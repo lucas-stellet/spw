@@ -43,6 +43,10 @@ Note: in spec-workflow, a custom template in `user-templates/` fully overrides t
 ## Config and hook (TDD via config)
 
 - Configure `.spec-workflow/spw-config.toml`:
+  - `[models]` routing policy:
+    - `web_research = haiku`
+    - `complex_reasoning = opus`
+    - `implementation = sonnet`
   - `execution.tdd_default = false|true`
   - `templates.tasks_template_mode = auto|on|off`
 - SessionStart hook auto-syncs:
@@ -50,45 +54,57 @@ Note: in spec-workflow, a custom template in `user-templates/` fully overrides t
   - target: `.spec-workflow/user-templates/tasks-template.md`
 - With this setup, you do not need a TDD flag in command calls; behavior comes from project config.
 
-## Commands and roles
+## Subagent strategy (default)
 
-### 1) `spw:prd`
+- Use subagents as the default execution mode to keep main-session context small and deterministic.
+- Model policy:
+  - web-only scouting/search -> `haiku`
+  - complex reasoning/synthesis/gates -> `opus`
+  - implementation/drafting/execution -> `sonnet`
+- Commands `spw:prd`, `spw:plan`, `spw:design-research`, `spw:design-draft`, `spw:tasks-plan`, `spw:tasks-check`, `spw:exec`, and `spw:checkpoint` are all defined as subagent-driven workflows.
+
+## Commands and roles (lifecycle order)
+
+### 1) `spw:prd` (product requirements)
 Generates `requirements.md` in PRD format (more product-oriented), with guided discovery and MCP-source gate when external input is provided (`--source`).
 Use when starting from zero (no approved requirements).
 
-### 2) `spw:design-research`
+### 2) `spw:plan` (technical planning orchestrator)
+Runs the technical planning pipeline from existing requirements.
+Use when `requirements.md` already exists for the spec.
+Before starting, it validates requirements approval via MCP (`spec-status`) and requests approval (`request-approval`) when needed.
+
+Pipeline executed by `spw:plan`:
+`design-research -> design-draft -> tasks-plan -> tasks-check`
+
+### 3) `spw:design-research` (manual/advanced)
 Technical research (codebase + web + Elixir/Phoenix/Ecto/OTP guardrails) and outputs `DESIGN-RESEARCH.md`.
 
-### 3) `spw:design-draft`
+### 4) `spw:design-draft` (manual/advanced)
 Consolidates `requirements + research` into `design.md` with REQ-ID traceability matrix.
 
-### 4) `spw:tasks-plan`
+### 5) `spw:tasks-plan` (manual/advanced)
 Generates `tasks.md` with:
 - explicit dependencies
 - wave-based parallelism
 - per-task tests (or justified exception)
 
-### 5) `spw:tasks-check`
+### 6) `spw:tasks-check` (manual/advanced)
 Validates `tasks.md` consistency (traceability, cycles, wave conflicts, tests).
 
-### 6) `spw:plan`
-Orchestrates full pipeline:
-`design-research -> design-draft -> tasks-plan -> tasks-check`.
-Use when `requirements.md` already exists for the spec.
-Before starting, it validates requirements approval via MCP (`spec-status`) and requests approval (`request-approval`) when needed.
+### 7) `spw:exec` (execution)
+Executes `tasks.md` in batches with mandatory checkpoints.
+
+### 8) `spw:checkpoint` (quality gate)
+Quality gate between batches/waves with PASS/BLOCKED output.
 
 ## Quick command selection
 
-- Without `requirements.md`: use `spw:prd`.
-- With `requirements.md`: use `spw:plan` (it validates/requests MCP approval before continuing).
-- Separation rule: `spw:prd` defines requirements; `spw:plan` turns requirements into design/tasks.
-- `spw:plan` does not trust file existence alone: it enforces an MCP approval gate first.
-
-### 7) `spw:exec`
-Executes `tasks.md` in batches with mandatory checkpoints.
-
-### 8) `spw:checkpoint`
-Quality gate between batches/waves with PASS/BLOCKED output.
+- Product stage (no requirements yet): use `spw:prd`.
+- Technical planning stage (requirements file exists): use `spw:plan`.
+- Execution stage (approved tasks): use `spw:exec`.
+- Quality gate between batches/waves: use `spw:checkpoint`.
+- Advanced/manual mode: run `design-research`, `design-draft`, `tasks-plan`, `tasks-check` individually.
 
 ## Recommended usage sequence
 

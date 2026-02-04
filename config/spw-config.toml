@@ -13,8 +13,27 @@
 #
 # Important note:
 # - This file does NOT replace requirements/design/tasks artifacts.
-# - It only controls command runtime behavior and template-sync hook behavior.
+# - It controls runtime behavior for commands and hooks, including
+#   model routing policy for subagents.
 # ===============================================================
+
+[models]
+# Model routing policy used by SPW commands.
+#
+# web_research:
+# - Use for lightweight web search/lookup/scouting only.
+# - Recommended default: "haiku"
+web_research = "haiku"
+
+# complex_reasoning:
+# - Use for architecture synthesis, validation gates, and high-risk decisions.
+# - Recommended default: "opus"
+complex_reasoning = "opus"
+
+# implementation:
+# - Use for code-oriented implementation and standard drafting/writing tasks.
+# - Recommended default: "sonnet"
+implementation = "sonnet"
 
 [execution]
 # tdd_default defines the default TDD behavior for the project.
@@ -41,6 +60,15 @@ tdd_require_red_green_evidence = true
 # - missing per-task verification
 # - critical checkpoint failures
 strict_gates = true
+
+[subagents]
+# Max number of parallel subagents for web scouting tasks.
+# Keep this moderate to avoid noisy/duplicated findings.
+max_parallel_web_scouts = 3
+
+# If true, complex/critical tasks in `spw:exec` route spec-compliance review
+# to complex_reasoning model. If false, always use implementation model.
+use_opus_for_complex_task_review = true
 
 [templates]
 # Controls whether the hook syncs tasks-template on SessionStart.

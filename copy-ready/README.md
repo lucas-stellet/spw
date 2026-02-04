@@ -34,6 +34,14 @@ This kit only uses:
 
 It does not modify default templates under `.spec-workflow/templates/`.
 
+## Default subagent/model policy
+
+- Subagent-first workflows across product, planning, execution, and checkpoints.
+- Model routing comes from `.spec-workflow/spw-config.toml`:
+  - web-only research/scouting -> `haiku`
+  - complex synthesis/validation gates -> `opus`
+  - implementation/drafting -> `sonnet`
+
 ## Available commands
 
 - `/spw:prd` (zero-to-PRD: generates requirements)

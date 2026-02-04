@@ -3,6 +3,10 @@
 SPW is a command/template kit that combines:
 - `spec-workflow-mcp` as the source of truth for artifacts and approvals
 - stricter agent execution patterns (planning gates, waves, checkpoints)
+- subagent-first orchestration with model routing:
+  - web scouting -> `haiku`
+  - complex reasoning -> `opus`
+  - implementation/drafting -> `sonnet`
 
 ## Where to start
 
@@ -35,4 +39,3 @@ After install:
 - `spw:plan` -> design/tasks planning from existing requirements (with MCP approval gate)
 - `spw:exec` -> batch execution with checkpoints
 - `spw:checkpoint` -> quality gate report (PASS/BLOCKED)
-

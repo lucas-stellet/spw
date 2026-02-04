@@ -1,6 +1,6 @@
 ---
 name: spw:tasks-check
-description: Validate tasks.md quality (traceability, dependencies, tests)
+description: Subagent-driven tasks.md validation (traceability, dependencies, tests)
 argument-hint: "<spec-name>"
 ---
 
@@ -8,25 +8,35 @@ argument-hint: "<spec-name>"
 Validate whether `tasks.md` is ready for subagent execution.
 </objective>
 
-<checks>
-1. Traceability:
-   - every task references `Requirements`
-   - every requirement is covered by at least one task
-2. Dependencies:
-   - no cycles
-   - wave ordering is compatible with `Depends On`
-3. Parallelism:
-   - same-wave tasks do not conflict on critical files
-4. Testing:
-   - every task has `Test Plan` + `Verification Command`
-   - exceptions include explicit justification
-5. Definition of done:
-   - objective completion criteria per task
-</checks>
+<model_policy>
+Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
+- complex_reasoning -> default `opus`
+- implementation -> default `sonnet`
+</model_policy>
 
-<output>
-Generate `.spec-workflow/specs/<spec-name>/TASKS-CHECK.md` containing:
-- PASS/BLOCKED
-- findings by severity
-- recommended `tasks.md` fixes
-</output>
+<subagents>
+- `traceability-auditor` (model: complex_reasoning)
+- `dag-validator` (model: implementation)
+- `test-policy-auditor` (model: complex_reasoning)
+- `decision-aggregator` (model: complex_reasoning)
+</subagents>
+
+<workflow>
+1. Read `.spec-workflow/specs/<spec-name>/tasks.md` + requirements/design docs.
+2. Dispatch in parallel:
+   - `traceability-auditor`
+   - `dag-validator`
+   - `test-policy-auditor`
+3. Dispatch `decision-aggregator` to produce PASS/BLOCKED decision.
+4. Generate `.spec-workflow/specs/<spec-name>/TASKS-CHECK.md` containing:
+   - PASS/BLOCKED
+   - findings by severity
+   - recommended fixes
+</workflow>
+
+<acceptance_criteria>
+- [ ] Every task references at least one requirement.
+- [ ] Every requirement maps to at least one task.
+- [ ] DAG has no cycles and wave order is valid.
+- [ ] Test policy gate is satisfied.
+</acceptance_criteria>

@@ -1,6 +1,6 @@
 ---
 name: spw:design-research
-description: Technical research to prepare design.md from approved requirements
+description: Subagent-driven technical research to prepare design.md
 argument-hint: "<spec-name> [--focus <topic>] [--web-depth low|medium|high]"
 ---
 
@@ -8,6 +8,24 @@ argument-hint: "<spec-name> [--focus <topic>] [--web-depth low|medium|high]"
 Generate architecture and implementation research inputs for the spec design.
 Output: `.spec-workflow/specs/<spec-name>/DESIGN-RESEARCH.md`.
 </objective>
+
+<model_policy>
+Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
+- web_research -> default `haiku`
+- complex_reasoning -> default `opus`
+- implementation -> default `sonnet`
+</model_policy>
+
+<subagents>
+- `codebase-pattern-scanner` (model: implementation)
+  - Finds reusable patterns, boundaries, integration points.
+- `web-pattern-scout-*` (model: web_research, parallel)
+  - Performs external web/library/pattern scans.
+- `risk-analyst` (model: complex_reasoning)
+  - Identifies architecture/operational risks and mitigations.
+- `research-synthesizer` (model: complex_reasoning)
+  - Produces final consolidated recommendation set.
+</subagents>
 
 <preconditions>
 - The spec has `requirements.md` and it is approved.
@@ -18,16 +36,12 @@ Output: `.spec-workflow/specs/<spec-name>/DESIGN-RESEARCH.md`.
 1. Read:
    - `.spec-workflow/specs/<spec-name>/requirements.md`
    - `.spec-workflow/steering/*.md` (if present)
-2. Analyze the codebase for:
-   - existing patterns
-   - reusable components/utilities
-   - integration points and risks
-3. Run external web research for relevant libraries/patterns.
-4. For Elixir/Phoenix projects, explicitly check:
-   - context boundaries (Ecto)
-   - LiveView/Phoenix conventions
-   - real process needs (OTP)
-5. Write `DESIGN-RESEARCH.md` with:
+2. Dispatch in parallel:
+   - `codebase-pattern-scanner`
+   - `web-pattern-scout-*` (2-4 scouts depending on depth)
+3. Dispatch `risk-analyst` using outputs from step 2.
+4. Dispatch `research-synthesizer` to produce `DESIGN-RESEARCH.md`.
+5. Ensure final sections include:
    - primary recommendations
    - alternatives and trade-offs
    - references/patterns to adopt
@@ -38,4 +52,5 @@ Output: `.spec-workflow/specs/<spec-name>/DESIGN-RESEARCH.md`.
 - [ ] Every relevant functional requirement has at least one technical recommendation.
 - [ ] Existing-code reuse section is included.
 - [ ] Risks and recommended decisions section is included.
+- [ ] Web-only findings came from web_research model.
 </acceptance_criteria>
