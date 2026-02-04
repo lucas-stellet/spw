@@ -103,6 +103,44 @@ to_bool() {
   esac
 }
 
+to_non_negative_int() {
+  local raw="${1:-0}"
+  if [[ "$raw" =~ ^[0-9]+$ ]]; then
+    printf '%s' "$raw"
+  else
+    printf '0'
+  fi
+}
+
+cleanup_template_backups() {
+  local target_path="$1"
+  local keep_count="$2"
+  local target_dir target_base
+  local backups=()
+  local idx
+
+  target_dir="$(dirname "$target_path")"
+  target_base="$(basename "$target_path")"
+
+  while IFS= read -r file; do
+    backups+=("$file")
+  done < <(find "$target_dir" -maxdepth 1 -type f -name "${target_base}.bak-*" 2>/dev/null | sort -r)
+
+  if [ "${#backups[@]}" -eq 0 ]; then
+    return
+  fi
+
+  idx=0
+  for file in "${backups[@]}"; do
+    idx=$((idx + 1))
+    if [ "$idx" -le "$keep_count" ]; then
+      continue
+    fi
+    rm -f -- "$file"
+    log "Removed old backup: ${file}"
+  done
+}
+
 SYNC_ENABLED="$(to_bool "$(get_toml_value templates sync_tasks_template_on_session_start true)")"
 if [ "$SYNC_ENABLED" != "true" ]; then
   log "Sync disabled by configuration."
@@ -118,6 +156,8 @@ FILE_OFF="$(get_toml_value templates tasks_template_tdd_off_file tasks-template.
 BACKUP_ENABLED="$(to_bool "$(get_toml_value safety backup_before_overwrite true)")"
 DRY_RUN="$(to_bool "$(get_toml_value safety dry_run false)")"
 FAIL_HARD="$(to_bool "$(get_toml_value safety fail_hard_on_missing_template false)")"
+CLEANUP_BACKUPS="$(to_bool "$(get_toml_value safety cleanup_backups_after_sync false)")"
+BACKUP_RETENTION_COUNT="$(to_non_negative_int "$(get_toml_value safety backup_retention_count 5)")"
 
 MODE_NORMALIZED="$(printf '%s' "$TEMPLATE_MODE" | tr '[:upper:]' '[:lower:]')"
 if [ "$MODE_NORMALIZED" = "auto" ]; then
@@ -160,6 +200,9 @@ mkdir -p "$(dirname "$TARGET_PATH")"
 
 if [ -f "$TARGET_PATH" ] && cmp -s "$SOURCE_PATH" "$TARGET_PATH"; then
   log "Template is already synchronized (${MODE_NORMALIZED})."
+  if [ "$CLEANUP_BACKUPS" = "true" ]; then
+    cleanup_template_backups "$TARGET_PATH" "$BACKUP_RETENTION_COUNT"
+  fi
   safe_exit
 fi
 
@@ -176,5 +219,9 @@ fi
 
 cp "$SOURCE_PATH" "$TARGET_PATH"
 log "Template synchronized (${MODE_NORMALIZED}): ${TARGET_PATH}"
+
+if [ "$CLEANUP_BACKUPS" = "true" ]; then
+  cleanup_template_backups "$TARGET_PATH" "$BACKUP_RETENTION_COUNT"
+fi
 
 safe_exit

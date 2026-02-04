@@ -7,6 +7,23 @@ SPW provides two runtime hooks/scripts:
 
 Both are fail-open by default (errors are logged, startup continues).
 
+## Backup cleanup options
+
+In `.spec-workflow/spw-config.toml` under `[safety]`:
+
+- `backup_before_overwrite` -> create `.bak-<timestamp>` before replacing template
+- `cleanup_backups_after_sync` -> prune backup files on SessionStart
+- `backup_retention_count` -> number of backups to keep when cleanup is enabled
+
+Example to remove backups after each sync:
+
+```toml
+[safety]
+backup_before_overwrite = true
+cleanup_backups_after_sync = true
+backup_retention_count = 0
+```
+
 ## Files
 
 - SessionStart script: `spw/hooks/session-start-sync-tasks-template.sh`

@@ -234,6 +234,18 @@ tasks_template_tdd_off_file = "tasks-template.tdd-off.md"
 # Format: tasks-template.md.bak-YYYYMMDDHHMMSS
 backup_before_overwrite = true
 
+# If true, the hook cleans up existing backup files after synchronization
+# (or when already synchronized). This is useful to avoid backup accumulation.
+cleanup_backups_after_sync = false
+
+# Number of backup files to keep when cleanup is enabled.
+#
+# Examples:
+# - 0 -> delete all backups (including the one created in the current sync)
+# - 1 -> keep only the most recent backup
+# - 5 -> keep the 5 most recent backups
+backup_retention_count = 5
+
 # If true, the hook runs in dry-run mode (does not write files).
 # Useful for validating behavior without changing anything.
 dry_run = false

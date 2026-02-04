@@ -28,6 +28,10 @@ Then:
 3. Start a new session so the hook syncs `tasks-template.md`.
 4. `spw-install` also tries to install default SPW skills into `.claude/skills/` (best effort, non-blocking).
 
+If you do not want `.bak` accumulation for `tasks-template.md`, set:
+- `safety.cleanup_backups_after_sync = true`
+- `safety.backup_retention_count = 0` (delete all backups after sync)
+
 ## spec-workflow compatibility
 
 This kit only uses:

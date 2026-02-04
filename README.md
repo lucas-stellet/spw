@@ -38,6 +38,7 @@ After install:
 4. Start a new session so SessionStart hook can sync the active tasks template.
 5. (Optional) Enable SPW statusline from `.claude/settings.json.example`.
 6. Default SPW skills are copied into `.claude/skills/` when local sources are found (best effort).
+7. (Optional) auto-clean template backups with `safety.cleanup_backups_after_sync=true` in `.spec-workflow/spw-config.toml`.
 
 ## Command entry points
 
