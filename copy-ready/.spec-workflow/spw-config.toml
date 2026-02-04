@@ -61,6 +61,15 @@ tdd_require_red_green_evidence = true
 # - critical checkpoint failures
 strict_gates = true
 
+# If true, `spw:exec` must pause after each wave/checkpoint PASS and ask the user
+# whether to continue to the next wave. No automatic wave progression is allowed.
+#
+# true  -> explicit user authorization required between waves
+# false -> command may auto-continue based on workflow policy
+#
+# Recommended default: true (human-in-the-loop control).
+require_user_approval_between_waves = true
+
 [subagents]
 # Max number of parallel subagents for web scouting tasks.
 # Keep this moderate to avoid noisy/duplicated findings.
@@ -69,6 +78,69 @@ max_parallel_web_scouts = 3
 # If true, complex/critical tasks in `spw:exec` route spec-compliance review
 # to complex_reasoning model. If false, always use implementation model.
 use_opus_for_complex_task_review = true
+
+[skills]
+# Enables skill-aware behavior in SPW commands.
+#
+# true  -> commands try to load skills listed below before key phases
+# false -> commands skip skill loading behavior
+enabled = true
+
+# Enforcement mode for required skills:
+#
+# - "advisory": if a required skill is missing, warn and continue.
+# - "strict":   if a required skill is missing, block the stage.
+#
+# Recommended default: "advisory"
+enforcement = "advisory"
+
+# If true, `spw-install` will try to copy default skills into
+# `.claude/skills/` from local/global skill directories when available.
+# Missing skills do not fail installation.
+auto_install_defaults_on_spw_install = true
+
+[skills.design]
+# Skills used by design/planning phases
+# (`spw:design-research`, `spw:design-draft`, `spw:tasks-plan`, `spw:tasks-check`).
+#
+# Core Elixir defaults:
+# - using-elixir-skills: routes to relevant Elixir-thinking skills
+# - elixir-thinking: idiomatic architecture/refactoring guidance
+# - elixir-anti-patterns: smell detection and safer alternatives
+# - phoenix-thinking: LiveView/controller/socket guidance
+# - ecto-thinking: schema/query/context/migration guidance
+# - otp-thinking: process/state/supervision guidance
+# - oban-thinking: queue/background-job guidance
+required = [
+  "using-elixir-skills",
+  "elixir-thinking",
+  "elixir-anti-patterns",
+  "phoenix-thinking",
+  "ecto-thinking",
+  "otp-thinking",
+  "oban-thinking"
+]
+
+# Optional skills: if present, SPW can use them to increase rigor.
+optional = [
+  "requesting-code-review"
+]
+
+[skills.implementation]
+# Skills used by execution phases (`spw:exec`, `spw:checkpoint`).
+required = [
+  "using-elixir-skills",
+  "elixir-thinking",
+  "elixir-anti-patterns"
+]
+
+# Optional implementation skills:
+# - test-driven-development: strict RED/GREEN/REFACTOR flow
+# - requesting-code-review: structured review/checklist before completion
+optional = [
+  "test-driven-development",
+  "requesting-code-review"
+]
 
 [templates]
 # Controls whether the hook syncs tasks-template on SessionStart.

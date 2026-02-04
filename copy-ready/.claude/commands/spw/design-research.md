@@ -16,6 +16,17 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - implementation -> default `sonnet`
 </model_policy>
 
+<skills_policy>
+Resolve skill policy from `.spec-workflow/spw-config.toml`:
+- `[skills]`
+- `[skills.design]`
+
+Before running subagents, attempt to load required design skills.
+If required skills are missing:
+- `enforcement = "strict"` -> BLOCKED
+- `enforcement = "advisory"` -> warn and continue
+</skills_policy>
+
 <subagents>
 - `codebase-pattern-scanner` (model: implementation)
   - Finds reusable patterns, boundaries, integration points.

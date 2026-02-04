@@ -14,6 +14,17 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - implementation -> default `sonnet`
 </model_policy>
 
+<skills_policy>
+Resolve skill policy from `.spec-workflow/spw-config.toml`:
+- `[skills]`
+- `[skills.design]`
+
+Before validation, attempt to load required design/check skills.
+If required skills are missing:
+- `enforcement = "strict"` -> BLOCKED
+- `enforcement = "advisory"` -> warn and continue
+</skills_policy>
+
 <subagents>
 - `traceability-auditor` (model: complex_reasoning)
 - `dag-validator` (model: implementation)

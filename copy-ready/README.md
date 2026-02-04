@@ -26,6 +26,7 @@ Then:
 1. Merge `.claude/settings.json.example` into your `.claude/settings.json` (SessionStart + statusLine).
 2. Adjust `.spec-workflow/spw-config.toml` (especially `execution.tdd_default`).
 3. Start a new session so the hook syncs `tasks-template.md`.
+4. `spw-install` also tries to install default SPW skills into `.claude/skills/` (best effort, non-blocking).
 
 ## spec-workflow compatibility
 
@@ -43,6 +44,22 @@ It does not modify default templates under `.spec-workflow/templates/`.
   - complex synthesis/validation gates -> `opus`
   - implementation/drafting -> `sonnet`
 
+## Default skills (installed by `spw-install` when found locally)
+
+- Elixir defaults:
+  - `using-elixir-skills`
+  - `elixir-thinking`
+  - `elixir-anti-patterns`
+  - `phoenix-thinking`
+  - `ecto-thinking`
+  - `otp-thinking`
+  - `oban-thinking`
+- Optional quality/TDD:
+  - `test-driven-development`
+  - `requesting-code-review`
+
+The installer searches common local skill directories (`~/.claude/skills`, `~/.codex/skills`, `~/.codex/superpowers/skills`) and also checks the local `superpowers/skills` folder (or `SPW_SUPERPOWERS_SKILLS_DIR`) when available.
+
 ## Available commands
 
 - `/spw:prd` (zero-to-PRD: generates requirements)
@@ -55,6 +72,12 @@ It does not modify default templates under `.spec-workflow/templates/`.
 - `/spw:checkpoint`
 
 All commands include end-of-command guidance: next-step command, blocked remediation path, and context reset suggestion when appropriate.
+
+`/spw:exec` guardrails:
+- mandatory subagent dispatch per task (including single-task sequential waves)
+- orchestrator-only main context (no direct implementation edits)
+- out-of-scope fixes are blocked and must be reported explicitly
+- default human gate between waves (no auto-continue without explicit authorization)
 
 ## Manual planning/refinement flow
 

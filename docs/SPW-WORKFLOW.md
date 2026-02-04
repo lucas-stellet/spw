@@ -50,6 +50,7 @@ Note: in spec-workflow, a custom template in `user-templates/` fully overrides t
     - `implementation = sonnet`
   - `execution.tdd_default = false|true`
   - `templates.tasks_template_mode = auto|on|off`
+  - `skills.*` sections for required/optional skills by phase
 - SessionStart hook auto-syncs:
   - source: `.spec-workflow/user-templates/variants/tasks-template.tdd-*.md`
   - target: `.spec-workflow/user-templates/tasks-template.md`
@@ -58,6 +59,19 @@ Note: in spec-workflow, a custom template in `user-templates/` fully overrides t
   - active spec + phase + tasks progress (best effort)
   - scaled context usage bar
 - With this setup, you do not need a TDD flag in command calls; behavior comes from project config.
+
+## Skills policy (config-driven)
+
+SPW can load skills from `.spec-workflow/spw-config.toml`:
+- `[skills]` (enable + enforcement mode)
+- `[skills.design]` (design/planning stages)
+- `[skills.implementation]` (execution/checkpoint stages)
+
+Default lists include Elixir-focused skills plus optional:
+- `test-driven-development`
+- `requesting-code-review`
+
+`spw-install` attempts to copy these defaults into `.claude/skills/` from local skill directories when available.
 
 ## Subagent strategy (default)
 
@@ -100,6 +114,8 @@ Validates `tasks.md` consistency (traceability, cycles, wave conflicts, tests).
 
 ### 7) `spw:exec` (execution)
 Executes `tasks.md` in batches with mandatory checkpoints.
+Execution rule: every task is dispatched to subagents even when a wave is sequential (single task). The orchestrator must not implement code directly.
+Execution rule: by default, wave progression requires explicit user authorization after each checkpoint PASS (`execution.require_user_approval_between_waves = true`).
 
 ### 8) `spw:checkpoint` (quality gate)
 Quality gate between batches/waves with PASS/BLOCKED output.

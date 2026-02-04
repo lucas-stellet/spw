@@ -34,6 +34,7 @@ After install:
 2. Review `.spec-workflow/spw-config.toml`.
 3. Start a new session so SessionStart hook can sync the active tasks template.
 4. (Optional) Enable SPW statusline from `.claude/settings.json.example`.
+5. Default SPW skills are copied into `.claude/skills/` when local sources are found (best effort).
 
 ## Command entry points
 
