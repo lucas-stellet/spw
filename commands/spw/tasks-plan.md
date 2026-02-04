@@ -45,7 +45,13 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 4. Dispatch `parallel-conflict-checker`.
 5. Dispatch `test-policy-enforcer`.
 6. Dispatch `tasks-writer` and save `.spec-workflow/specs/<spec-name>/tasks.md`.
-7. Request approval.
+7. Handle approval via MCP only:
+   - call `spec-status`
+   - if already approved, continue without re-requesting
+   - if not approved, call `request-approval` then `get-approval-status` once
+   - if pending, stop with `WAITING_FOR_APPROVAL` and instruct UI approval + rerun
+   - if rejected/changes-requested, stop BLOCKED
+   - never ask for approval in chat
 </workflow>
 
 <acceptance_criteria>

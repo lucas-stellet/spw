@@ -84,7 +84,13 @@ If `--source` is provided and looks like a URL (`http://` or `https://`) or mark
 7. Save artifacts:
    - canonical: `.spec-workflow/specs/<spec-name>/requirements.md`
    - product mirror: `.spec-workflow/specs/<spec-name>/PRD.md`
-8. Request approval via MCP and wait for approved status before handoff to `spw:plan`.
+8. Handle approval via MCP only:
+   - call `spec-status`
+   - if already approved, continue without re-requesting
+   - if not approved, call `request-approval` then `get-approval-status` once
+   - if pending, stop with `WAITING_FOR_APPROVAL` and instruct UI approval + rerun
+   - if rejected/changes-requested, stop BLOCKED
+   - never ask for approval in chat
 </workflow>
 
 <acceptance_criteria>

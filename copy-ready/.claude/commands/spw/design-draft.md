@@ -35,7 +35,14 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 5. If critic returns BLOCKED:
    - revise with `design-writer`
    - re-run `design-critic`
-6. Save to `.spec-workflow/specs/<spec-name>/design.md` and request approval.
+6. Save to `.spec-workflow/specs/<spec-name>/design.md`.
+7. Handle approval via MCP only:
+   - call `spec-status`
+   - if already approved, continue without re-requesting
+   - if not approved, call `request-approval` then `get-approval-status` once
+   - if pending, stop with `WAITING_FOR_APPROVAL` and instruct UI approval + rerun
+   - if rejected/changes-requested, stop BLOCKED
+   - never ask for approval in chat
 </workflow>
 
 <acceptance_criteria>

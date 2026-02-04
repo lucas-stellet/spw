@@ -73,6 +73,7 @@ Use when starting from zero (no approved requirements).
 Runs the technical planning pipeline from existing requirements.
 Use when `requirements.md` already exists for the spec.
 Before starting, it validates requirements approval via MCP (`spec-status`) and requests approval (`request-approval`) when needed.
+Approval is MCP-driven only: SPW commands do not ask for manual in-chat approval choices.
 
 Pipeline executed by `spw:plan`:
 `design-research -> design-draft -> tasks-plan -> tasks-check`

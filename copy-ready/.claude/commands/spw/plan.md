@@ -22,7 +22,7 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 
 <subagents>
 - `requirements-approval-gate` (model: complex_reasoning)
-  - Validates approval state through MCP and handles approval loop.
+  - Validates approval state strictly through MCP only.
 - `planning-stage-orchestrator` (model: complex_reasoning)
   - Runs stage-by-stage orchestration for design/tasks generation.
 </subagents>
@@ -33,11 +33,22 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - Do not assume approval from file existence; validate approval via MCP.
 </preconditions>
 
+<approval_protocol>
+- Approval source of truth is MCP status only.
+- Never ask for approval in chat (no AskUserQuestion/manual "approve now?" options).
+- Always do this sequence:
+  1) call `spec-status`
+  2) if `documents.requirements.approved == true`: proceed immediately
+  3) if not approved:
+     - call `request-approval` (idempotent)
+     - call `get-approval-status` once
+     - stop with `WAITING_FOR_APPROVAL` (or BLOCKED on rejected/changes-requested)
+- If status is `pending`, do not poll in a loop; instruct user to approve in Spec Workflow UI and rerun the command.
+</approval_protocol>
+
 <pipeline>
 0. Dispatch `requirements-approval-gate`:
-   - check MCP `spec-status` -> `documents.requirements.approved`
-   - if not approved: request via `request-approval`, poll `get-approval-status`
-   - if status = `rejected` or `changes-requested`: stop BLOCKED
+   - run the approval protocol above
 1. Dispatch `planning-stage-orchestrator` for:
    - `spw:design-research <spec-name>`
    - `spw:design-draft <spec-name>`
@@ -61,5 +72,6 @@ On success:
 
 If blocked:
 - Show exactly which stage blocked (approval gate, design, tasks-plan, tasks-check).
+- If waiting on approval, explicitly state: "Approve in Spec Workflow UI, then rerun `/spw:plan <spec-name>`."
 - Provide corrective action and rerun command (`spw:plan <spec-name>` or specific stage command).
 </completion_guidance>

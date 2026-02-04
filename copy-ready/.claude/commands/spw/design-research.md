@@ -30,6 +30,7 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 <preconditions>
 - The spec has `requirements.md` and it is approved.
 - Also read steering docs when present (`product.md`, `tech.md`, `structure.md`).
+- Approval check must come from MCP `spec-status`; never ask approval in chat.
 </preconditions>
 
 <workflow>
