@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$PROJECT_ROOT/spw/hooks/session-start-sync-tasks-template.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
