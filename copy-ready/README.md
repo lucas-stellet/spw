@@ -54,6 +54,8 @@ It does not modify default templates under `.spec-workflow/templates/`.
   - `ecto-thinking`
   - `otp-thinking`
   - `oban-thinking`
+- Git hygiene:
+  - `conventional-commits`
 - Optional quality/TDD:
   - `test-driven-development`
   - `requesting-code-review`
@@ -78,6 +80,10 @@ All commands include end-of-command guidance: next-step command, blocked remedia
 - orchestrator-only main context (no direct implementation edits)
 - out-of-scope fixes are blocked and must be reported explicitly
 - default human gate between waves (no auto-continue without explicit authorization)
+- default atomic commit per completed task
+- Conventional Commits for task-level commits (`<type>(<spec>): task <id> - <title>`)
+- default clean-worktree requirement before wave progression
+- manual/human-gated tasks stop in handoff mode (no automatic in-progress mark)
 
 ## Manual planning/refinement flow
 

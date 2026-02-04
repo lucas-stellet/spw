@@ -16,12 +16,21 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 
 <subagents>
 - `evidence-collector` (model: implementation)
-  - Collects task state, test/lint/typecheck outputs, and implementation logs.
+  - Collects task state, test/lint/typecheck outputs, implementation logs, and git status.
 - `traceability-judge` (model: complex_reasoning)
   - Verifies requirements/design/tasks alignment for delivered changes.
 - `release-gate-decider` (model: complex_reasoning)
   - Produces final PASS/BLOCKED decision and corrective actions.
 </subagents>
+
+<git_gate>
+Resolve from `.spec-workflow/spw-config.toml` `[execution].require_clean_worktree_for_wave_pass` (default `true`).
+
+If enabled:
+- include `git status --porcelain` evidence in the report
+- return BLOCKED when uncommitted tracked changes exist
+- recommend exact commit commands before rerunning checkpoint
+</git_gate>
 
 <workflow>
 1. Dispatch `evidence-collector`.

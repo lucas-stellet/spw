@@ -94,6 +94,7 @@ install_default_skills() {
     "ecto-thinking"
     "otp-thinking"
     "oban-thinking"
+    "conventional-commits"
     "test-driven-development"
     "requesting-code-review"
   )

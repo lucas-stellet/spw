@@ -68,6 +68,7 @@ SPW can load skills from `.spec-workflow/spw-config.toml`:
 - `[skills.implementation]` (execution/checkpoint stages)
 
 Default lists include Elixir-focused skills plus optional:
+- `conventional-commits`
 - `test-driven-development`
 - `requesting-code-review`
 
@@ -87,12 +88,15 @@ Default lists include Elixir-focused skills plus optional:
 ### 1) `spw:prd` (product requirements)
 Generates `requirements.md` in PRD format (more product-oriented), with guided discovery and MCP-source gate when external input is provided (`--source`).
 Use when starting from zero (no approved requirements).
+When approval returns `changes-requested`/`rejected` (or `needs-revision`), `spw:prd` runs a revision protocol: feedback analysis + codebase impact scan + clarification questions before applying edits.
+It only calls `request-approval` when no prior approval request/status exists.
 
 ### 2) `spw:plan` (technical planning orchestrator)
 Runs the technical planning pipeline from existing requirements.
 Use when `requirements.md` already exists for the spec.
 Before starting, it validates requirements approval via MCP (`spec-status`) and requests approval (`request-approval`) when needed.
 Approval is MCP-driven only: SPW commands do not ask for manual in-chat approval choices.
+If requirements status is `needs-revision`/`changes-requested`/`rejected`, it blocks and routes back to `spw:prd` revision flow (it does not re-request approval).
 
 Pipeline executed by `spw:plan`:
 `design-research -> design-draft -> tasks-plan -> tasks-check`
@@ -116,6 +120,9 @@ Validates `tasks.md` consistency (traceability, cycles, wave conflicts, tests).
 Executes `tasks.md` in batches with mandatory checkpoints.
 Execution rule: every task is dispatched to subagents even when a wave is sequential (single task). The orchestrator must not implement code directly.
 Execution rule: by default, wave progression requires explicit user authorization after each checkpoint PASS (`execution.require_user_approval_between_waves = true`).
+Execution rule: by default, each completed task must be committed atomically and wave PASS requires a clean worktree.
+Execution rule: task-level commits follow Conventional Commits format.
+Execution rule: manual/human-gated tasks are handed off to the user (no automatic `[ ] -> [-]` progression).
 
 ### 8) `spw:checkpoint` (quality gate)
 Quality gate between batches/waves with PASS/BLOCKED output.

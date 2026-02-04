@@ -49,10 +49,17 @@ If required skills are missing:
 6. Save to `.spec-workflow/specs/<spec-name>/design.md`.
 7. Handle approval via MCP only:
    - call `spec-status`
-   - if already approved, continue without re-requesting
-   - if not approved, call `request-approval` then `get-approval-status` once
+   - resolve design status from:
+     - `documents.design.approved`
+     - `documents.design.status`
+     - `approvals.design.status`
+   - if approved, continue without re-requesting
+   - if `needs-revision`/`changes-requested`/`rejected`, stop BLOCKED
    - if pending, stop with `WAITING_FOR_APPROVAL` and instruct UI approval + rerun
-   - if rejected/changes-requested, stop BLOCKED
+   - only if approval was never requested (missing/empty/unknown status):
+     - call `request-approval` then `get-approval-status` once
+     - if pending, stop with `WAITING_FOR_APPROVAL`
+     - if needs revision, stop BLOCKED
    - never ask for approval in chat
 </workflow>
 

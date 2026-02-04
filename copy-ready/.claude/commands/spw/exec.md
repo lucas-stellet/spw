@@ -63,6 +63,32 @@ If `true`:
 - Proceed only on explicit continue.
 </wave_authorization>
 
+<manual_task_policy>
+Resolve from `.spec-workflow/spw-config.toml` `[execution].manual_tasks_require_human_handoff` (default `true`).
+
+When enabled, if the next task is manual/human-gated (for example external sandbox verification, production UI checks, stakeholder validation):
+- do not auto-mark `[ ] -> [-]`
+- do not auto-execute
+- stop with `WAITING_FOR_HUMAN_ACTION`
+- provide checklist + exact command to resume after user confirms completion
+</manual_task_policy>
+
+<git_hygiene>
+Resolve from `.spec-workflow/spw-config.toml` `[execution]`:
+- `commit_per_task` (default `true`)
+- `auto_commit_on_task_completion` (default `true`)
+- `require_clean_worktree_for_wave_pass` (default `true`)
+
+Rules:
+- For each completed implementation task, create an atomic commit before moving forward.
+- Commit must include task-scoped code changes plus task status artifacts (`tasks.md`, implementation logs).
+- Commit message must follow Conventional Commits:
+  - `<type>(<spec-name>): task <task-id> - <short-title>`
+  - type guidance: `feat|fix|refactor|test|docs|chore`
+- If auto-commit is disabled, stop with exact `git add`/`git commit` commands.
+- If clean-worktree gate is enabled, checkpoint PASS cannot advance while `git status --porcelain` is non-empty.
+</git_hygiene>
+
 <scope_control>
 - Execute only the currently selected task IDs for the active batch/wave.
 - Do not "pre-fix" TODOs or unrelated failures from other tasks.
@@ -97,11 +123,14 @@ For complex/critical tasks, run spec-compliance review on `complex_reasoning` mo
    - dispatch `task-implementer` (mandatory, even when single-task batch)
    - dispatch `spec-compliance-reviewer`
    - dispatch `code-quality-reviewer`
-   - if all gates pass: log implementation details and mark `[x]`
+   - if all gates pass:
+     - log implementation details and mark `[x]`
+     - enforce git_hygiene commit policy for this task
    - if any gate fails: mark BLOCKED and stop current batch
 5. At end of batch, run `spw:checkpoint <spec-name>`.
 6. If checkpoint BLOCKED, stop.
 7. If checkpoint PASS:
+   - if `require_clean_worktree_for_wave_pass=true` and worktree is dirty: stop BLOCKED
    - if no remaining waves: finish
    - if remaining waves and `require_user_approval_between_waves=true`: request explicit authorization, then continue only if approved
    - if remaining waves and `require_user_approval_between_waves=false`: continue by policy
@@ -114,6 +143,8 @@ With `--strict true` (default):
 - block continuation when implementation was done without required subagent dispatch.
 - block continuation on out-of-scope edits (changes unrelated to active task IDs).
 - block progression to next wave without required user authorization.
+- block progression without required per-task commit.
+- block progression when clean-worktree gate is enabled and there are uncommitted changes.
 </strict_mode>
 
 <completion_guidance>
@@ -123,6 +154,10 @@ After each batch:
   - if authorization is required, stop in `WAITING_FOR_USER_AUTHORIZATION` and ask whether to continue.
   - otherwise, suggest/continue next batch per policy.
 - If checkpoint BLOCKED: stop and show exact corrective actions.
+
+If waiting on manual task:
+- stop in `WAITING_FOR_HUMAN_ACTION` with checklist.
+- keep manual task unchecked unless user explicitly confirms it started/completed.
 
 After full execution success:
 - Recommend final validation review and optionally `/clear` before any new planning cycle.

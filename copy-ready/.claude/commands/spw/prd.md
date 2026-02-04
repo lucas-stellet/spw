@@ -29,6 +29,12 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
   - Reads URLs and extracts only requirement-relevant signals.
 - `source-reader-mcp` (model: implementation)
   - Reads MCP-backed sources (GitHub/Linear/ClickUp) and normalizes output.
+- `feedback-analyzer` (model: complex_reasoning)
+  - Converts approval comments into concrete requirement deltas and open questions.
+- `codebase-impact-scanner` (model: implementation)
+  - Checks feasibility/impact against existing code patterns and boundaries.
+- `revision-planner` (model: complex_reasoning)
+  - Produces an explicit revision plan before any document edits.
 - `requirements-structurer` (model: complex_reasoning)
   - Produces v1/v2/out-of-scope, REQ-IDs, acceptance criteria draft.
 - `prd-editor` (model: implementation)
@@ -36,6 +42,29 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - `prd-critic` (model: complex_reasoning)
   - Performs strict quality gate before approval request.
 </subagents>
+
+<revision_protocol>
+Trigger this protocol when either:
+- MCP approval status for requirements is `changes-requested` or `rejected`, or
+- user asks to analyze/adjust reviewed requirements.
+
+Protocol (mandatory):
+1. Read approval feedback from MCP and existing `requirements.md`.
+2. Dispatch `feedback-analyzer` to classify:
+   - accepted changes
+   - ambiguous/conflicting feedback
+   - out-of-scope suggestions
+3. Dispatch `codebase-impact-scanner` (if enabled in config `[reviews]`).
+4. Dispatch `revision-planner` to create:
+   - `.spec-workflow/specs/<spec-name>/PRD-REVISION-PLAN.md`
+   - `.spec-workflow/specs/<spec-name>/PRD-REVISION-QUESTIONS.md` (if needed)
+5. Ask targeted clarification questions before editing if ambiguity/conflict exists.
+6. Only after clarification, dispatch `prd-editor` to apply approved deltas.
+7. Save revision summary:
+   - `.spec-workflow/specs/<spec-name>/PRD-REVISION-NOTES.md`
+
+Never directly edit requirements immediately after reading review comments.
+</revision_protocol>
 
 <source_handling>
 If `--source` is provided and looks like a URL (`http://` or `https://`) or markdown (`.md`), run a source-reading gate:
@@ -86,10 +115,17 @@ If `--source` is provided and looks like a URL (`http://` or `https://`) or mark
    - product mirror: `.spec-workflow/specs/<spec-name>/PRD.md`
 8. Handle approval via MCP only:
    - call `spec-status`
-   - if already approved, continue without re-requesting
-   - if not approved, call `request-approval` then `get-approval-status` once
+   - resolve status from:
+     - `documents.requirements.approved`
+     - `documents.requirements.status`
+     - `approvals.requirements.status`
+   - if approved, continue without re-requesting
+   - if `needs-revision`/`changes-requested`/`rejected`, run revision_protocol first (subagent-driven), then continue through critic + approval flow
    - if pending, stop with `WAITING_FOR_APPROVAL` and instruct UI approval + rerun
-   - if rejected/changes-requested, stop BLOCKED
+   - only if approval was never requested (missing/empty/unknown status):
+     - call `request-approval` then `get-approval-status` once
+     - if pending, stop with `WAITING_FOR_APPROVAL`
+     - if needs revision, run revision_protocol
    - never ask for approval in chat
 </workflow>
 
@@ -99,6 +135,8 @@ If `--source` is provided and looks like a URL (`http://` or `https://`) or mark
 - [ ] Every functional requirement has REQ-ID, priority, and verifiable acceptance criteria.
 - [ ] Explicit separation exists for v1, v2, and out-of-scope.
 - [ ] If `--source` was provided, MCP usage was explicitly asked.
+- [ ] On revision cycles, subagent analysis + codebase impact scan happened before edits.
+- [ ] Clarification questions were asked when feedback was ambiguous/conflicting.
 - [ ] PRD is approved before moving to design/tasks.
 </acceptance_criteria>
 
@@ -110,5 +148,6 @@ On success:
 
 If blocked:
 - Show the blocking reason (approval pending/rejected, missing source context, quality gate failure).
+- If blocked by revision ambiguity, show pending clarification questions and do not edit artifacts until answered.
 - Provide exact fix action and the command to rerun: `spw:prd <spec-name>`.
 </completion_guidance>

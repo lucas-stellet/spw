@@ -36,13 +36,26 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 <approval_protocol>
 - Approval source of truth is MCP status only.
 - Never ask for approval in chat (no AskUserQuestion/manual "approve now?" options).
+- Resolve requirements approval from MCP using both boolean and status fields:
+  - `documents.requirements.approved`
+  - `documents.requirements.status`
+  - `approvals.requirements.status`
+- Treat status values case-insensitively:
+  - approved: `approved`
+  - pending: `pending`
+  - needs revision: `needs-revision`, `changes-requested`, `rejected`
+  - not requested: missing/empty/unknown
 - Always do this sequence:
   1) call `spec-status`
-  2) if `documents.requirements.approved == true`: proceed immediately
-  3) if not approved:
+  2) if status is approved: proceed immediately (never re-request approval)
+  3) if status is needs revision: stop BLOCKED and route to `spw:prd <spec-name>` revision protocol (never request approval first)
+  4) if status is pending: stop with `WAITING_FOR_APPROVAL` and instruct UI approval + rerun
+  5) only if status is not requested:
      - call `request-approval` (idempotent)
      - call `get-approval-status` once
-     - stop with `WAITING_FOR_APPROVAL` (or BLOCKED on rejected/changes-requested)
+     - if approved: proceed
+     - if pending: stop with `WAITING_FOR_APPROVAL`
+     - if needs revision: stop BLOCKED and route to `spw:prd <spec-name>`
 - If status is `pending`, do not poll in a loop; instruct user to approve in Spec Workflow UI and rerun the command.
 </approval_protocol>
 
@@ -73,5 +86,6 @@ On success:
 If blocked:
 - Show exactly which stage blocked (approval gate, design, tasks-plan, tasks-check).
 - If waiting on approval, explicitly state: "Approve in Spec Workflow UI, then rerun `/spw:plan <spec-name>`."
+- If requirements are `changes-requested`/`rejected`, route to `spw:prd <spec-name>` revision protocol before planning.
 - Provide corrective action and rerun command (`spw:plan <spec-name>` or specific stage command).
 </completion_guidance>

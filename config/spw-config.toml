@@ -70,6 +70,22 @@ strict_gates = true
 # Recommended default: true (human-in-the-loop control).
 require_user_approval_between_waves = true
 
+# If true, each completed implementation task must produce an atomic git commit
+# before moving to another task/wave.
+commit_per_task = true
+
+# If true and commit_per_task=true, SPW attempts to stage/commit automatically.
+# If false, SPW stops with explicit git commands for the user.
+auto_commit_on_task_completion = true
+
+# If true, checkpoint/wave PASS requires a clean git worktree.
+# This prevents finishing a wave with uncommitted implementation changes.
+require_clean_worktree_for_wave_pass = true
+
+# If true, tasks that require human/manual external actions are never auto-marked
+# as in-progress by the orchestrator. SPW stops and hands off to the user instead.
+manual_tasks_require_human_handoff = true
+
 [subagents]
 # Max number of parallel subagents for web scouting tasks.
 # Keep this moderate to avoid noisy/duplicated findings.
@@ -131,7 +147,8 @@ optional = [
 required = [
   "using-elixir-skills",
   "elixir-thinking",
-  "elixir-anti-patterns"
+  "elixir-anti-patterns",
+  "conventional-commits"
 ]
 
 # Optional implementation skills:
@@ -141,6 +158,22 @@ optional = [
   "test-driven-development",
   "requesting-code-review"
 ]
+
+[reviews]
+# Requirements revision protocol controls (used by `spw:prd` when approval is
+# returned as changes-requested/rejected).
+
+# If true, requirements revisions must be subagent-driven (no direct one-pass
+# inline edits in main context).
+requirements_revision_requires_subagents = true
+
+# If true, revision flow must include a codebase impact scan before applying
+# requirement edits.
+requirements_revision_require_codebase_scan = true
+
+# Minimum number of targeted clarification questions when feedback is ambiguous
+# or conflicts with existing requirements/design context.
+requirements_revision_min_clarifying_questions = 1
 
 [templates]
 # Controls whether the hook syncs tasks-template on SessionStart.
