@@ -14,11 +14,9 @@ TARGET_ROOT="$(pwd)"
 
 echo "[spw-kit] Installing into project: ${TARGET_ROOT}"
 
-# Copy everything except installer and settings example (handled separately)
-rsync -a \
-  --exclude 'install.sh' \
-  --exclude '.claude/settings.json.example' \
-  "${SCRIPT_DIR}/" "${TARGET_ROOT}/"
+# Copy only SPW runtime assets (avoid touching project root files like README.md)
+rsync -a "${SCRIPT_DIR}/.claude/" "${TARGET_ROOT}/.claude/"
+rsync -a "${SCRIPT_DIR}/.spec-workflow/" "${TARGET_ROOT}/.spec-workflow/"
 
 if [ ! -f "${TARGET_ROOT}/.claude/settings.json" ]; then
   mkdir -p "${TARGET_ROOT}/.claude"
