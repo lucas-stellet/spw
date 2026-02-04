@@ -36,6 +36,11 @@ This kit only uses:
 
 It does not modify default templates under `.spec-workflow/templates/`.
 
+Artifact locality rule:
+- Generated planning/research files must stay under `.spec-workflow/specs/<spec-name>/`.
+- Supporting research files must stay under `.spec-workflow/specs/<spec-name>/research/`.
+- Avoid generating research files in generic folders like `docs/`.
+
 ## Default subagent/model policy
 
 - Subagent-first workflows across product, planning, execution, and checkpoints.

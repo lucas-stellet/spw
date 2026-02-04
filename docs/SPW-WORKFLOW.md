@@ -31,6 +31,16 @@ This package implements the discussed model: use `spec-workflow-mcp` as the sour
 - `spw/hooks/spw-statusline.js`
 - `spw/hooks/README.md`
 
+## Artifact locality rule
+
+All generated planning/research artifacts must stay inside the active spec folder:
+- `.spec-workflow/specs/<spec-name>/`
+
+Supporting research files (extra notes, references, examples) must stay in:
+- `.spec-workflow/specs/<spec-name>/research/`
+
+Do not generate research/planning files in generic locations such as `docs/`.
+
 ## How to use templates
 
 Copy templates into the project using spec-workflow:

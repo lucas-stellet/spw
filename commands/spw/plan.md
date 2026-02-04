@@ -70,6 +70,16 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 2. If `tasks-check` is BLOCKED, revise and repeat stage 1 as needed.
 </pipeline>
 
+<artifact_boundary>
+Planning artifacts must stay under:
+- `.spec-workflow/specs/<spec-name>/`
+
+Research/supporting files must stay under:
+- `.spec-workflow/specs/<spec-name>/research/`
+
+Do not generate planning/research artifacts under generic folders like `docs/`.
+</artifact_boundary>
+
 <rules>
 - Mandatory gate: requirements without MCP approval blocks `spw:plan`.
 - Do not infer requirements in this command.

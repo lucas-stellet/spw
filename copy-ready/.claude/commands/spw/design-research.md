@@ -9,6 +9,18 @@ Generate architecture and implementation research inputs for the spec design.
 Output: `.spec-workflow/specs/<spec-name>/DESIGN-RESEARCH.md`.
 </objective>
 
+<artifact_boundary>
+All research outputs must stay inside the spec directory:
+- canonical summary: `.spec-workflow/specs/<spec-name>/DESIGN-RESEARCH.md`
+- supporting research files: `.spec-workflow/specs/<spec-name>/research/*`
+
+Forbidden output locations for generated research:
+- `docs/*`
+- project root
+- `.spec-workflow/steering/*`
+- `.spec-workflow/user-templates/*`
+</artifact_boundary>
+
 <model_policy>
 Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - web_research -> default `haiku`
@@ -56,19 +68,25 @@ Skill loading gate (mandatory when `skills.enabled=true`):
 
 <workflow>
 1. Run design skill loading gate and write `SKILLS-DESIGN-RESEARCH.md`.
-2. Read:
+2. Ensure research directory exists:
+   - `.spec-workflow/specs/<spec-name>/research/`
+3. Read:
    - `.spec-workflow/specs/<spec-name>/requirements.md`
    - `.spec-workflow/steering/*.md` (if present)
-3. Dispatch in parallel:
+4. Dispatch in parallel:
    - `codebase-pattern-scanner`
    - `web-pattern-scout-*` (2-4 scouts depending on depth)
-4. Dispatch `risk-analyst` using outputs from step 3.
-5. Dispatch `research-synthesizer` to produce `DESIGN-RESEARCH.md`.
-6. Ensure final sections include:
+5. Dispatch `risk-analyst` using outputs from step 4.
+6. Dispatch `research-synthesizer` to produce:
+   - `.spec-workflow/specs/<spec-name>/DESIGN-RESEARCH.md`
+   - optional supporting files only under `.spec-workflow/specs/<spec-name>/research/`
+7. Ensure final sections include:
    - primary recommendations
    - alternatives and trade-offs
    - references/patterns to adopt
    - technical risks and mitigations
+8. If any generated research file is outside the spec directory, move it into
+   `.spec-workflow/specs/<spec-name>/research/` and report relocation in output.
 </workflow>
 
 <acceptance_criteria>
@@ -81,6 +99,7 @@ Skill loading gate (mandatory when `skills.enabled=true`):
 <completion_guidance>
 On success:
 - Confirm output path: `.spec-workflow/specs/<spec-name>/DESIGN-RESEARCH.md`.
+- Confirm supporting artifacts path: `.spec-workflow/specs/<spec-name>/research/`.
 - Recommend next command: `spw:design-draft <spec-name>`.
 
 If blocked:

@@ -15,6 +15,14 @@ Generate `.spec-workflow/specs/<spec-name>/design.md` with strong traceability b
   - `spw:design-research <spec-name>`
 </preconditions>
 
+<artifact_boundary>
+Use only spec-local research artifacts:
+- `.spec-workflow/specs/<spec-name>/DESIGN-RESEARCH.md`
+- `.spec-workflow/specs/<spec-name>/research/*` (optional supporting notes)
+
+Do not consume generated research from generic locations (for example `docs/*`).
+</artifact_boundary>
+
 <model_policy>
 Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - complex_reasoning -> default `opus`
@@ -56,6 +64,7 @@ Skill loading gate (mandatory when `skills.enabled=true`):
 2. Read:
    - `.spec-workflow/specs/<spec-name>/requirements.md`
    - `.spec-workflow/specs/<spec-name>/DESIGN-RESEARCH.md` (required)
+   - `.spec-workflow/specs/<spec-name>/research/*` (if present)
    - `.spec-workflow/user-templates/design-template.md` (preferred)
    - fallback: `.spec-workflow/templates/design-template.md`
 3. Dispatch `traceability-mapper`.
