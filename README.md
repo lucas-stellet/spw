@@ -49,7 +49,9 @@ After install:
 - `spw:status` -> summarize where workflow stopped + next commands
 
 File-first subagent communication is enabled for planning/validation flows and
-stored under `.spec-workflow/specs/<spec-name>/agent-comms/<command>/<run-id>/`.
+stored under:
+- planning/research: `.spec-workflow/specs/<spec-name>/agent-comms/<command>/<run-id>/`
+- execution/checkpoint by wave: `.spec-workflow/specs/<spec-name>/agent-comms/waves/wave-<NN>/<stage>/<run-id>/`
 
 Skills are configured to be `subagent-first` by default to reduce main-context
 growth (`skills.load_mode = "subagent-first"`).

@@ -67,6 +67,22 @@ Skill gate (mandatory when `skills.enabled=true`):
 - Do not implement task code directly in the main orchestration context.
 </execution_mode>
 
+<wave_comms_layout>
+Execution/checkpoint communications must be grouped by wave:
+- base: `.spec-workflow/specs/<spec-name>/agent-comms/waves/wave-<NN>/`
+
+Within each wave folder:
+- `execution/<run-id>/` (task execution communications/evidence)
+- `checkpoint/<run-id>/` (checkpoint communications/evidence)
+- `post-check/<run-id>/` (optional post-check validations)
+- `_wave-summary.md` (wave-level synthesis)
+- `_latest.json` (pointers to latest execution/checkpoint/post-check run IDs)
+
+Rules:
+- Do not create top-level timestamped wave folders under `agent-comms/checkpoint/`.
+- Keep all wave evidence under its canonical `wave-<NN>/` folder.
+</wave_comms_layout>
+
 <wave_authorization>
 Resolve from `.spec-workflow/spw-config.toml` `[execution].require_user_approval_between_waves` (default `true`).
 
@@ -134,7 +150,9 @@ For complex/critical tasks, run spec-compliance review on `complex_reasoning` mo
    - `.spec-workflow/specs/<spec-name>/requirements.md`
    - `.spec-workflow/specs/<spec-name>/design.md`
    - if `tasks.md` is missing, stop BLOCKED and instruct to run `spw:tasks-plan <spec-name>`.
-3. Select pending tasks by wave.
+3. Select pending tasks by wave and resolve current wave ID:
+   - `wave-<NN>` (zero-padded, for example `wave-02`)
+   - ensure canonical wave comms folder exists under `agent-comms/waves/`
 4. Execute up to `batch-size` tasks per batch (prefer safe parallelism).
 5. For each task:
    - mark `[-]`
@@ -145,9 +163,11 @@ For complex/critical tasks, run spec-compliance review on `complex_reasoning` mo
      - log implementation details and mark `[x]`
      - enforce git_hygiene commit policy for this task
    - if any gate fails: mark BLOCKED and stop current batch
-6. At end of batch, run `spw:checkpoint <spec-name>`.
-7. If checkpoint BLOCKED, stop.
-8. If checkpoint PASS:
+6. Persist execution communication/evidence under:
+   - `.spec-workflow/specs/<spec-name>/agent-comms/waves/<wave-id>/execution/<run-id>/`
+7. At end of batch, run `spw:checkpoint <spec-name>`.
+8. If checkpoint BLOCKED, stop.
+9. If checkpoint PASS:
    - if `require_clean_worktree_for_wave_pass=true` and worktree is dirty: stop BLOCKED
    - if no remaining waves: finish
    - if remaining waves and `require_user_approval_between_waves=true`: request explicit authorization, then continue only if approved

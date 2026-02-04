@@ -91,7 +91,8 @@ Subagent coverage:
 
 File-first communication (GSD-style):
 - `/spw:design-research`, `/spw:prd`, `/spw:tasks-plan`, `/spw:tasks-check`, and `/spw:checkpoint` persist subagent communication under:
-  - `.spec-workflow/specs/<spec-name>/agent-comms/<command>/<run-id>/`
+  - planning/research: `.spec-workflow/specs/<spec-name>/agent-comms/<command>/<run-id>/`
+  - execution/checkpoint by wave: `.spec-workflow/specs/<spec-name>/agent-comms/waves/wave-<NN>/<stage>/<run-id>/`
 - each subagent writes `brief.md`, `report.md`, `status.json`
 - each run writes `_handoff.md`
 - missing communication files cause BLOCKED

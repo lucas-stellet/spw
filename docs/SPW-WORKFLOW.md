@@ -121,6 +121,14 @@ subagent communication:
 Per run, commands create:
 - `.spec-workflow/specs/<spec-name>/agent-comms/<command>/<run-id>/`
 
+Wave-based execution/checkpoint communication uses:
+- `.spec-workflow/specs/<spec-name>/agent-comms/waves/wave-<NN>/execution/<run-id>/`
+- `.spec-workflow/specs/<spec-name>/agent-comms/waves/wave-<NN>/checkpoint/<run-id>/`
+- optional: `.spec-workflow/specs/<spec-name>/agent-comms/waves/wave-<NN>/post-check/<run-id>/`
+- plus wave-level files:
+  - `.spec-workflow/specs/<spec-name>/agent-comms/waves/wave-<NN>/_wave-summary.md`
+  - `.spec-workflow/specs/<spec-name>/agent-comms/waves/wave-<NN>/_latest.json`
+
 Per subagent, required files:
 - `<subagent>/brief.md` (orchestrator -> subagent contract)
 - `<subagent>/report.md` (subagent result)

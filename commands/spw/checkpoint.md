@@ -11,8 +11,13 @@ Validate that the executed batch truly meets spec intent, code quality, and inte
 <file_handoff_protocol>
 Subagent communication must be file-first (no implicit-only handoff).
 
-Create a run folder:
-- `.spec-workflow/specs/<spec-name>/agent-comms/checkpoint/<run-id>/`
+Create a run folder under the current wave:
+- `.spec-workflow/specs/<spec-name>/agent-comms/waves/wave-<NN>/checkpoint/<run-id>/`
+
+Wave container:
+- `.spec-workflow/specs/<spec-name>/agent-comms/waves/wave-<NN>/`
+- `_wave-summary.md`
+- `_latest.json`
 
 For each subagent, use:
 - `<run-dir>/<subagent>/brief.md` (written by orchestrator before dispatch)
@@ -30,6 +35,8 @@ Status schema (minimum):
 
 After checkpoint, write:
 - `<run-dir>/_handoff.md` (orchestrator final go/no-go reasoning)
+- update `<wave-dir>/_wave-summary.md`
+- update `<wave-dir>/_latest.json` with latest checkpoint run ID
 
 If a required `report.md` or `status.json` is missing, stop BLOCKED.
 </file_handoff_protocol>
@@ -88,19 +95,24 @@ If enabled:
 
 <workflow>
 1. Run implementation skills preflight (availability + load mode) and write `SKILLS-CHECKPOINT.md`.
-2. Create communication run directory:
-   - `.spec-workflow/specs/<spec-name>/agent-comms/checkpoint/<run-id>/`
-3. Write brief (including required skills for role) and dispatch `evidence-collector`.
-4. Require `evidence-collector` output files (`report.md`, `status.json` with skill fields); BLOCKED if missing.
-5. Write brief (including required skills for role) and dispatch `traceability-judge` using collected evidence files.
-6. Require `traceability-judge` output files (`report.md`, `status.json` with skill fields); BLOCKED if missing.
-7. Write brief (including required skills for role) and dispatch `release-gate-decider` using prior reports.
-8. Generate `.spec-workflow/specs/<spec-name>/CHECKPOINT-REPORT.md` with:
+2. Resolve current wave ID (`wave-<NN>`) and create canonical wave directory:
+   - `.spec-workflow/specs/<spec-name>/agent-comms/waves/wave-<NN>/`
+3. Create checkpoint run directory:
+   - `.spec-workflow/specs/<spec-name>/agent-comms/waves/wave-<NN>/checkpoint/<run-id>/`
+4. Write brief (including required skills for role) and dispatch `evidence-collector`.
+5. Require `evidence-collector` output files (`report.md`, `status.json` with skill fields); BLOCKED if missing.
+6. Write brief (including required skills for role) and dispatch `traceability-judge` using collected evidence files.
+7. Require `traceability-judge` output files (`report.md`, `status.json` with skill fields); BLOCKED if missing.
+8. Write brief (including required skills for role) and dispatch `release-gate-decider` using prior reports.
+9. Generate `.spec-workflow/specs/<spec-name>/CHECKPOINT-REPORT.md` with:
    - status: PASS | BLOCKED
    - critical issues
    - corrective actions
    - recommended next step
-9. Write `<run-dir>/_handoff.md` linking all subagent outputs and final decision.
+10. Write `<run-dir>/_handoff.md` linking all subagent outputs and final decision.
+11. Update wave-level pointers/summaries in:
+    - `<wave-dir>/_latest.json`
+    - `<wave-dir>/_wave-summary.md`
 </workflow>
 
 <gate_rule>
@@ -108,8 +120,9 @@ If status is BLOCKED, do not proceed to the next batch/wave.
 </gate_rule>
 
 <acceptance_criteria>
-- [ ] File-based handoff exists under `.spec-workflow/specs/<spec-name>/agent-comms/checkpoint/<run-id>/`.
+- [ ] File-based handoff exists under `.spec-workflow/specs/<spec-name>/agent-comms/waves/wave-<NN>/checkpoint/<run-id>/`.
 - [ ] `CHECKPOINT-REPORT.md` decision is traceable to subagent reports.
+- [ ] Wave-level summary/pointers are updated (`_wave-summary.md`, `_latest.json`).
 </acceptance_criteria>
 
 <completion_guidance>

@@ -37,6 +37,11 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
    - artifact presence: `requirements.md`, `DESIGN-RESEARCH.md`, `design.md`, `tasks.md`
    - tasks progress counts: `[ ]`, `[-]`, `[x]`
    - active wave/blocked/manual markers when present
+   - wave comms state from:
+     - `.spec-workflow/specs/<spec-name>/agent-comms/waves/wave-<NN>/_latest.json`
+     - `.spec-workflow/specs/<spec-name>/agent-comms/waves/wave-<NN>/_wave-summary.md`
+   - legacy comms paths present (for migration warning):
+     - `.spec-workflow/specs/<spec-name>/agent-comms/checkpoint/*`
 3. Dispatch `approval-auditor`:
    - call `spec-status`
    - read document approval state (requirements/design/tasks) from boolean + status fields
@@ -62,6 +67,7 @@ Always include:
 When execution is in progress, also include:
 - task counters (`todo/in-progress/done`)
 - whether human authorization is required between waves
+- current wave folder path and latest run pointers (`execution/checkpoint/post-check`)
 </output_contract>
 
 <completion_guidance>
