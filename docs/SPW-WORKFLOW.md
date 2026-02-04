@@ -106,6 +106,13 @@ Quality gate between batches/waves with PASS/BLOCKED output.
 - Quality gate between batches/waves: use `spw:checkpoint`.
 - Advanced/manual mode: run `design-research`, `design-draft`, `tasks-plan`, `tasks-check` individually.
 
+## End-of-command guidance
+
+Each SPW command includes completion guidance with:
+- success path and exact next command
+- blocked path and exact remediation command
+- context hygiene suggestion (including `/clear` before major phase transitions)
+
 ## Recommended usage sequence
 
 ```mermaid

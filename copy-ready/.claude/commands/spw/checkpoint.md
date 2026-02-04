@@ -37,3 +37,12 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 <gate_rule>
 If status is BLOCKED, do not proceed to the next batch/wave.
 </gate_rule>
+
+<completion_guidance>
+On PASS:
+- Show concise go/no-go summary and recommend next command: `spw:exec <spec-name>` (next batch/wave).
+
+On BLOCKED:
+- Show critical issues first, with exact corrective actions.
+- Recommend remediation command(s) and rerun: `spw:checkpoint <spec-name>`.
+</completion_guidance>

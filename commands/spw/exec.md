@@ -51,3 +51,13 @@ With `--strict true` (default):
 - block continuation when checkpoint fails.
 - block continuation when a task has no requirement traceability.
 </strict_mode>
+
+<completion_guidance>
+After each batch:
+- Show executed task IDs, commit/log evidence, and checkpoint status.
+- If checkpoint PASS: suggest continuing with next batch via `spw:exec <spec-name>`.
+- If checkpoint BLOCKED: stop and show exact corrective actions.
+
+After full execution success:
+- Recommend final validation review and optionally `/clear` before any new planning cycle.
+</completion_guidance>

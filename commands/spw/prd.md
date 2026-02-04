@@ -95,3 +95,14 @@ If `--source` is provided and looks like a URL (`http://` or `https://`) or mark
 - [ ] If `--source` was provided, MCP usage was explicitly asked.
 - [ ] PRD is approved before moving to design/tasks.
 </acceptance_criteria>
+
+<completion_guidance>
+On success:
+- Confirm PRD approval status and show artifact paths.
+- Recommend next command: `spw:plan <spec-name>`.
+- Recommend running `/clear` before `spw:plan` to keep context clean.
+
+If blocked:
+- Show the blocking reason (approval pending/rejected, missing source context, quality gate failure).
+- Provide exact fix action and the command to rerun: `spw:prd <spec-name>`.
+</completion_guidance>

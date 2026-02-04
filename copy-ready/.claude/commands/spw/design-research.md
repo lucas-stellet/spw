@@ -54,3 +54,13 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - [ ] Risks and recommended decisions section is included.
 - [ ] Web-only findings came from web_research model.
 </acceptance_criteria>
+
+<completion_guidance>
+On success:
+- Confirm output path: `.spec-workflow/specs/<spec-name>/DESIGN-RESEARCH.md`.
+- Recommend next command: `spw:design-draft <spec-name>`.
+
+If blocked:
+- List missing inputs (requirements approval, steering docs, source failures).
+- Provide rerun command: `spw:design-research <spec-name>`.
+</completion_guidance>

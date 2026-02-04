@@ -52,3 +52,5 @@ It does not modify default templates under `.spec-workflow/templates/`.
 - `/spw:tasks-check`
 - `/spw:exec`
 - `/spw:checkpoint`
+
+All commands include end-of-command guidance: next-step command, blocked remediation path, and context reset suggestion when appropriate.

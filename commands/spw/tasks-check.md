@@ -40,3 +40,14 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - [ ] DAG has no cycles and wave order is valid.
 - [ ] Test policy gate is satisfied.
 </acceptance_criteria>
+
+<completion_guidance>
+On PASS:
+- Confirm output path: `.spec-workflow/specs/<spec-name>/TASKS-CHECK.md`.
+- Recommend next command: `spw:exec <spec-name> --batch-size <N>`.
+- Recommend running `/clear` before execution.
+
+On BLOCKED:
+- Show findings by severity and required fixes.
+- Recommend fix path: update `tasks.md`, then rerun `spw:tasks-check <spec-name>`.
+</completion_guidance>

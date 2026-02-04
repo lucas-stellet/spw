@@ -54,3 +54,14 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - [ ] Waves respect the configured limit.
 - [ ] Conflict checker returns no critical same-wave file collisions.
 </acceptance_criteria>
+
+<completion_guidance>
+On success:
+- Confirm output path: `.spec-workflow/specs/<spec-name>/tasks.md`.
+- Confirm approval request status for tasks.
+- Recommend next command: `spw:tasks-check <spec-name>`.
+
+If blocked:
+- Show decomposition/dependency/conflict/test-policy failures.
+- Provide rerun command: `spw:tasks-plan <spec-name> --max-wave-size <N>`.
+</completion_guidance>

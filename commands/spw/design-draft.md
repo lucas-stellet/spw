@@ -44,3 +44,14 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - [ ] Test strategy is explicit.
 - [ ] Critic gate returned PASS before approval request.
 </acceptance_criteria>
+
+<completion_guidance>
+On success:
+- Confirm output path: `.spec-workflow/specs/<spec-name>/design.md`.
+- Confirm approval request status for design.
+- Recommend next command: `spw:tasks-plan <spec-name> --max-wave-size <N>`.
+
+If blocked:
+- Show critic/review failures with required fixes.
+- Provide rerun command: `spw:design-draft <spec-name>`.
+</completion_guidance>

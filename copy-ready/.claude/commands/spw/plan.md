@@ -51,3 +51,15 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - Do not infer requirements in this command.
 - Do not start execution before design/tasks are approved.
 </rules>
+
+<completion_guidance>
+On success:
+- Summarize generated artifacts (`DESIGN-RESEARCH.md`, `design.md`, `tasks.md`, `TASKS-CHECK.md`).
+- Confirm approval state for design/tasks.
+- Recommend next command: `spw:exec <spec-name> --batch-size <N>`.
+- Recommend running `/clear` before `spw:exec` for fresh execution context.
+
+If blocked:
+- Show exactly which stage blocked (approval gate, design, tasks-plan, tasks-check).
+- Provide corrective action and rerun command (`spw:plan <spec-name>` or specific stage command).
+</completion_guidance>
