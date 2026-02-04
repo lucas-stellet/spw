@@ -1,4 +1,8 @@
 {
+  "statusLine": {
+    "type": "command",
+    "command": "node $PROJECT_ROOT/spw/hooks/spw-statusline.js"
+  },
   "hooks": {
     "SessionStart": [
       {

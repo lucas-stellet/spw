@@ -32,6 +32,7 @@ After install:
 1. Merge `.claude/settings.json.example` into your `.claude/settings.json` (if needed).
 2. Review `.spec-workflow/spw-config.toml`.
 3. Start a new session so SessionStart hook can sync the active tasks template.
+4. (Optional) Enable SPW statusline from `.claude/settings.json.example`.
 
 ## Command entry points
 

@@ -28,6 +28,7 @@ else
 fi
 
 chmod +x "${TARGET_ROOT}/.claude/hooks/session-start-sync-tasks-template.sh" || true
+chmod +x "${TARGET_ROOT}/.claude/hooks/spw-statusline.js" || true
 
 echo "[spw-kit] Installation complete."
 echo "[spw-kit] Next step: adjust .spec-workflow/spw-config.toml"

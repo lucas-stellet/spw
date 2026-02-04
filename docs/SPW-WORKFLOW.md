@@ -27,6 +27,7 @@ This package implements the discussed model: use `spec-workflow-mcp` as the sour
 - `spw/templates/user-templates/variants/tasks-template.tdd-off.md`
 - `spw/config/spw-config.toml`
 - `spw/hooks/session-start-sync-tasks-template.sh`
+- `spw/hooks/spw-statusline.js`
 - `spw/hooks/README.md`
 
 ## How to use templates
@@ -52,6 +53,10 @@ Note: in spec-workflow, a custom template in `user-templates/` fully overrides t
 - SessionStart hook auto-syncs:
   - source: `.spec-workflow/user-templates/variants/tasks-template.tdd-*.md`
   - target: `.spec-workflow/user-templates/tasks-template.md`
+- Statusline command (`spw-statusline.js`) shows:
+  - model, project, git branch/dirty marker
+  - active spec + phase + tasks progress (best effort)
+  - scaled context usage bar
 - With this setup, you do not need a TDD flag in command calls; behavior comes from project config.
 
 ## Subagent strategy (default)

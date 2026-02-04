@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
-set -euo pipefail
+#
+# Fail-open SessionStart hook:
+# - Never blocks Claude startup due to hook/runtime errors.
+# - Logs problems and exits 0.
+set -uo pipefail
 
 # Sync tasks-template based on .spec-workflow/spw-config.toml
 # Intended usage: Claude/Codex SessionStart hook.
@@ -7,6 +11,12 @@ set -euo pipefail
 log() {
   printf '[spw-hook] %s\n' "$*"
 }
+
+safe_exit() {
+  exit 0
+}
+
+trap 'rc=$?; if [ "$rc" -ne 0 ]; then log "Unexpected hook error (fail-open)."; fi; exit 0' EXIT
 
 # Resolve workspace root
 resolve_workspace_root() {
@@ -28,7 +38,7 @@ CONFIG_PATH="${WORKSPACE_ROOT}/.spec-workflow/spw-config.toml"
 
 if [ ! -f "$CONFIG_PATH" ]; then
   log "Config not found at ${CONFIG_PATH}. Nothing to sync."
-  exit 0
+  safe_exit
 fi
 
 # Read a TOML key value from a section.
@@ -84,7 +94,9 @@ get_toml_value() {
 
 to_bool() {
   local raw="${1:-}"
-  case "${raw,,}" in
+  local raw_lower
+  raw_lower="$(printf '%s' "$raw" | tr '[:upper:]' '[:lower:]')"
+  case "$raw_lower" in
     true|1|yes|on) printf 'true' ;;
     false|0|no|off) printf 'false' ;;
     *) printf 'false' ;;
@@ -94,7 +106,7 @@ to_bool() {
 SYNC_ENABLED="$(to_bool "$(get_toml_value templates sync_tasks_template_on_session_start true)")"
 if [ "$SYNC_ENABLED" != "true" ]; then
   log "Sync disabled by configuration."
-  exit 0
+  safe_exit
 fi
 
 TDD_DEFAULT="$(to_bool "$(get_toml_value execution tdd_default false)")"
@@ -107,7 +119,7 @@ BACKUP_ENABLED="$(to_bool "$(get_toml_value safety backup_before_overwrite true)
 DRY_RUN="$(to_bool "$(get_toml_value safety dry_run false)")"
 FAIL_HARD="$(to_bool "$(get_toml_value safety fail_hard_on_missing_template false)")"
 
-MODE_NORMALIZED="${TEMPLATE_MODE,,}"
+MODE_NORMALIZED="$(printf '%s' "$TEMPLATE_MODE" | tr '[:upper:]' '[:lower:]')"
 if [ "$MODE_NORMALIZED" = "auto" ]; then
   if [ "$TDD_DEFAULT" = "true" ]; then
     MODE_NORMALIZED="on"
@@ -121,9 +133,9 @@ case "$MODE_NORMALIZED" in
   *)
     log "Invalid tasks_template_mode: '${TEMPLATE_MODE}'. Use auto|on|off."
     if [ "$FAIL_HARD" = "true" ]; then
-      exit 1
+      log "fail_hard_on_missing_template=true is ignored in hook mode (fail-open)."
     fi
-    exit 0
+    safe_exit
     ;;
 esac
 
@@ -139,21 +151,21 @@ fi
 if [ ! -f "$SOURCE_PATH" ]; then
   log "Source template not found: ${SOURCE_PATH}"
   if [ "$FAIL_HARD" = "true" ]; then
-    exit 1
+    log "fail_hard_on_missing_template=true is ignored in hook mode (fail-open)."
   fi
-  exit 0
+  safe_exit
 fi
 
 mkdir -p "$(dirname "$TARGET_PATH")"
 
 if [ -f "$TARGET_PATH" ] && cmp -s "$SOURCE_PATH" "$TARGET_PATH"; then
   log "Template is already synchronized (${MODE_NORMALIZED})."
-  exit 0
+  safe_exit
 fi
 
 if [ "$DRY_RUN" = "true" ]; then
   log "[dry-run] Would copy ${SOURCE_PATH} -> ${TARGET_PATH}"
-  exit 0
+  safe_exit
 fi
 
 if [ "$BACKUP_ENABLED" = "true" ] && [ -f "$TARGET_PATH" ]; then
@@ -165,4 +177,4 @@ fi
 cp "$SOURCE_PATH" "$TARGET_PATH"
 log "Template synchronized (${MODE_NORMALIZED}): ${TARGET_PATH}"
 
-exit 0
+safe_exit

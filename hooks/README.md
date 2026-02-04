@@ -1,10 +1,16 @@
-# SPW Hook: SessionStart Template Sync
+# SPW Hooks
 
-This hook automatically synchronizes the active tasks template based on `.spec-workflow/spw-config.toml`.
+SPW provides two runtime hooks/scripts:
+
+- `session-start-sync-tasks-template.sh` (SessionStart hook)
+- `spw-statusline.js` (status line command)
+
+Both are fail-open by default (errors are logged, startup continues).
 
 ## Files
 
-- Script: `spw/hooks/session-start-sync-tasks-template.sh`
+- SessionStart script: `spw/hooks/session-start-sync-tasks-template.sh`
+- Statusline script: `spw/hooks/spw-statusline.js`
 - Config: `.spec-workflow/spw-config.toml`
 - Expected variants:
   - `.spec-workflow/user-templates/variants/tasks-template.tdd-on.md`
@@ -29,21 +35,41 @@ cp spw/templates/user-templates/variants/tasks-template.tdd-on.md .spec-workflow
 cp spw/templates/user-templates/variants/tasks-template.tdd-off.md .spec-workflow/user-templates/variants/
 ```
 
-3. Register the SessionStart hook in your `.claude/settings.json` (or equivalent config), pointing to:
+3. Register SessionStart + statusline in `.claude/settings.json`:
 
-```text
-<repo>/spw/hooks/session-start-sync-tasks-template.sh
+```json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "node <repo>/spw/hooks/spw-statusline.js"
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "<repo>/spw/hooks/session-start-sync-tasks-template.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
 ```
 
-See JSON structure example in `spw/hooks/claude-hooks.snippet.json`.
+See snippet: `spw/hooks/claude-hooks.snippet.json`.
 
 ## Quick manual test
 
 ```bash
 ./spw/hooks/session-start-sync-tasks-template.sh
+echo '{"workspace":{"current_dir":"'$(pwd)'"}}' | node ./spw/hooks/spw-statusline.js
 ```
 
 Expected output:
 - reports when template was synchronized
 - reports when template was already synchronized
 - reports missing config/template (without breaking the session by default)
+- statusline shows model/project/git/spec/context (best effort)

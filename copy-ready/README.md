@@ -6,6 +6,7 @@ Ready-to-copy package for any project using `spec-workflow-mcp`.
 
 - `.claude/commands/spw/*.md` (planning/execution/checkpoint commands)
 - `.claude/hooks/session-start-sync-tasks-template.sh` (sync hook)
+- `.claude/hooks/spw-statusline.js` (statusline: project/spec/context)
 - `.claude/settings.json.example` (hook config snippet)
 - `.spec-workflow/spw-config.toml` (central config with extensive comments)
 - `.spec-workflow/user-templates/*.md` (custom templates)
@@ -22,7 +23,7 @@ cp -R /PATH/TO/spw/copy-ready/. .
 
 Then:
 
-1. Merge `.claude/settings.json.example` into your `.claude/settings.json`.
+1. Merge `.claude/settings.json.example` into your `.claude/settings.json` (SessionStart + statusLine).
 2. Adjust `.spec-workflow/spw-config.toml` (especially `execution.tdd_default`).
 3. Start a new session so the hook syncs `tasks-template.md`.
 
