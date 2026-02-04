@@ -112,6 +112,48 @@ Quality gate between batches/waves with PASS/BLOCKED output.
 - Quality gate between batches/waves: use `spw:checkpoint`.
 - Advanced/manual mode: run `design-research`, `design-draft`, `tasks-plan`, `tasks-check` individually.
 
+## Manual planning order (explicit)
+
+Use this when you want full control instead of `spw:plan` orchestration:
+
+```bash
+/spw:design-research <spec-name>
+/spw:design-draft <spec-name>
+/spw:tasks-plan <spec-name> --max-wave-size 3
+/spw:tasks-check <spec-name>
+```
+
+Notes:
+- `spw:plan` already runs the same sequence automatically.
+- Manual mode is useful when refining only one planning stage.
+
+## Which commands generate approval artifacts
+
+- `spw:design-draft` -> generates `design.md` and requests approval.
+- `spw:tasks-plan` -> generates `tasks.md` and requests approval.
+- `spw:design-research` -> generates `DESIGN-RESEARCH.md` (research input, no formal approval gate).
+- `spw:tasks-check` -> generates `TASKS-CHECK.md` (validation report, no formal approval gate).
+
+## Refinement loops (design/tasks)
+
+For design refinements:
+```bash
+/spw:design-research <spec-name>
+/spw:design-draft <spec-name>
+```
+
+For tasks refinements:
+```bash
+/spw:tasks-plan <spec-name> --max-wave-size 3
+/spw:tasks-check <spec-name>
+```
+
+After design changes that affect implementation structure, rerun tasks planning/check:
+```bash
+/spw:tasks-plan <spec-name> --max-wave-size 3
+/spw:tasks-check <spec-name>
+```
+
 ## End-of-command guidance
 
 Each SPW command includes completion guidance with:

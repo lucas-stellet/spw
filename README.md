@@ -13,6 +13,7 @@ SPW is a command/template kit that combines:
 - Full workflow guide: `spw/docs/SPW-WORKFLOW.md`
 - Copy-ready package guide: `spw/copy-ready/README.md`
 - Hook setup details: `spw/hooks/README.md`
+- Manual planning order + refinement loops: see `spw/docs/SPW-WORKFLOW.md` ("Manual planning order (explicit)")
 
 ## Quick install in another project
 

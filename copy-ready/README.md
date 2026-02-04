@@ -55,3 +55,20 @@ It does not modify default templates under `.spec-workflow/templates/`.
 - `/spw:checkpoint`
 
 All commands include end-of-command guidance: next-step command, blocked remediation path, and context reset suggestion when appropriate.
+
+## Manual planning/refinement flow
+
+If you want to run planning stages manually (instead of `/spw:plan`):
+
+```bash
+/spw:design-research <spec-name>
+/spw:design-draft <spec-name>
+/spw:tasks-plan <spec-name> --max-wave-size 3
+/spw:tasks-check <spec-name>
+```
+
+Approval-related outputs:
+- `/spw:design-draft` -> `design.md` (approval requested)
+- `/spw:tasks-plan` -> `tasks.md` (approval requested)
+- `/spw:design-research` -> `DESIGN-RESEARCH.md` (input/report)
+- `/spw:tasks-check` -> `TASKS-CHECK.md` (validation report)
