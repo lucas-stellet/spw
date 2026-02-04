@@ -32,9 +32,12 @@ cp -R /path/to/spw/copy-ready/. .
 After install:
 1. Merge `.claude/settings.json.example` into your `.claude/settings.json` (if needed).
 2. Review `.spec-workflow/spw-config.toml`.
-3. Start a new session so SessionStart hook can sync the active tasks template.
-4. (Optional) Enable SPW statusline from `.claude/settings.json.example`.
-5. Default SPW skills are copied into `.claude/skills/` when local sources are found (best effort).
+3. Set per-stage skill enforcement as needed:
+   - `skills.design.enforce_required = true|false`
+   - `skills.implementation.enforce_required = true|false`
+4. Start a new session so SessionStart hook can sync the active tasks template.
+5. (Optional) Enable SPW statusline from `.claude/settings.json.example`.
+6. Default SPW skills are copied into `.claude/skills/` when local sources are found (best effort).
 
 ## Command entry points
 
@@ -42,3 +45,4 @@ After install:
 - `spw:plan` -> design/tasks planning from existing requirements (with MCP approval gate)
 - `spw:exec` -> batch execution with checkpoints
 - `spw:checkpoint` -> quality gate report (PASS/BLOCKED)
+- `spw:status` -> summarize where workflow stopped + next commands

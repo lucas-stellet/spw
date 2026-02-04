@@ -16,13 +16,23 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 
 <skills_policy>
 Resolve skill policy from `.spec-workflow/spw-config.toml`:
-- `[skills]`
-- `[skills.design]`
+- `[skills].enabled`
+- `[skills.design].required`
+- `[skills.design].optional`
+- `[skills.design].enforce_required` (boolean)
 
-Before decomposition/wave planning, attempt to load required design skills.
-If required skills are missing:
-- `enforcement = "strict"` -> BLOCKED
-- `enforcement = "advisory"` -> warn and continue
+Backward compatibility:
+- if `[skills.design].enforce_required` is absent, map `[skills].enforcement`:
+  - `"strict"` -> `true`
+  - any other value -> `false`
+
+Skill loading gate (mandatory when `skills.enabled=true`):
+1. Explicitly invoke every required design skill before decomposition/wave planning.
+2. Record loaded/missing skills in:
+   - `.spec-workflow/specs/<spec-name>/SKILLS-TASKS-PLAN.md`
+3. If any required skill is missing/not invoked:
+   - `enforce_required=true` -> BLOCKED
+   - `enforce_required=false` -> warn and continue
 </skills_policy>
 
 <subagents>
@@ -46,17 +56,18 @@ If required skills are missing:
 </rules>
 
 <workflow>
-1. Read:
+1. Run design skill loading gate and write `SKILLS-TASKS-PLAN.md`.
+2. Read:
    - `.spec-workflow/specs/<spec-name>/requirements.md`
    - `.spec-workflow/specs/<spec-name>/design.md`
    - `.spec-workflow/user-templates/tasks-template.md` (preferred)
    - fallback: `.spec-workflow/templates/tasks-template.md`
-2. Dispatch `task-decomposer`.
-3. Dispatch `dependency-graph-builder`.
-4. Dispatch `parallel-conflict-checker`.
-5. Dispatch `test-policy-enforcer`.
-6. Dispatch `tasks-writer` and save `.spec-workflow/specs/<spec-name>/tasks.md`.
-7. Handle approval via MCP only:
+3. Dispatch `task-decomposer`.
+4. Dispatch `dependency-graph-builder`.
+5. Dispatch `parallel-conflict-checker`.
+6. Dispatch `test-policy-enforcer`.
+7. Dispatch `tasks-writer` and save `.spec-workflow/specs/<spec-name>/tasks.md`.
+8. Handle approval via MCP only:
    - call `spec-status`
    - resolve tasks status from:
      - `documents.tasks.approved`

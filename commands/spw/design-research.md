@@ -18,13 +18,23 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 
 <skills_policy>
 Resolve skill policy from `.spec-workflow/spw-config.toml`:
-- `[skills]`
-- `[skills.design]`
+- `[skills].enabled`
+- `[skills.design].required`
+- `[skills.design].optional`
+- `[skills.design].enforce_required` (boolean)
 
-Before running subagents, attempt to load required design skills.
-If required skills are missing:
-- `enforcement = "strict"` -> BLOCKED
-- `enforcement = "advisory"` -> warn and continue
+Backward compatibility:
+- if `[skills.design].enforce_required` is absent, map `[skills].enforcement`:
+  - `"strict"` -> `true`
+  - any other value -> `false`
+
+Skill loading gate (mandatory when `skills.enabled=true`):
+1. Explicitly invoke every required design skill before running subagents.
+2. Record loaded/missing skills in:
+   - `.spec-workflow/specs/<spec-name>/SKILLS-DESIGN-RESEARCH.md`
+3. If any required skill is missing/not invoked:
+   - `enforce_required=true` -> BLOCKED
+   - `enforce_required=false` -> warn and continue
 </skills_policy>
 
 <subagents>
@@ -45,15 +55,16 @@ If required skills are missing:
 </preconditions>
 
 <workflow>
-1. Read:
+1. Run design skill loading gate and write `SKILLS-DESIGN-RESEARCH.md`.
+2. Read:
    - `.spec-workflow/specs/<spec-name>/requirements.md`
    - `.spec-workflow/steering/*.md` (if present)
-2. Dispatch in parallel:
+3. Dispatch in parallel:
    - `codebase-pattern-scanner`
    - `web-pattern-scout-*` (2-4 scouts depending on depth)
-3. Dispatch `risk-analyst` using outputs from step 2.
-4. Dispatch `research-synthesizer` to produce `DESIGN-RESEARCH.md`.
-5. Ensure final sections include:
+4. Dispatch `risk-analyst` using outputs from step 3.
+5. Dispatch `research-synthesizer` to produce `DESIGN-RESEARCH.md`.
+6. Ensure final sections include:
    - primary recommendations
    - alternatives and trade-offs
    - references/patterns to adopt

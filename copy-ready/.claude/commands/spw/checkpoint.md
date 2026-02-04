@@ -14,6 +14,27 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - implementation -> default `sonnet`
 </model_policy>
 
+<skills_policy>
+Resolve skill policy from `.spec-workflow/spw-config.toml`:
+- `[skills].enabled`
+- `[skills.implementation].required`
+- `[skills.implementation].optional`
+- `[skills.implementation].enforce_required` (boolean)
+
+Backward compatibility:
+- if `[skills.implementation].enforce_required` is absent, map `[skills].enforcement`:
+  - `"strict"` -> `true`
+  - any other value -> `false`
+
+Skill loading gate (mandatory when `skills.enabled=true`):
+1. Explicitly invoke every required implementation skill before checkpoint analysis.
+2. Record loaded/missing skills in:
+   - `.spec-workflow/specs/<spec-name>/SKILLS-CHECKPOINT.md`
+3. If any required skill is missing/not invoked:
+   - `enforce_required=true` -> BLOCKED
+   - `enforce_required=false` -> warn and continue
+</skills_policy>
+
 <subagents>
 - `evidence-collector` (model: implementation)
   - Collects task state, test/lint/typecheck outputs, implementation logs, and git status.
@@ -33,10 +54,11 @@ If enabled:
 </git_gate>
 
 <workflow>
-1. Dispatch `evidence-collector`.
-2. Dispatch `traceability-judge` using collected evidence.
-3. Dispatch `release-gate-decider`.
-4. Generate `.spec-workflow/specs/<spec-name>/CHECKPOINT-REPORT.md` with:
+1. Run implementation skill loading gate and write `SKILLS-CHECKPOINT.md`.
+2. Dispatch `evidence-collector`.
+3. Dispatch `traceability-judge` using collected evidence.
+4. Dispatch `release-gate-decider`.
+5. Generate `.spec-workflow/specs/<spec-name>/CHECKPOINT-REPORT.md` with:
    - status: PASS | BLOCKED
    - critical issues
    - corrective actions

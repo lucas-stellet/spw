@@ -24,7 +24,7 @@ cp -R /PATH/TO/spw/copy-ready/. .
 Then:
 
 1. Merge `.claude/settings.json.example` into your `.claude/settings.json` (SessionStart + statusLine).
-2. Adjust `.spec-workflow/spw-config.toml` (especially `execution.tdd_default`).
+2. Adjust `.spec-workflow/spw-config.toml` (especially `execution.tdd_default`, `skills.design.enforce_required`, and `skills.implementation.enforce_required`).
 3. Start a new session so the hook syncs `tasks-template.md`.
 4. `spw-install` also tries to install default SPW skills into `.claude/skills/` (best effort, non-blocking).
 
@@ -72,8 +72,13 @@ The installer searches common local skill directories (`~/.claude/skills`, `~/.c
 - `/spw:tasks-check`
 - `/spw:exec`
 - `/spw:checkpoint`
+- `/spw:status`
 
 All commands include end-of-command guidance: next-step command, blocked remediation path, and context reset suggestion when appropriate.
+
+Subagent coverage:
+- Subagent-driven commands: `/spw:prd`, `/spw:plan`, `/spw:design-research`, `/spw:design-draft`, `/spw:tasks-plan`, `/spw:tasks-check`, `/spw:exec`, `/spw:checkpoint`.
+- Orchestrator-only parts (non-subagent): MCP approval checks, AskUserQuestion prompts, wait/block states, hooks/install scripts.
 
 `/spw:exec` guardrails:
 - mandatory subagent dispatch per task (including single-task sequential waves)
@@ -101,3 +106,6 @@ Approval-related outputs:
 - `/spw:tasks-plan` -> `tasks.md` (approval requested)
 - `/spw:design-research` -> `DESIGN-RESEARCH.md` (input/report)
 - `/spw:tasks-check` -> `TASKS-CHECK.md` (validation report)
+
+Note:
+- `/spw:design-draft` requires `DESIGN-RESEARCH.md`; run `/spw:design-research <spec-name>` first.

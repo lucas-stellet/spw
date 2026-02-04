@@ -8,6 +8,13 @@ argument-hint: "<spec-name>"
 Generate `.spec-workflow/specs/<spec-name>/design.md` with strong traceability back to requirements.
 </objective>
 
+<preconditions>
+- `.spec-workflow/specs/<spec-name>/requirements.md` exists.
+- `.spec-workflow/specs/<spec-name>/DESIGN-RESEARCH.md` exists (mandatory intermediate artifact).
+- If `DESIGN-RESEARCH.md` is missing, stop BLOCKED and instruct:
+  - `spw:design-research <spec-name>`
+</preconditions>
+
 <model_policy>
 Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - complex_reasoning -> default `opus`
@@ -16,13 +23,23 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 
 <skills_policy>
 Resolve skill policy from `.spec-workflow/spw-config.toml`:
-- `[skills]`
-- `[skills.design]`
+- `[skills].enabled`
+- `[skills.design].required`
+- `[skills.design].optional`
+- `[skills.design].enforce_required` (boolean)
 
-Before drafting, attempt to load required design skills.
-If required skills are missing:
-- `enforcement = "strict"` -> BLOCKED
-- `enforcement = "advisory"` -> warn and continue
+Backward compatibility:
+- if `[skills.design].enforce_required` is absent, map `[skills].enforcement`:
+  - `"strict"` -> `true`
+  - any other value -> `false`
+
+Skill loading gate (mandatory when `skills.enabled=true`):
+1. Explicitly invoke every required design skill before drafting.
+2. Record loaded/missing skills in:
+   - `.spec-workflow/specs/<spec-name>/SKILLS-DESIGN-DRAFT.md`
+3. If any required skill is missing/not invoked:
+   - `enforce_required=true` -> BLOCKED
+   - `enforce_required=false` -> warn and continue
 </skills_policy>
 
 <subagents>
@@ -35,19 +52,20 @@ If required skills are missing:
 </subagents>
 
 <workflow>
-1. Read:
+1. Run design skill loading gate and write `SKILLS-DESIGN-DRAFT.md`.
+2. Read:
    - `.spec-workflow/specs/<spec-name>/requirements.md`
-   - `.spec-workflow/specs/<spec-name>/DESIGN-RESEARCH.md` (if present)
+   - `.spec-workflow/specs/<spec-name>/DESIGN-RESEARCH.md` (required)
    - `.spec-workflow/user-templates/design-template.md` (preferred)
    - fallback: `.spec-workflow/templates/design-template.md`
-2. Dispatch `traceability-mapper`.
-3. Dispatch `design-writer` using mapper output.
-4. Dispatch `design-critic`.
-5. If critic returns BLOCKED:
+3. Dispatch `traceability-mapper`.
+4. Dispatch `design-writer` using mapper output.
+5. Dispatch `design-critic`.
+6. If critic returns BLOCKED:
    - revise with `design-writer`
    - re-run `design-critic`
-6. Save to `.spec-workflow/specs/<spec-name>/design.md`.
-7. Handle approval via MCP only:
+7. Save to `.spec-workflow/specs/<spec-name>/design.md`.
+8. Handle approval via MCP only:
    - call `spec-status`
    - resolve design status from:
      - `documents.design.approved`
@@ -77,6 +95,6 @@ On success:
 - Recommend next command: `spw:tasks-plan <spec-name> --max-wave-size <N>`.
 
 If blocked:
-- Show critic/review failures with required fixes.
+- Show precondition/critic/review failures with required fixes.
 - Provide rerun command: `spw:design-draft <spec-name>`.
 </completion_guidance>

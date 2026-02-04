@@ -26,13 +26,23 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 
 <skills_policy>
 Resolve skill policy from `.spec-workflow/spw-config.toml`:
-- `[skills]`
-- `[skills.implementation]`
+- `[skills].enabled`
+- `[skills.implementation].required`
+- `[skills.implementation].optional`
+- `[skills.implementation].enforce_required` (boolean)
 
-Before executing tasks, attempt to load required implementation skills.
-If required skills are missing:
-- `enforcement = "strict"` -> BLOCKED
-- `enforcement = "advisory"` -> warn and continue
+Backward compatibility:
+- if `[skills.implementation].enforce_required` is absent, map `[skills].enforcement`:
+  - `"strict"` -> `true`
+  - any other value -> `false`
+
+Skill loading gate (mandatory when `skills.enabled=true`):
+1. Explicitly invoke every required implementation skill before task execution.
+2. Record loaded/missing skills in:
+   - `.spec-workflow/specs/<spec-name>/SKILLS-EXEC.md`
+3. If any required skill is missing/not invoked:
+   - `enforce_required=true` -> BLOCKED
+   - `enforce_required=false` -> warn and continue
 </skills_policy>
 
 <subagents>
@@ -111,14 +121,15 @@ For complex/critical tasks, run spec-compliance review on `complex_reasoning` mo
 0. Resolve spec directory:
    - `SPEC_DIR=.spec-workflow/specs/<spec-name>`
    - if `SPEC_DIR` does not exist, list available specs from `.spec-workflow/specs/*` and stop BLOCKED.
-1. Read files from canonical paths:
+1. Run implementation skill loading gate and write `SKILLS-EXEC.md`.
+2. Read files from canonical paths:
    - `.spec-workflow/specs/<spec-name>/tasks.md`
    - `.spec-workflow/specs/<spec-name>/requirements.md`
    - `.spec-workflow/specs/<spec-name>/design.md`
    - if `tasks.md` is missing, stop BLOCKED and instruct to run `spw:tasks-plan <spec-name>`.
-2. Select pending tasks by wave.
-3. Execute up to `batch-size` tasks per batch (prefer safe parallelism).
-4. For each task:
+3. Select pending tasks by wave.
+4. Execute up to `batch-size` tasks per batch (prefer safe parallelism).
+5. For each task:
    - mark `[-]`
    - dispatch `task-implementer` (mandatory, even when single-task batch)
    - dispatch `spec-compliance-reviewer`
@@ -127,9 +138,9 @@ For complex/critical tasks, run spec-compliance review on `complex_reasoning` mo
      - log implementation details and mark `[x]`
      - enforce git_hygiene commit policy for this task
    - if any gate fails: mark BLOCKED and stop current batch
-5. At end of batch, run `spw:checkpoint <spec-name>`.
-6. If checkpoint BLOCKED, stop.
-7. If checkpoint PASS:
+6. At end of batch, run `spw:checkpoint <spec-name>`.
+7. If checkpoint BLOCKED, stop.
+8. If checkpoint PASS:
    - if `require_clean_worktree_for_wave_pass=true` and worktree is dirty: stop BLOCKED
    - if no remaining waves: finish
    - if remaining waves and `require_user_approval_between_waves=true`: request explicit authorization, then continue only if approved
@@ -139,6 +150,7 @@ For complex/critical tasks, run spec-compliance review on `complex_reasoning` mo
 <strict_mode>
 With `--strict true` (default):
 - block continuation when checkpoint fails.
+- block continuation when required implementation skills were not invoked under enforce mode.
 - block continuation when a task has no requirement traceability.
 - block continuation when implementation was done without required subagent dispatch.
 - block continuation on out-of-scope edits (changes unrelated to active task IDs).

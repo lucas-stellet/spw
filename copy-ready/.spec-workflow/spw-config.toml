@@ -102,13 +102,19 @@ use_opus_for_complex_task_review = true
 # false -> commands skip skill loading behavior
 enabled = true
 
-# Enforcement mode for required skills:
+# Legacy global enforcement mode (kept for backward compatibility):
 #
-# - "advisory": if a required skill is missing, warn and continue.
-# - "strict":   if a required skill is missing, block the stage.
+# - "advisory": missing required skills warn and continue
+# - "strict":   missing required skills block
 #
-# Recommended default: "advisory"
-enforcement = "advisory"
+# New behavior should prefer per-stage booleans:
+# - [skills.design].enforce_required
+# - [skills.implementation].enforce_required
+#
+# Mapping fallback when per-stage key is absent:
+# - enforcement="strict"   -> enforce_required=true
+# - enforcement="advisory" -> enforce_required=false
+enforcement = "strict"
 
 # If true, `spw-install` will try to copy default skills into
 # `.claude/skills/` from local/global skill directories when available.
@@ -118,6 +124,13 @@ auto_install_defaults_on_spw_install = true
 [skills.design]
 # Skills used by design/planning phases
 # (`spw:design-research`, `spw:design-draft`, `spw:tasks-plan`, `spw:tasks-check`).
+#
+# If true, every required skill must be explicitly loaded/invoked before the
+# stage continues. If any required skill is missing, the stage is BLOCKED.
+#
+# If false, missing required skills produce warnings and execution continues.
+enforce_required = true
+
 #
 # Core Elixir defaults:
 # - using-elixir-skills: routes to relevant Elixir-thinking skills
@@ -144,6 +157,13 @@ optional = [
 
 [skills.implementation]
 # Skills used by execution phases (`spw:exec`, `spw:checkpoint`).
+#
+# If true, every required skill must be explicitly loaded/invoked before the
+# stage continues. If any required skill is missing, the stage is BLOCKED.
+#
+# If false, missing required skills produce warnings and execution continues.
+enforce_required = true
+
 required = [
   "using-elixir-skills",
   "elixir-thinking",

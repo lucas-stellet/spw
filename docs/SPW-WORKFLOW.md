@@ -19,6 +19,7 @@ This package implements the discussed model: use `spec-workflow-mcp` as the sour
 - `spw/commands/spw/plan.md`
 - `spw/commands/spw/exec.md`
 - `spw/commands/spw/checkpoint.md`
+- `spw/commands/spw/status.md`
 - `spw/templates/user-templates/prd-template.md`
 - `spw/templates/user-templates/requirements-template.md`
 - `spw/templates/user-templates/design-template.md`
@@ -51,6 +52,9 @@ Note: in spec-workflow, a custom template in `user-templates/` fully overrides t
   - `execution.tdd_default = false|true`
   - `templates.tasks_template_mode = auto|on|off`
   - `skills.*` sections for required/optional skills by phase
+  - per-stage enforcement booleans:
+    - `skills.design.enforce_required = true|false`
+    - `skills.implementation.enforce_required = true|false`
 - SessionStart hook auto-syncs:
   - source: `.spec-workflow/user-templates/variants/tasks-template.tdd-*.md`
   - target: `.spec-workflow/user-templates/tasks-template.md`
@@ -63,9 +67,14 @@ Note: in spec-workflow, a custom template in `user-templates/` fully overrides t
 ## Skills policy (config-driven)
 
 SPW can load skills from `.spec-workflow/spw-config.toml`:
-- `[skills]` (enable + enforcement mode)
+- `[skills]` (enable + legacy fallback enforcement)
 - `[skills.design]` (design/planning stages)
 - `[skills.implementation]` (execution/checkpoint stages)
+
+Enforcement model:
+- `enforce_required=true` -> stage is BLOCKED if any required skill is missing/not invoked.
+- `enforce_required=false` -> warn and continue.
+- Commands record per-stage skill loading evidence in spec artifacts (for example `SKILLS-DESIGN-DRAFT.md`, `SKILLS-EXEC.md`).
 
 Default lists include Elixir-focused skills plus optional:
 - `conventional-commits`
@@ -81,7 +90,27 @@ Default lists include Elixir-focused skills plus optional:
   - web-only scouting/search -> `haiku`
   - complex reasoning/synthesis/gates -> `opus`
   - implementation/drafting/execution -> `sonnet`
-- Commands `spw:prd`, `spw:plan`, `spw:design-research`, `spw:design-draft`, `spw:tasks-plan`, `spw:tasks-check`, `spw:exec`, and `spw:checkpoint` are all defined as subagent-driven workflows.
+- Commands `spw:prd`, `spw:plan`, `spw:design-research`, `spw:design-draft`, `spw:tasks-plan`, `spw:tasks-check`, `spw:exec`, `spw:checkpoint`, and `spw:status` are all defined as subagent-driven workflows.
+
+## Subagent vs orchestrator responsibilities
+
+All SPW lifecycle commands are subagent-driven:
+- `spw:prd`
+- `spw:plan`
+- `spw:design-research`
+- `spw:design-draft`
+- `spw:tasks-plan`
+- `spw:tasks-check`
+- `spw:exec`
+- `spw:checkpoint`
+- `spw:status`
+- `spw:status`
+
+Non-subagent steps (orchestrator/gates) still exist and are expected:
+- MCP approval checks and transitions (`spec-status`, `request-approval`, `get-approval-status`)
+- Explicit user prompts (`AskUserQuestion`) for MCP source selection and wave continuation
+- Execution stop states (`WAITING_FOR_APPROVAL`, `WAITING_FOR_USER_AUTHORIZATION`, `WAITING_FOR_HUMAN_ACTION`)
+- Local hooks/install/runtime scripts (`spw-install`, statusline, template sync hook)
 
 ## Commands and roles (lifecycle order)
 
@@ -106,6 +135,7 @@ Technical research (codebase + web + Elixir/Phoenix/Ecto/OTP guardrails) and out
 
 ### 4) `spw:design-draft` (manual/advanced)
 Consolidates `requirements + research` into `design.md` with REQ-ID traceability matrix.
+Requires `DESIGN-RESEARCH.md` as a mandatory intermediate artifact.
 
 ### 5) `spw:tasks-plan` (manual/advanced)
 Generates `tasks.md` with:
@@ -127,12 +157,16 @@ Execution rule: manual/human-gated tasks are handed off to the user (no automati
 ### 8) `spw:checkpoint` (quality gate)
 Quality gate between batches/waves with PASS/BLOCKED output.
 
+### 9) `spw:status` (resume helper)
+Summarizes where the process stopped (artifacts + approvals + task progress), shows blockers, and provides ordered next commands.
+
 ## Quick command selection
 
 - Product stage (no requirements yet): use `spw:prd`.
 - Technical planning stage (requirements file exists): use `spw:plan`.
 - Execution stage (approved tasks): use `spw:exec`.
 - Quality gate between batches/waves: use `spw:checkpoint`.
+- Resume helper (where we stopped + next action): use `spw:status`.
 - Advanced/manual mode: run `design-research`, `design-draft`, `tasks-plan`, `tasks-check` individually.
 
 ## Manual planning order (explicit)
