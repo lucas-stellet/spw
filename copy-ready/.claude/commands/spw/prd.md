@@ -43,6 +43,33 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
   - Performs strict quality gate before approval request.
 </subagents>
 
+<file_handoff_protocol>
+Subagent communication must be file-first (no implicit-only handoff).
+
+Create a run folder:
+- `.spec-workflow/specs/<spec-name>/agent-comms/prd/<run-id>/`
+
+For each subagent, use:
+- `<run-dir>/<subagent>/brief.md` (written by orchestrator before dispatch)
+- `<run-dir>/<subagent>/report.md` (written by subagent after execution)
+- `<run-dir>/<subagent>/status.json` (written by subagent)
+
+Status schema (minimum):
+- `status`: `pass|blocked`
+- `summary`: short result
+- `inputs`: key files/URLs used
+- `outputs`: generated artifacts
+- `open_questions`: unresolved items
+
+For revision loops, also create:
+- `.spec-workflow/specs/<spec-name>/agent-comms/prd-revision/<run-id>/`
+
+After each phase, write:
+- `<run-dir>/_handoff.md` (orchestrator synthesis of subagent outputs)
+
+If a required `report.md` or `status.json` is missing, stop BLOCKED.
+</file_handoff_protocol>
+
 <revision_protocol>
 Trigger this protocol when either:
 - MCP approval status for requirements is `changes-requested` or `rejected`, or
@@ -50,18 +77,20 @@ Trigger this protocol when either:
 
 Protocol (mandatory):
 1. Read approval feedback from MCP and existing `requirements.md`.
-2. Dispatch `feedback-analyzer` to classify:
+2. Dispatch `feedback-analyzer` (with file handoff) to classify:
    - accepted changes
    - ambiguous/conflicting feedback
    - out-of-scope suggestions
-3. Dispatch `codebase-impact-scanner` (if enabled in config `[reviews]`).
-4. Dispatch `revision-planner` to create:
+3. Dispatch `codebase-impact-scanner` (if enabled in config `[reviews]`) with file handoff.
+4. Dispatch `revision-planner` with file handoff to create:
    - `.spec-workflow/specs/<spec-name>/PRD-REVISION-PLAN.md`
    - `.spec-workflow/specs/<spec-name>/PRD-REVISION-QUESTIONS.md` (if needed)
 5. Ask targeted clarification questions before editing if ambiguity/conflict exists.
-6. Only after clarification, dispatch `prd-editor` to apply approved deltas.
+6. Only after clarification, dispatch `prd-editor` with file handoff to apply approved deltas.
 7. Save revision summary:
    - `.spec-workflow/specs/<spec-name>/PRD-REVISION-NOTES.md`
+8. Write revision handoff:
+   - `.spec-workflow/specs/<spec-name>/agent-comms/prd-revision/<run-id>/_handoff.md`
 
 Never directly edit requirements immediately after reading review comments.
 </revision_protocol>
@@ -93,27 +122,31 @@ If `--source` is provided and looks like a URL (`http://` or `https://`) or mark
 </source_handling>
 
 <workflow>
-1. Read existing context:
+1. Create communication run directory:
+   - `.spec-workflow/specs/<spec-name>/agent-comms/prd/<run-id>/`
+2. Read existing context:
    - `.spec-workflow/specs/<spec-name>/requirements.md` (if present)
    - `.spec-workflow/specs/<spec-name>/design.md` (if present)
    - `.spec-workflow/steering/*.md` (if present)
-2. If `--source` is present, dispatch source-reader subagents:
+3. If `--source` is present, write briefs and dispatch source-reader subagents:
    - web-only fetches -> `source-reader-web`
    - MCP-backed reads -> `source-reader-mcp`
    - save normalized notes to `.spec-workflow/specs/<spec-name>/PRD-SOURCE-NOTES.md`
-3. Run one-question-at-a-time discovery with user.
-4. Dispatch `requirements-structurer` to produce a structured draft:
+4. Require source-reader `report.md` + `status.json`; BLOCKED if missing.
+5. Run one-question-at-a-time discovery with user.
+6. Dispatch `requirements-structurer` with file handoff to produce a structured draft:
    - `.spec-workflow/specs/<spec-name>/PRD-STRUCTURE.md`
-5. Dispatch `prd-editor` to fill template using:
+7. Dispatch `prd-editor` with file handoff to fill template using:
    - `.spec-workflow/user-templates/prd-template.md` (preferred)
    - fallback: `.spec-workflow/templates/prd-template.md`
-6. Dispatch `prd-critic` and enforce gate:
+8. Dispatch `prd-critic` with file handoff and enforce gate:
    - if BLOCKED, revise and re-run critic
    - if PASS, continue
-7. Save artifacts:
+9. Save artifacts:
    - canonical: `.spec-workflow/specs/<spec-name>/requirements.md`
    - product mirror: `.spec-workflow/specs/<spec-name>/PRD.md`
-8. Handle approval via MCP only:
+10. Write `<run-dir>/_handoff.md` referencing source/structure/editor/critic outputs.
+11. Handle approval via MCP only:
    - call `spec-status`
    - resolve status from:
      - `documents.requirements.approved`
@@ -138,6 +171,7 @@ If `--source` is provided and looks like a URL (`http://` or `https://`) or mark
 - [ ] On revision cycles, subagent analysis + codebase impact scan happened before edits.
 - [ ] Clarification questions were asked when feedback was ambiguous/conflicting.
 - [ ] PRD is approved before moving to design/tasks.
+- [ ] File-based handoff exists under `.spec-workflow/specs/<spec-name>/agent-comms/prd/<run-id>/` (and revision run dir when applicable).
 </acceptance_criteria>
 
 <completion_guidance>

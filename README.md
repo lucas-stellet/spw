@@ -47,3 +47,6 @@ After install:
 - `spw:exec` -> batch execution with checkpoints
 - `spw:checkpoint` -> quality gate report (PASS/BLOCKED)
 - `spw:status` -> summarize where workflow stopped + next commands
+
+File-first subagent communication is enabled for planning/validation flows and
+stored under `.spec-workflow/specs/<spec-name>/agent-comms/<command>/<run-id>/`.

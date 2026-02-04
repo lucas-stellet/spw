@@ -8,6 +8,30 @@ argument-hint: "<spec-name>"
 Validate whether `tasks.md` is ready for subagent execution.
 </objective>
 
+<file_handoff_protocol>
+Subagent communication must be file-first (no implicit-only handoff).
+
+Create a run folder:
+- `.spec-workflow/specs/<spec-name>/agent-comms/tasks-check/<run-id>/`
+
+For each subagent, use:
+- `<run-dir>/<subagent>/brief.md` (written by orchestrator before dispatch)
+- `<run-dir>/<subagent>/report.md` (written by subagent after execution)
+- `<run-dir>/<subagent>/status.json` (written by subagent)
+
+Status schema (minimum):
+- `status`: `pass|blocked`
+- `summary`: short result
+- `inputs`: key files used
+- `outputs`: generated artifacts
+- `open_questions`: unresolved items
+
+After validation, write:
+- `<run-dir>/_handoff.md` (orchestrator summary of audit results)
+
+If a required `report.md` or `status.json` is missing, stop BLOCKED.
+</file_handoff_protocol>
+
 <model_policy>
 Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - complex_reasoning -> default `opus`
@@ -44,16 +68,20 @@ Skill loading gate (mandatory when `skills.enabled=true`):
 
 <workflow>
 1. Run design skill loading gate and write `SKILLS-TASKS-CHECK.md`.
-2. Read `.spec-workflow/specs/<spec-name>/tasks.md` + requirements/design docs.
-3. Dispatch in parallel:
+2. Create communication run directory:
+   - `.spec-workflow/specs/<spec-name>/agent-comms/tasks-check/<run-id>/`
+3. Read `.spec-workflow/specs/<spec-name>/tasks.md` + requirements/design docs.
+4. Write briefs and dispatch in parallel:
    - `traceability-auditor`
    - `dag-validator`
    - `test-policy-auditor`
-4. Dispatch `decision-aggregator` to produce PASS/BLOCKED decision.
-5. Generate `.spec-workflow/specs/<spec-name>/TASKS-CHECK.md` containing:
+5. Require auditor `report.md` + `status.json`; BLOCKED if missing.
+6. Dispatch `decision-aggregator` with file handoff to produce PASS/BLOCKED decision.
+7. Generate `.spec-workflow/specs/<spec-name>/TASKS-CHECK.md` containing:
    - PASS/BLOCKED
    - findings by severity
    - recommended fixes
+8. Write `<run-dir>/_handoff.md` linking all auditor/aggregator outputs.
 </workflow>
 
 <acceptance_criteria>
@@ -61,6 +89,7 @@ Skill loading gate (mandatory when `skills.enabled=true`):
 - [ ] Every requirement maps to at least one task.
 - [ ] DAG has no cycles and wave order is valid.
 - [ ] Test policy gate is satisfied.
+- [ ] File-based handoff exists under `.spec-workflow/specs/<spec-name>/agent-comms/tasks-check/<run-id>/`.
 </acceptance_criteria>
 
 <completion_guidance>

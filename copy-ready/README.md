@@ -89,6 +89,13 @@ Subagent coverage:
 - Subagent-driven commands: `/spw:prd`, `/spw:plan`, `/spw:design-research`, `/spw:design-draft`, `/spw:tasks-plan`, `/spw:tasks-check`, `/spw:exec`, `/spw:checkpoint`.
 - Orchestrator-only parts (non-subagent): MCP approval checks, AskUserQuestion prompts, wait/block states, hooks/install scripts.
 
+File-first communication (GSD-style):
+- `/spw:design-research`, `/spw:prd`, `/spw:tasks-plan`, `/spw:tasks-check`, and `/spw:checkpoint` persist subagent communication under:
+  - `.spec-workflow/specs/<spec-name>/agent-comms/<command>/<run-id>/`
+- each subagent writes `brief.md`, `report.md`, `status.json`
+- each run writes `_handoff.md`
+- missing communication files cause BLOCKED
+
 `/spw:exec` guardrails:
 - mandatory subagent dispatch per task (including single-task sequential waves)
 - orchestrator-only main context (no direct implementation edits)

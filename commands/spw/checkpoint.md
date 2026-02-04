@@ -8,6 +8,30 @@ argument-hint: "<spec-name> [--scope batch|wave|phase]"
 Validate that the executed batch truly meets spec intent, code quality, and integration safety before moving forward.
 </objective>
 
+<file_handoff_protocol>
+Subagent communication must be file-first (no implicit-only handoff).
+
+Create a run folder:
+- `.spec-workflow/specs/<spec-name>/agent-comms/checkpoint/<run-id>/`
+
+For each subagent, use:
+- `<run-dir>/<subagent>/brief.md` (written by orchestrator before dispatch)
+- `<run-dir>/<subagent>/report.md` (written by subagent after execution)
+- `<run-dir>/<subagent>/status.json` (written by subagent)
+
+Status schema (minimum):
+- `status`: `pass|blocked`
+- `summary`: short result
+- `inputs`: evidence sources used
+- `outputs`: generated artifacts
+- `open_questions`: unresolved items
+
+After checkpoint, write:
+- `<run-dir>/_handoff.md` (orchestrator final go/no-go reasoning)
+
+If a required `report.md` or `status.json` is missing, stop BLOCKED.
+</file_handoff_protocol>
+
 <model_policy>
 Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - complex_reasoning -> default `opus`
@@ -55,19 +79,29 @@ If enabled:
 
 <workflow>
 1. Run implementation skill loading gate and write `SKILLS-CHECKPOINT.md`.
-2. Dispatch `evidence-collector`.
-3. Dispatch `traceability-judge` using collected evidence.
-4. Dispatch `release-gate-decider`.
-5. Generate `.spec-workflow/specs/<spec-name>/CHECKPOINT-REPORT.md` with:
+2. Create communication run directory:
+   - `.spec-workflow/specs/<spec-name>/agent-comms/checkpoint/<run-id>/`
+3. Write brief and dispatch `evidence-collector`.
+4. Require `evidence-collector` output files (`report.md`, `status.json`); BLOCKED if missing.
+5. Write brief and dispatch `traceability-judge` using collected evidence files.
+6. Require `traceability-judge` output files (`report.md`, `status.json`); BLOCKED if missing.
+7. Write brief and dispatch `release-gate-decider` using prior reports.
+8. Generate `.spec-workflow/specs/<spec-name>/CHECKPOINT-REPORT.md` with:
    - status: PASS | BLOCKED
    - critical issues
    - corrective actions
    - recommended next step
+9. Write `<run-dir>/_handoff.md` linking all subagent outputs and final decision.
 </workflow>
 
 <gate_rule>
 If status is BLOCKED, do not proceed to the next batch/wave.
 </gate_rule>
+
+<acceptance_criteria>
+- [ ] File-based handoff exists under `.spec-workflow/specs/<spec-name>/agent-comms/checkpoint/<run-id>/`.
+- [ ] `CHECKPOINT-REPORT.md` decision is traceable to subagent reports.
+</acceptance_criteria>
 
 <completion_guidance>
 On PASS:

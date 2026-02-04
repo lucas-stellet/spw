@@ -8,6 +8,30 @@ argument-hint: "<spec-name> [--max-wave-size 3] [--allow-no-test-exception true|
 Generate `.spec-workflow/specs/<spec-name>/tasks.md` for predictable parallel execution.
 </objective>
 
+<file_handoff_protocol>
+Subagent communication must be file-first (no implicit-only handoff).
+
+Create a run folder:
+- `.spec-workflow/specs/<spec-name>/agent-comms/tasks-plan/<run-id>/`
+
+For each subagent, use:
+- `<run-dir>/<subagent>/brief.md` (written by orchestrator before dispatch)
+- `<run-dir>/<subagent>/report.md` (written by subagent after execution)
+- `<run-dir>/<subagent>/status.json` (written by subagent)
+
+Status schema (minimum):
+- `status`: `pass|blocked`
+- `summary`: short result
+- `inputs`: key files used
+- `outputs`: generated artifacts
+- `open_questions`: unresolved items
+
+After planning, write:
+- `<run-dir>/_handoff.md` (orchestrator synthesis and final decisions)
+
+If a required `report.md` or `status.json` is missing, stop BLOCKED.
+</file_handoff_protocol>
+
 <model_policy>
 Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - complex_reasoning -> default `opus`
@@ -57,17 +81,21 @@ Skill loading gate (mandatory when `skills.enabled=true`):
 
 <workflow>
 1. Run design skill loading gate and write `SKILLS-TASKS-PLAN.md`.
-2. Read:
+2. Create communication run directory:
+   - `.spec-workflow/specs/<spec-name>/agent-comms/tasks-plan/<run-id>/`
+3. Read:
    - `.spec-workflow/specs/<spec-name>/requirements.md`
    - `.spec-workflow/specs/<spec-name>/design.md`
    - `.spec-workflow/user-templates/tasks-template.md` (preferred)
    - fallback: `.spec-workflow/templates/tasks-template.md`
-3. Dispatch `task-decomposer`.
-4. Dispatch `dependency-graph-builder`.
-5. Dispatch `parallel-conflict-checker`.
-6. Dispatch `test-policy-enforcer`.
-7. Dispatch `tasks-writer` and save `.spec-workflow/specs/<spec-name>/tasks.md`.
-8. Handle approval via MCP only:
+4. Write briefs and dispatch `task-decomposer`.
+5. Write briefs and dispatch `dependency-graph-builder`.
+6. Write briefs and dispatch `parallel-conflict-checker`.
+7. Write briefs and dispatch `test-policy-enforcer`.
+8. Require subagent `report.md` + `status.json`; BLOCKED if missing.
+9. Dispatch `tasks-writer` with file handoff and save `.spec-workflow/specs/<spec-name>/tasks.md`.
+10. Write `<run-dir>/_handoff.md` with decomposition decisions, DAG rationale, and conflict/test policy outcomes.
+11. Handle approval via MCP only:
    - call `spec-status`
    - resolve tasks status from:
      - `documents.tasks.approved`
@@ -88,6 +116,7 @@ Skill loading gate (mandatory when `skills.enabled=true`):
 - [ ] All tasks have tests or a documented exception.
 - [ ] Waves respect the configured limit.
 - [ ] Conflict checker returns no critical same-wave file collisions.
+- [ ] File-based handoff exists under `.spec-workflow/specs/<spec-name>/agent-comms/tasks-plan/<run-id>/`.
 </acceptance_criteria>
 
 <completion_guidance>

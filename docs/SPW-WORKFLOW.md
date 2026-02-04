@@ -102,6 +102,29 @@ Default lists include Elixir-focused skills plus optional:
   - implementation/drafting/execution -> `sonnet`
 - Commands `spw:prd`, `spw:plan`, `spw:design-research`, `spw:design-draft`, `spw:tasks-plan`, `spw:tasks-check`, `spw:exec`, `spw:checkpoint`, and `spw:status` are all defined as subagent-driven workflows.
 
+## File-first subagent communication (GSD-style)
+
+For auditability and deterministic handoff, selected commands require file-based
+subagent communication:
+- `spw:design-research`
+- `spw:prd` (including revision loops)
+- `spw:tasks-plan`
+- `spw:tasks-check`
+- `spw:checkpoint`
+
+Per run, commands create:
+- `.spec-workflow/specs/<spec-name>/agent-comms/<command>/<run-id>/`
+
+Per subagent, required files:
+- `<subagent>/brief.md` (orchestrator -> subagent contract)
+- `<subagent>/report.md` (subagent result)
+- `<subagent>/status.json` (`pass|blocked`, inputs/outputs/open questions)
+
+Per command run:
+- `<run-dir>/_handoff.md` (orchestrator synthesis and next-step context)
+
+If required communication files are missing, the command must return BLOCKED.
+
 ## Subagent vs orchestrator responsibilities
 
 All SPW lifecycle commands are subagent-driven:
@@ -113,7 +136,6 @@ All SPW lifecycle commands are subagent-driven:
 - `spw:tasks-check`
 - `spw:exec`
 - `spw:checkpoint`
-- `spw:status`
 - `spw:status`
 
 Non-subagent steps (orchestrator/gates) still exist and are expected:
