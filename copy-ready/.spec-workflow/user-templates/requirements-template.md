@@ -1,42 +1,42 @@
 # Requirements Document
 
-## Contexto de Produto
-- Problema de negócio:
-- Objetivo da feature:
-- Público-alvo:
+## Product Context
+- Business problem:
+- Feature objective:
+- Target audience:
 
-## Escopo
+## Scope
 ### In Scope
-- 
+-
 
 ### Out of Scope
-- 
+-
 
-## Requisitos Funcionais
+## Functional Requirements
 
-### REQ-001 - [Título]
+### REQ-001 - [Title]
 - User story:
-- Critérios de aceitação (EARS):
-  - WHEN [evento] THEN [sistema deve...]
-  - IF [condição] THEN [sistema deve...]
-- Prioridade: Must | Should | Could
+- Acceptance criteria (EARS):
+  - WHEN [event] THEN [system must...]
+  - IF [condition] THEN [system must...]
+- Priority: Must | Should | Could
 
-### REQ-002 - [Título]
+### REQ-002 - [Title]
 - User story:
-- Critérios de aceitação (EARS):
-- Prioridade:
+- Acceptance criteria (EARS):
+- Priority:
 
-## Requisitos Não Funcionais
+## Non-Functional Requirements
 - Performance:
-- Segurança:
-- Observabilidade:
-- Acessibilidade (quando aplicável):
+- Security:
+- Observability:
+- Accessibility (when applicable):
 
-## Restrições e Assunções
-- Restrições técnicas:
-- Dependências externas:
-- Assunções:
+## Constraints and Assumptions
+- Technical constraints:
+- External dependencies:
+- Assumptions:
 
-## Critérios de Sucesso
-- Métrica 1:
-- Métrica 2:
+## Success Criteria
+- Metric 1:
+- Metric 2:

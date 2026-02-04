@@ -1,91 +1,90 @@
 # ===============================================================
-# SPW Hybrid Configuration
+# SPW Configuration
 # ===============================================================
-# Este arquivo centraliza o comportamento do fluxo híbrido
-# (spec-workflow + comandos SPW + execução com subagents).
+# This file centralizes behavior for the hybrid workflow
+# (spec-workflow + SPW commands + subagent execution).
 #
-# Como usar:
-# 1) Copie este arquivo para o projeto real em:
+# How to use:
+# 1) Copy this file into your real project at:
 #    .spec-workflow/spw-config.toml
-# 2) Registre o hook de SessionStart para rodar o script de sync.
-# 3) Sempre que iniciar uma sessão no Claude, o template de tasks
-#    será ajustado automaticamente conforme esta configuração.
+# 2) Register the SessionStart hook to run the sync script.
+# 3) On every Claude session start, the active tasks template
+#    will be automatically aligned with this configuration.
 #
-# Observação importante:
-# - Este arquivo NÃO substitui requirements/design/tasks.
-# - Ele apenas controla o comportamento operacional dos comandos e
-#   do hook de sincronização de template.
+# Important note:
+# - This file does NOT replace requirements/design/tasks artifacts.
+# - It only controls command runtime behavior and template-sync hook behavior.
 # ===============================================================
 
 [execution]
-# tdd_default define o comportamento padrão de TDD no projeto.
+# tdd_default defines the default TDD behavior for the project.
 #
 # false:
-# - TDD desligado por padrão (modelo "opt-in").
-# - Só usa TDD quando a tarefa declarar explicitamente `TDD: required`
-#   ou quando você mudar essa configuração para true.
+# - TDD is off by default (opt-in model).
+# - TDD is used only when a task explicitly sets `TDD: required`
+#   or when you change this config to true.
 #
 # true:
-# - TDD ligado por padrão.
-# - Tarefas com `TDD: inherit` passam a exigir ciclo RED->GREEN.
+# - TDD is on by default.
+# - Tasks using `TDD: inherit` will require a RED->GREEN cycle.
 #
-# Recomendação inicial para o seu caso: false.
+# Recommended starting value for your setup: false.
 tdd_default = false
 
-# Se true, o executor deve exigir evidência mínima de RED->GREEN
-# em tarefas com TDD ativo (ex.: teste falhou antes e passou depois).
-# Isso evita "testes escritos depois" sem garantir disciplina.
+# If true, the executor requires minimum RED->GREEN evidence
+# for tasks with active TDD (for example: test fails first, then passes).
+# This avoids "tests written after the fact" without discipline.
 tdd_require_red_green_evidence = true
 
-# Se true, o executor bloqueia avanço de batch/wave quando encontrar:
-# - falta de rastreabilidade de requirements
-# - ausência de verificação por tarefa
-# - falhas de checkpoint crítico
+# If true, the executor blocks batch/wave progression when it finds:
+# - missing requirements traceability
+# - missing per-task verification
+# - critical checkpoint failures
 strict_gates = true
 
 [templates]
-# Controla se o hook deve sincronizar tasks-template no SessionStart.
+# Controls whether the hook syncs tasks-template on SessionStart.
 #
-# true  -> hook ativo: escolhe variante e atualiza tasks-template.md
-# false -> hook inativo: não altera template automaticamente
+# true  -> hook active: choose variant and update tasks-template.md
+# false -> hook inactive: do not auto-change the template
 sync_tasks_template_on_session_start = true
 
-# Define como escolher a variante do template de tasks.
+# Defines how to choose tasks template variant.
 #
-# Valores suportados:
-# - "auto": decide com base em [execution].tdd_default
-# - "on":  força variante TDD ON
-# - "off": força variante TDD OFF
+# Supported values:
+# - "auto": decide from [execution].tdd_default
+# - "on":   force TDD ON variant
+# - "off":  force TDD OFF variant
 #
-# "auto" é o mais recomendado para manter uma fonte única de verdade
-# no parâmetro execution.tdd_default.
+# "auto" is recommended to keep a single source of truth
+# in execution.tdd_default.
 tasks_template_mode = "auto"
 
-# Caminho do diretório que contém as variantes de template.
-# Esse caminho é relativo à raiz do projeto.
-# Exemplo esperado:
+# Path to the directory containing template variants.
+# This path is relative to the project root.
+# Expected example:
 # .spec-workflow/user-templates/variants/
 variants_dir = ".spec-workflow/user-templates/variants"
 
-# Caminho do template ativo que o spec-workflow vai usar.
-# O hook escreve aqui após escolher a variante.
+# Path to the active template used by spec-workflow.
+# The hook writes here after selecting a variant.
 active_tasks_template_path = ".spec-workflow/user-templates/tasks-template.md"
 
-# Nome do arquivo de variante quando TDD estiver ON.
+# Variant file name when TDD is ON.
 tasks_template_tdd_on_file = "tasks-template.tdd-on.md"
 
-# Nome do arquivo de variante quando TDD estiver OFF.
+# Variant file name when TDD is OFF.
 tasks_template_tdd_off_file = "tasks-template.tdd-off.md"
 
 [safety]
-# Se true, o hook gera backup do template ativo antes de sobrescrever.
-# Formato: tasks-template.md.bak-YYYYMMDDHHMMSS
+# If true, the hook creates a backup of active template before overwrite.
+# Format: tasks-template.md.bak-YYYYMMDDHHMMSS
 backup_before_overwrite = true
 
-# Se true, o hook roda em modo simulação (não escreve arquivos).
-# Útil para validar comportamento sem alterar nada.
+# If true, the hook runs in dry-run mode (does not write files).
+# Useful for validating behavior without changing anything.
 dry_run = false
 
-# Se true, o hook falha com exit code 1 quando faltar variante/config.
-# Se false, ele apenas avisa e encerra sem quebrar a sessão.
+# If true, hook exits with code 1 when variant/config is missing.
+# If false, it logs a warning and exits without breaking the session.
 fail_hard_on_missing_template = false

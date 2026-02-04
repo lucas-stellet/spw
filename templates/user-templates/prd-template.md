@@ -1,89 +1,88 @@
 # PRD (Product Requirements Document)
 
-## 1. Resumo Executivo
-- Nome da iniciativa:
-- Problema principal:
-- Resultado esperado:
+## 1. Executive Summary
+- Initiative name:
+- Primary problem:
+- Expected outcome:
 - Stakeholders:
 
-## 2. Contexto e Motivacao
-- Situacao atual:
-- Dor do usuario/produto:
-- Por que agora:
+## 2. Context and Motivation
+- Current situation:
+- User/product pain:
+- Why now:
 
-## 3. Objetivos e Nao-Objetivos
-### Objetivos (v1)
-- 
+## 3. Goals and Non-Goals
+### Goals (v1)
+-
 
-### Nao-Objetivos (agora)
-- 
+### Non-goals (now)
+-
 
-## 4. Personas e Jobs To Be Done
-### Persona principal
-- Quem e:
-- Contexto de uso:
+## 4. Personas and Jobs To Be Done
+### Primary persona
+- Who they are:
+- Usage context:
 - JTBD:
 
-### Persona secundaria (se aplicavel)
-- Quem e:
+### Secondary persona (if applicable)
+- Who they are:
 - JTBD:
 
-## 5. Escopo
+## 5. Scope
 ### In Scope (v1)
-- 
+-
 
-### v2 / Depois
-- 
+### v2 / Later
+-
 
 ### Out of Scope
-- 
+-
 
-## 6. Requisitos Funcionais
+## 6. Functional Requirements
 
-### REQ-001 - [Titulo]
+### REQ-001 - [Title]
 - User story:
-- Criterios de aceitacao:
-  - GIVEN [contexto] WHEN [acao] THEN [resultado]
-  - IF [condicao] THEN [resultado]
-- Prioridade: Must | Should | Could
-- Dependencias:
+- Acceptance criteria:
+  - GIVEN [context] WHEN [action] THEN [outcome]
+  - IF [condition] THEN [outcome]
+- Priority: Must | Should | Could
+- Dependencies:
 
-### REQ-002 - [Titulo]
+### REQ-002 - [Title]
 - User story:
-- Criterios de aceitacao:
-- Prioridade:
-- Dependencias:
+- Acceptance criteria:
+- Priority:
+- Dependencies:
 
-## 7. Requisitos Nao Funcionais
+## 7. Non-Functional Requirements
 - Performance:
-- Seguranca:
-- Confiabilidade/Disponibilidade:
-- Observabilidade:
-- Acessibilidade:
-- Compliance/Privacidade:
+- Security:
+- Reliability/Availability:
+- Observability:
+- Accessibility:
+- Compliance/Privacy:
 
-## 8. UX e Fluxos Principais
-- Fluxo principal:
-- Estados de erro:
+## 8. UX and Main Flows
+- Main flow:
+- Error states:
 - Empty states:
-- Consideracoes de conteudo/mensagem:
+- Content/messaging considerations:
 
-## 9. Metricas de Sucesso
-- KPI primario:
-- KPI secundario:
-- Sinal de falha:
+## 9. Success Metrics
+- Primary KPI:
+- Secondary KPI:
+- Failure signal:
 
-## 10. Riscos e Mitigacoes
-| Risco | Impacto | Mitigacao |
-|------|---------|-----------|
+## 10. Risks and Mitigations
+| Risk | Impact | Mitigation |
+|------|--------|------------|
 | | | |
 
-## 11. Questoes em Aberto
-- 
+## 11. Open Questions
+-
 
-## 12. Rastreabilidade para Design/Tasks
-| REQ-ID | Secao de Design | Tasks esperadas |
-|--------|------------------|-----------------|
+## 12. Traceability to Design/Tasks
+| REQ-ID | Design Section | Expected Tasks |
+|--------|----------------|----------------|
 | REQ-001 | | |
 | REQ-002 | | |
-

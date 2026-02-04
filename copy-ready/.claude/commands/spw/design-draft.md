@@ -1,30 +1,30 @@
 ---
 name: spw:design-draft
-description: Cria ou atualiza design.md usando requirements + DESIGN-RESEARCH
+description: Create or update design.md from requirements + DESIGN-RESEARCH
 argument-hint: "<spec-name>"
 ---
 
 <objective>
-Gerar `.spec-workflow/specs/<spec-name>/design.md` com rastreabilidade forte para requirements.
+Generate `.spec-workflow/specs/<spec-name>/design.md` with strong traceability back to requirements.
 </objective>
 
 <workflow>
-1. Ler:
+1. Read:
    - `.spec-workflow/specs/<spec-name>/requirements.md`
-   - `.spec-workflow/specs/<spec-name>/DESIGN-RESEARCH.md` (se existir)
-   - `.spec-workflow/user-templates/design-template.md` (preferencial)
+   - `.spec-workflow/specs/<spec-name>/DESIGN-RESEARCH.md` (if present)
+   - `.spec-workflow/user-templates/design-template.md` (preferred)
    - fallback: `.spec-workflow/templates/design-template.md`
-2. Preencher design com foco em:
-   - mapeamento `REQ-ID -> decisão técnica`
-   - arquitetura e boundaries
-   - reuso de código existente
-   - estratégia de teste (unit, integration, e2e)
-3. Salvar em `.spec-workflow/specs/<spec-name>/design.md`.
-4. Solicitar aprovação (workflow normal do spec-workflow).
+2. Fill design with focus on:
+   - mapping `REQ-ID -> technical decision`
+   - architecture and boundaries
+   - existing code reuse
+   - test strategy (unit, integration, e2e)
+3. Save to `.spec-workflow/specs/<spec-name>/design.md`.
+4. Request approval (standard spec-workflow flow).
 </workflow>
 
 <acceptance_criteria>
-- [ ] Existe matriz de rastreabilidade de requisitos.
-- [ ] Decisões técnicas estão justificadas.
-- [ ] Estratégia de testes está explícita.
+- [ ] Requirements traceability matrix exists.
+- [ ] Technical decisions are justified.
+- [ ] Test strategy is explicit.
 </acceptance_criteria>

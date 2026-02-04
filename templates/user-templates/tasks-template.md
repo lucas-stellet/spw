@@ -12,7 +12,7 @@
 
 ---
 
-- [ ] 1.1 [Título da tarefa]
+- [ ] 1.1 [Task title]
   - Wave: 1
   - Depends On: none
   - Can Run In Parallel With: 1.2, 1.3
@@ -20,21 +20,21 @@
     - modify: path/to/file.ex
     - test: test/path/to/file_test.exs
   - Implementation:
-    - 
+    -
   - Test Plan:
     - Unit:
-    - Integration (se aplicável):
+    - Integration (if applicable):
   - Verification Command:
     - mix test test/path/to/file_test.exs
   - Requirements: REQ-001
   - TDD: inherit
   - Definition of Done:
-    - [ ] comportamento implementado
-    - [ ] testes passando
-    - [ ] sem regressão conhecida
-  - _Prompt: Role: [especialista da tarefa] | Task: Implementar tarefa 1.1 para a spec [spec-name] conforme requirements e design aprovados | Restrictions: manter boundaries arquiteturais, não criar escopo extra, seguir TDD | Success: critérios de DoD atendidos e comando de verificação em verde_
+    - [ ] behavior implemented
+    - [ ] tests passing
+    - [ ] no known regression
+  - _Prompt: Role: [task specialist] | Task: Implement task 1.1 for spec [spec-name] according to approved requirements and design | Restrictions: preserve architectural boundaries, no scope expansion, follow TDD | Success: DoD criteria met and verification command passes_
 
-- [ ] 1.2 [Título da tarefa]
+- [ ] 1.2 [Task title]
   - Wave: 1
   - Depends On: none
   - Can Run In Parallel With: 1.1, 1.3
@@ -42,20 +42,20 @@
     - modify:
     - test:
   - Implementation:
-    - 
+    -
   - Test Plan:
     - Unit:
   - Verification Command:
-    - 
+    -
   - Requirements: REQ-002
   - TDD: inherit
-  - No-Test Justification (somente se exceção):
+  - No-Test Justification (only for exception):
     - Reason:
     - Alternative validation:
   - Definition of Done:
     - [ ]
 
-- [ ] 2.1 [Título da tarefa]
+- [ ] 2.1 [Task title]
   - Wave: 2
   - Depends On: 1.1, 1.2
   - Can Run In Parallel With: none
@@ -63,11 +63,11 @@
     - modify:
     - test:
   - Implementation:
-    - 
+    -
   - Test Plan:
     - Integration:
   - Verification Command:
-    - 
+    -
   - Requirements: REQ-001, REQ-002
   - TDD: inherit
   - Definition of Done:

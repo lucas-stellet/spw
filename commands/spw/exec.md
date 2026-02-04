@@ -1,28 +1,28 @@
 ---
 name: spw:exec
-description: Executa tasks.md em batches com checkpoints obrigatórios
+description: Execute tasks.md in batches with mandatory checkpoints
 argument-hint: "<spec-name> [--batch-size 3] [--strict true|false]"
 ---
 
 <objective>
-Executar tarefas em lotes, com pausa obrigatória para checkpoint de qualidade.
+Execute tasks in batches, with mandatory pauses for checkpoint quality gates.
 </objective>
 
 <workflow>
-1. Ler `tasks.md` e selecionar tarefas pendentes por wave.
-2. Executar até `batch-size` tarefas por lote (preferir paralelismo seguro).
-3. Para cada tarefa:
-   - marcar `[-]`
-   - executar com subagente
-   - validar spec compliance + code quality
-   - registrar log de implementação
-   - marcar `[x]`
-4. Ao fim do lote, executar `spw:checkpoint <spec-name>`.
-5. Só continuar quando checkpoint passar.
+1. Read `tasks.md` and select pending tasks by wave.
+2. Execute up to `batch-size` tasks per batch (prefer safe parallelism).
+3. For each task:
+   - mark `[-]`
+   - execute with a subagent
+   - validate spec compliance + code quality
+   - log implementation details
+   - mark `[x]`
+4. At end of batch, run `spw:checkpoint <spec-name>`.
+5. Continue only if checkpoint passes.
 </workflow>
 
 <strict_mode>
-Com `--strict true` (padrão):
-- bloqueia continuidade se checkpoint falhar.
-- bloqueia continuidade se houver tarefa sem rastreabilidade de requirement.
+With `--strict true` (default):
+- block continuation when checkpoint fails.
+- block continuation when a task has no requirement traceability.
 </strict_mode>

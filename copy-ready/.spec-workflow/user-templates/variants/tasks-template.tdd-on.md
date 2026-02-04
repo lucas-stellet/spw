@@ -12,7 +12,7 @@
 
 ---
 
-- [ ] 1.1 [Titulo da tarefa]
+- [ ] 1.1 [Task title]
   - Wave: 1
   - Depends On: none
   - Can Run In Parallel With: 1.2, 1.3
@@ -23,20 +23,20 @@
   - TDD: required
   - Test Plan:
     - Unit:
-    - Integration (se aplicavel):
+    - Integration (if applicable):
   - Verification Command:
     - mix test test/path/to/file_test.exs
-  - No-TDD Justification (somente se TDD: skip):
+  - No-TDD Justification (only for TDD: skip):
     - Reason:
     - Alternative validation:
   - Definition of Done:
-    - [ ] comportamento implementado
-    - [ ] evidencias RED->GREEN registradas
-    - [ ] testes em verde
-    - [ ] sem regressao conhecida
-  - _Prompt: Role: [especialista] | Task: Implementar 1.1 conforme design e requirements aprovados | Restrictions: seguir TDD estrito (RED->GREEN->REFACTOR), nao aumentar escopo | Success: DoD completo e verificacao em verde_
+    - [ ] behavior implemented
+    - [ ] RED->GREEN evidence recorded
+    - [ ] tests green
+    - [ ] no known regression
+  - _Prompt: Role: [specialist] | Task: Implement 1.1 according to approved design and requirements | Restrictions: strict TDD (RED->GREEN->REFACTOR), no scope expansion | Success: full DoD and green verification_
 
-- [ ] 1.2 [Titulo da tarefa]
+- [ ] 1.2 [Task title]
   - Wave: 1
   - Depends On: none
   - Can Run In Parallel With: 1.1, 1.3
@@ -48,11 +48,11 @@
   - Test Plan:
     - Unit:
   - Verification Command:
-    - 
+    -
   - Definition of Done:
     - [ ]
 
-- [ ] 2.1 [Titulo da tarefa]
+- [ ] 2.1 [Task title]
   - Wave: 2
   - Depends On: 1.1, 1.2
   - Can Run In Parallel With: none
@@ -64,6 +64,6 @@
   - Test Plan:
     - Integration:
   - Verification Command:
-    - 
+    -
   - Definition of Done:
     - [ ]

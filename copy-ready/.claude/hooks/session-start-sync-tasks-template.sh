@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Sync de tasks-template com base em .spec-workflow/spw-config.toml
-# Uso esperado: hook de SessionStart do Claude/Codex.
+# Sync tasks-template based on .spec-workflow/spw-config.toml
+# Intended usage: Claude/Codex SessionStart hook.
 
 log() {
   printf '[spw-hook] %s\n' "$*"
 }
 
-# Resolve raiz do workspace
+# Resolve workspace root
 resolve_workspace_root() {
   if [ -n "${CLAUDE_PROJECT_DIR:-}" ] && [ -d "${CLAUDE_PROJECT_DIR}" ]; then
     printf '%s' "${CLAUDE_PROJECT_DIR}"
@@ -27,12 +27,12 @@ WORKSPACE_ROOT="$(resolve_workspace_root)"
 CONFIG_PATH="${WORKSPACE_ROOT}/.spec-workflow/spw-config.toml"
 
 if [ ! -f "$CONFIG_PATH" ]; then
-  log "Config nao encontrada em ${CONFIG_PATH}. Nada a sincronizar."
+  log "Config not found at ${CONFIG_PATH}. Nothing to sync."
   exit 0
 fi
 
-# Le valor de uma chave TOML em uma secao.
-# Suporta formato: key = value  (com ou sem aspas)
+# Read a TOML key value from a section.
+# Supported format: key = value (with or without quotes)
 get_toml_value() {
   local section="$1"
   local key="$2"
@@ -52,7 +52,7 @@ get_toml_value() {
       }
 
       in_section {
-        # ignora comentarios e linhas vazias
+        # ignore comments and empty lines
         if ($0 ~ /^[ \t]*#/ || $0 ~ /^[ \t]*$/) {
           next
         }
@@ -63,7 +63,7 @@ get_toml_value() {
           sub(/[ \t]*#.*/, "", line)
           line = trim(line)
 
-          # remove aspas simples ou duplas se houver
+          # remove single/double quotes if present
           if ((line ~ /^".*"$/) || (line ~ /^\047.*\047$/)) {
             line = substr(line, 2, length(line) - 2)
           }
@@ -93,7 +93,7 @@ to_bool() {
 
 SYNC_ENABLED="$(to_bool "$(get_toml_value templates sync_tasks_template_on_session_start true)")"
 if [ "$SYNC_ENABLED" != "true" ]; then
-  log "Sync desabilitado por configuracao."
+  log "Sync disabled by configuration."
   exit 0
 fi
 
@@ -119,7 +119,7 @@ fi
 case "$MODE_NORMALIZED" in
   on|off) ;;
   *)
-    log "tasks_template_mode invalido: '${TEMPLATE_MODE}'. Use auto|on|off."
+    log "Invalid tasks_template_mode: '${TEMPLATE_MODE}'. Use auto|on|off."
     if [ "$FAIL_HARD" = "true" ]; then
       exit 1
     fi
@@ -137,7 +137,7 @@ else
 fi
 
 if [ ! -f "$SOURCE_PATH" ]; then
-  log "Template de origem nao encontrado: ${SOURCE_PATH}"
+  log "Source template not found: ${SOURCE_PATH}"
   if [ "$FAIL_HARD" = "true" ]; then
     exit 1
   fi
@@ -147,22 +147,22 @@ fi
 mkdir -p "$(dirname "$TARGET_PATH")"
 
 if [ -f "$TARGET_PATH" ] && cmp -s "$SOURCE_PATH" "$TARGET_PATH"; then
-  log "Template ja esta sincronizado (${MODE_NORMALIZED})."
+  log "Template is already synchronized (${MODE_NORMALIZED})."
   exit 0
 fi
 
 if [ "$DRY_RUN" = "true" ]; then
-  log "[dry-run] Copiaria ${SOURCE_PATH} -> ${TARGET_PATH}"
+  log "[dry-run] Would copy ${SOURCE_PATH} -> ${TARGET_PATH}"
   exit 0
 fi
 
 if [ "$BACKUP_ENABLED" = "true" ] && [ -f "$TARGET_PATH" ]; then
   ts="$(date +%Y%m%d%H%M%S)"
   cp "$TARGET_PATH" "${TARGET_PATH}.bak-${ts}"
-  log "Backup criado: ${TARGET_PATH}.bak-${ts}"
+  log "Backup created: ${TARGET_PATH}.bak-${ts}"
 fi
 
 cp "$SOURCE_PATH" "$TARGET_PATH"
-log "Template sincronizado (${MODE_NORMALIZED}): ${TARGET_PATH}"
+log "Template synchronized (${MODE_NORMALIZED}): ${TARGET_PATH}"
 
 exit 0

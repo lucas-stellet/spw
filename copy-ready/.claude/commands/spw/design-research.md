@@ -1,41 +1,41 @@
 ---
 name: spw:design-research
-description: Pesquisa técnica para gerar design.md com base em requirements aprovados
-argument-hint: "<spec-name> [--focus <tema>] [--web-depth low|medium|high]"
+description: Technical research to prepare design.md from approved requirements
+argument-hint: "<spec-name> [--focus <topic>] [--web-depth low|medium|high]"
 ---
 
 <objective>
-Gerar insumos de arquitetura e implementação para o design da spec.
-Saída: `.spec-workflow/specs/<spec-name>/DESIGN-RESEARCH.md`.
+Generate architecture and implementation research inputs for the spec design.
+Output: `.spec-workflow/specs/<spec-name>/DESIGN-RESEARCH.md`.
 </objective>
 
 <preconditions>
-- `requirements.md` da spec existe e está aprovado.
-- Ler também steering docs se existirem (`product.md`, `tech.md`, `structure.md`).
+- The spec has `requirements.md` and it is approved.
+- Also read steering docs when present (`product.md`, `tech.md`, `structure.md`).
 </preconditions>
 
 <workflow>
-1. Ler:
+1. Read:
    - `.spec-workflow/specs/<spec-name>/requirements.md`
-   - `.spec-workflow/steering/*.md` (se existir)
-2. Fazer análise de codebase:
-   - padrões existentes
-   - componentes/utilitários reaproveitáveis
-   - pontos de integração e riscos
-3. Fazer pesquisa externa (web) para bibliotecas/padrões relevantes ao problema.
-4. Para projetos Elixir/Phoenix, incluir checagem explícita de:
-   - boundaries de contextos (Ecto)
-   - padrões de LiveView/Phoenix
-   - necessidade real de processos (OTP)
-5. Escrever `DESIGN-RESEARCH.md` com:
-   - recomendações principais
-   - alternativas e trade-offs
-   - referências/padrões que serão adotados
-   - riscos técnicos e mitigação
+   - `.spec-workflow/steering/*.md` (if present)
+2. Analyze the codebase for:
+   - existing patterns
+   - reusable components/utilities
+   - integration points and risks
+3. Run external web research for relevant libraries/patterns.
+4. For Elixir/Phoenix projects, explicitly check:
+   - context boundaries (Ecto)
+   - LiveView/Phoenix conventions
+   - real process needs (OTP)
+5. Write `DESIGN-RESEARCH.md` with:
+   - primary recommendations
+   - alternatives and trade-offs
+   - references/patterns to adopt
+   - technical risks and mitigations
 </workflow>
 
 <acceptance_criteria>
-- [ ] Todo requisito funcional relevante tem ao menos uma recomendação técnica associada.
-- [ ] Há seção de reuso de código existente.
-- [ ] Há seção de riscos e decisões recomendadas.
+- [ ] Every relevant functional requirement has at least one technical recommendation.
+- [ ] Existing-code reuse section is included.
+- [ ] Risks and recommended decisions section is included.
 </acceptance_criteria>

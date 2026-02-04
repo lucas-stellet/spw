@@ -1,32 +1,32 @@
 ---
 name: spw:tasks-check
-description: Valida qualidade do tasks.md (rastreabilidade, dependências, testes)
+description: Validate tasks.md quality (traceability, dependencies, tests)
 argument-hint: "<spec-name>"
 ---
 
 <objective>
-Validar se o `tasks.md` está pronto para execução com subagentes.
+Validate whether `tasks.md` is ready for subagent execution.
 </objective>
 
 <checks>
-1. Rastreabilidade:
-   - toda tarefa referencia `Requirements`
-   - todo requirement tem pelo menos uma tarefa
-2. Dependências:
-   - sem ciclos
-   - ordem de wave compatível com `Depends On`
-3. Paralelismo:
-   - tarefas da mesma wave não conflitam em arquivos críticos
-4. Testes:
-   - toda tarefa tem `Test Plan` + `Verification Command`
-   - exceções têm justificativa explícita
-5. Definição de pronto:
-   - critérios objetivos por tarefa
+1. Traceability:
+   - every task references `Requirements`
+   - every requirement is covered by at least one task
+2. Dependencies:
+   - no cycles
+   - wave ordering is compatible with `Depends On`
+3. Parallelism:
+   - same-wave tasks do not conflict on critical files
+4. Testing:
+   - every task has `Test Plan` + `Verification Command`
+   - exceptions include explicit justification
+5. Definition of done:
+   - objective completion criteria per task
 </checks>
 
 <output>
-Gerar `.spec-workflow/specs/<spec-name>/TASKS-CHECK.md` contendo:
+Generate `.spec-workflow/specs/<spec-name>/TASKS-CHECK.md` containing:
 - PASS/BLOCKED
-- achados por severidade
-- ajustes recomendados no tasks.md
+- findings by severity
+- recommended `tasks.md` fixes
 </output>

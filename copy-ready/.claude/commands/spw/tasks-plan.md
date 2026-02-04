@@ -1,41 +1,41 @@
 ---
 name: spw:tasks-plan
-description: Cria tasks.md orientado a waves, paralelismo e TDD por tarefa
+description: Create tasks.md optimized for waves, parallelism, and per-task TDD
 argument-hint: "<spec-name> [--max-wave-size 3] [--allow-no-test-exception true|false]"
 ---
 
 <objective>
-Gerar `.spec-workflow/specs/<spec-name>/tasks.md` com execução previsível e paralela.
+Generate `.spec-workflow/specs/<spec-name>/tasks.md` for predictable parallel execution.
 </objective>
 
 <rules>
-- Cada tarefa deve ser autocontida.
-- Cada tarefa deve ter teste e comando de verificação.
-- Exceção de teste só com justificativa explícita.
-- Planejar dependências para maximizar paralelismo por wave.
+- Each task must be self-contained.
+- Each task must include tests and a verification command.
+- No-test exception is allowed only with explicit justification.
+- Plan dependencies to maximize safe parallelism per wave.
 </rules>
 
 <workflow>
-1. Ler:
+1. Read:
    - `.spec-workflow/specs/<spec-name>/requirements.md`
    - `.spec-workflow/specs/<spec-name>/design.md`
-   - `.spec-workflow/user-templates/tasks-template.md` (preferencial)
+   - `.spec-workflow/user-templates/tasks-template.md` (preferred)
    - fallback: `.spec-workflow/templates/tasks-template.md`
-2. Construir DAG de dependências entre tarefas.
-3. Atribuir `Wave: N` respeitando `max-wave-size`.
-4. Para cada tarefa, preencher:
+2. Build a dependency DAG across tasks.
+3. Assign `Wave: N` respecting `max-wave-size`.
+4. For each task, fill:
    - `Depends On`
    - `Files`
    - `Test Plan`
    - `Verification Command`
    - `Requirements`
-   - `No-Test Justification` (quando necessário)
-5. Salvar em `.spec-workflow/specs/<spec-name>/tasks.md`.
-6. Solicitar aprovação.
+   - `No-Test Justification` (when needed)
+5. Save to `.spec-workflow/specs/<spec-name>/tasks.md`.
+6. Request approval.
 </workflow>
 
 <acceptance_criteria>
-- [ ] Todas as tarefas possuem `Requirements`.
-- [ ] Todas as tarefas possuem teste ou exceção documentada.
-- [ ] Waves respeitam o limite configurado.
+- [ ] All tasks have `Requirements`.
+- [ ] All tasks have tests or a documented exception.
+- [ ] Waves respect the configured limit.
 </acceptance_criteria>

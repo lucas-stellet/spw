@@ -1,15 +1,15 @@
 # SPW Workflow (spec-workflow + subagents)
 
-Este pacote implementa o modelo discutido: usar o `spec-workflow-mcp` como fonte de verdade (UI + aprovações), com comandos de planejamento e execução mais rígidos para subagents.
+This package implements the discussed model: use `spec-workflow-mcp` as the source of truth (UI + approvals), while adding stricter planning/execution commands for coding agents.
 
-## Objetivo
+## Goals
 
-- Manter colaboração com produto em `requirements/design/tasks`.
-- Aumentar previsibilidade de execução técnica.
-- Garantir rastreabilidade `requirements -> design -> tasks -> código/testes`.
-- Maximizar paralelismo por wave com segurança.
+- Keep product collaboration in `requirements/design/tasks`.
+- Increase technical execution predictability.
+- Enforce traceability `requirements -> design -> tasks -> code/tests`.
+- Maximize safe parallelism per wave.
 
-## Estrutura criada
+## Generated structure
 
 - `spw/commands/spw/design-research.md`
 - `spw/commands/spw/design-draft.md`
@@ -29,115 +29,115 @@ Este pacote implementa o modelo discutido: usar o `spec-workflow-mcp` como fonte
 - `spw/hooks/session-start-sync-tasks-template.sh`
 - `spw/hooks/README.md`
 
-## Como usar os templates
+## How to use templates
 
-Copie os templates para o projeto que usa spec-workflow:
+Copy templates into the project using spec-workflow:
 
 - `spw/templates/user-templates/requirements-template.md` -> `.spec-workflow/user-templates/requirements-template.md`
 - `spw/templates/user-templates/prd-template.md` -> `.spec-workflow/user-templates/prd-template.md`
 - `spw/templates/user-templates/design-template.md` -> `.spec-workflow/user-templates/design-template.md`
 - `spw/templates/user-templates/tasks-template.md` -> `.spec-workflow/user-templates/tasks-template.md`
 
-Observacao: no spec-workflow, custom template em `user-templates/` substitui integralmente o template padrao correspondente.
+Note: in spec-workflow, a custom template in `user-templates/` fully overrides the matching default template.
 
-## Config e Hook (TDD por configuracao)
+## Config and hook (TDD via config)
 
-- Configure em `.spec-workflow/spw-config.toml`:
+- Configure `.spec-workflow/spw-config.toml`:
   - `execution.tdd_default = false|true`
   - `templates.tasks_template_mode = auto|on|off`
-- O hook de SessionStart sincroniza automaticamente:
-  - origem: `.spec-workflow/user-templates/variants/tasks-template.tdd-*.md`
-  - destino: `.spec-workflow/user-templates/tasks-template.md`
-- Com isso, voce nao precisa passar flag de TDD em comando; o comportamento vem da configuracao do projeto.
+- SessionStart hook auto-syncs:
+  - source: `.spec-workflow/user-templates/variants/tasks-template.tdd-*.md`
+  - target: `.spec-workflow/user-templates/tasks-template.md`
+- With this setup, you do not need a TDD flag in command calls; behavior comes from project config.
 
-## Comandos e papeis
+## Commands and roles
 
 ### 1) `spw:prd`
-Gera `requirements.md` no formato PRD (mais aderente a produto), com descoberta guiada e gate para uso de MCP quando houver fonte externa (`--source`).
-Use quando estiver com spec do zero (sem requirements aprovados).
+Generates `requirements.md` in PRD format (more product-oriented), with guided discovery and MCP-source gate when external input is provided (`--source`).
+Use when starting from zero (no approved requirements).
 
 ### 2) `spw:design-research`
-Pesquisa tecnica (codebase + web + guardrails Elixir/Phoenix/Ecto/OTP) e gera `DESIGN-RESEARCH.md`.
+Technical research (codebase + web + Elixir/Phoenix/Ecto/OTP guardrails) and outputs `DESIGN-RESEARCH.md`.
 
 ### 3) `spw:design-draft`
-Consolida `requirements + research` em `design.md` com matriz de rastreabilidade por REQ-ID.
+Consolidates `requirements + research` into `design.md` with REQ-ID traceability matrix.
 
 ### 4) `spw:tasks-plan`
-Gera `tasks.md` com:
-- dependencias explicitas
-- waves para paralelismo
-- teste por tarefa (ou excecao justificada)
+Generates `tasks.md` with:
+- explicit dependencies
+- wave-based parallelism
+- per-task tests (or justified exception)
 
 ### 5) `spw:tasks-check`
-Valida consistencia de `tasks.md` (rastreabilidade, ciclos, conflitos por wave, testes).
+Validates `tasks.md` consistency (traceability, cycles, wave conflicts, tests).
 
 ### 6) `spw:plan`
-Orquestra pipeline completo:
+Orchestrates full pipeline:
 `design-research -> design-draft -> tasks-plan -> tasks-check`.
-Use quando `requirements.md` ja existir para a spec.
-Antes de iniciar, valida aprovacao de requirements via MCP (`spec-status`) e solicita aprovacao (`request-approval`) se necessario.
+Use when `requirements.md` already exists for the spec.
+Before starting, it validates requirements approval via MCP (`spec-status`) and requests approval (`request-approval`) when needed.
 
-## Escolha rapida de comando
+## Quick command selection
 
-- Sem `requirements.md`: use `spw:prd`.
-- Com `requirements.md`: use `spw:plan` (ele valida/aprova via MCP antes de seguir).
-- Regra de separacao: `spw:prd` define requisitos; `spw:plan` transforma requisitos em design/tasks.
-- `spw:plan` nao confia so no arquivo: faz gate de aprovacao MCP antes de seguir.
+- Without `requirements.md`: use `spw:prd`.
+- With `requirements.md`: use `spw:plan` (it validates/requests MCP approval before continuing).
+- Separation rule: `spw:prd` defines requirements; `spw:plan` turns requirements into design/tasks.
+- `spw:plan` does not trust file existence alone: it enforces an MCP approval gate first.
 
 ### 7) `spw:exec`
-Executa tasks em batches com subagents e pausa obrigatoria para checkpoint.
+Executes `tasks.md` in batches with mandatory checkpoints.
 
 ### 8) `spw:checkpoint`
-Gate de qualidade entre batches/waves com relatorio PASS/BLOCKED.
+Quality gate between batches/waves with PASS/BLOCKED output.
 
-## Sequencia de uso recomendada
+## Recommended usage sequence
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor P as Produto
-    actor E as Engenheiro
-    participant SW as Spec Workflow (UI/Aprovacoes)
-    participant C as Comandos SPW
+    actor P as Product
+    actor E as Engineer
+    participant SW as Spec Workflow (UI/Approvals)
+    participant C as SPW Commands
     participant SA as Subagents
 
     E->>C: /spw:prd <spec-name> [--source ...]
-    C->>SW: Atualiza requirements.md (padrao PRD) e solicita aprovacao
-    P->>SW: Aprova requirements.md
+    C->>SW: Update requirements.md (PRD format) and request approval
+    P->>SW: Approve requirements.md
     E->>C: /spw:plan <spec-name>
     C->>C: /spw:design-research
     C->>C: /spw:design-draft
-    C->>SW: Atualiza design.md e solicita aprovacao
-    P->>SW: Aprova design.md
+    C->>SW: Update design.md and request approval
+    P->>SW: Approve design.md
     C->>C: /spw:tasks-plan --max-wave-size 3
     C->>C: /spw:tasks-check
-    C->>SW: Atualiza tasks.md e solicita aprovacao
-    P->>SW: Aprova tasks.md
+    C->>SW: Update tasks.md and request approval
+    P->>SW: Approve tasks.md
 
     E->>C: /spw:exec <spec-name> --batch-size 3
-    loop Cada task do batch
-        C->>SA: Implementar task + testes
-        SA-->>C: Resultado + evidencias
-        C->>SW: Atualiza status da task e log
+    loop Each task in batch
+        C->>SA: Implement task + tests
+        SA-->>C: Result + evidence
+        C->>SW: Update task status and logs
     end
 
     C->>C: /spw:checkpoint <spec-name>
     alt PASS
-        C-->>E: Continuar proximo batch
+        C-->>E: Continue to next batch
     else BLOCKED
-        C-->>E: Corrigir pendencias antes de continuar
+        C-->>E: Fix pending issues before continuing
     end
 ```
 
-## Modelo operacional (resumo)
+## Operating model (summary)
 
-1. Produto aprova artefatos no spec-workflow.
-2. Planejamento tecnico gera design e tasks rastreaveis.
-3. Execucao ocorre em lotes, com subagents e checkpoints obrigatorios.
-4. Nenhuma wave avanca com checkpoint BLOCKED.
+1. Product approves artifacts in spec-workflow.
+2. Technical planning produces traceable design and tasks.
+3. Execution runs in batches with subagents and mandatory checkpoints.
+4. No wave advances when checkpoint is BLOCKED.
 
-## Proximos passos
+## Next steps
 
-- Adaptar os comandos para o formato exato do seu runtime (Claude Code/Codex/OpenCode).
-- Ajustar `max_tasks_per_wave` (3 ou 4) conforme perfil de risco do projeto.
-- Incluir no pipeline uma checagem automatica de conflito de arquivos por wave (se quiser, eu monto isso no proximo passo).
+- Adapt commands to your exact runtime format (Claude Code/Codex/OpenCode).
+- Tune `max_tasks_per_wave` (3 or 4) based on project risk profile.
+- Add an automated per-wave file-conflict check in the pipeline (I can add this next).

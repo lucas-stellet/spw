@@ -1,75 +1,75 @@
 # Design Document
 
 ## Overview
-- Objetivo técnico da solução:
-- Relação com o problema de produto:
+- Technical objective of the solution:
+- Relationship to the product problem:
 
-## Requirement Mapping (Obrigatório)
-| Requirement | Decisão Técnica | Componentes/Arquivos | Estratégia de Teste |
-|-------------|------------------|----------------------|---------------------|
+## Requirement Mapping (Required)
+| Requirement | Technical Decision | Components/Files | Test Strategy |
+|-------------|--------------------|------------------|---------------|
 | REQ-001 | | | |
 | REQ-002 | | | |
 
-## Opções Consideradas e Trade-offs
-### Opção A (recomendada)
-- Prós:
-- Contras:
-- Quando não usar:
+## Considered Options and Trade-offs
+### Option A (recommended)
+- Pros:
+- Cons:
+- When not to use:
 
-### Opção B
-- Prós:
-- Contras:
+### Option B
+- Pros:
+- Cons:
 
-## Alinhamento com Steering Docs
+## Alignment with Steering Docs
 ### tech.md
-- Padrões aplicados:
+- Applied standards:
 
 ### structure.md
-- Convenções de organização aplicadas:
+- Applied organization conventions:
 
-## Reuso de Código
-- Módulos/arquivos a reaproveitar:
-- Extensões planejadas:
-- Código que deve ser evitado/legado crítico:
+## Code Reuse
+- Modules/files to reuse:
+- Planned extensions:
+- Code to avoid / critical legacy:
 
-## Arquitetura
+## Architecture
 ### Boundaries
-- Contextos/módulos:
-- Dependências permitidas entre módulos:
+- Contexts/modules:
+- Allowed dependencies between modules:
 
-### Fluxo principal
+### Main flow
 ```mermaid
 graph TD
-  Client[Cliente] --> API[Camada de Entrada]
-  API --> Domain[Domínio]
+  Client[Client] --> API[Entry Layer]
+  API --> Domain[Domain]
   Domain --> Infra[Infra/Adapters]
 ```
 
-## Contratos e Modelos de Dados
-- Entidades e campos relevantes:
-- Contratos de API/eventos:
-- Migrações/esquema (se aplicável):
+## Contracts and Data Models
+- Relevant entities and fields:
+- API/event contracts:
+- Migrations/schema (if applicable):
 
-## Estratégia de Erros
-- Erros esperados e handling:
-- Erros inesperados e fallback:
-- Observabilidade (logs/metrics/traces):
+## Error Strategy
+- Expected errors and handling:
+- Unexpected errors and fallback:
+- Observability (logs/metrics/traces):
 
-## Estratégia de Testes
+## Test Strategy
 ### Unit
-- 
+-
 
 ### Integration
-- 
+-
 
 ### E2E/UAT
-- 
+-
 
-## Guardrails Elixir/Phoenix/Ecto/OTP (quando aplicável)
-- Phoenix: evitar query em `mount`; carregar dados em `handle_params`.
-- Ecto: manter boundaries de contextos; sem acoplamento indevido entre contexts.
-- OTP: não criar GenServer sem razão de runtime (estado concorrência/falha).
+## Elixir/Phoenix/Ecto/OTP Guardrails (when applicable)
+- Phoenix: avoid heavy queries in `mount`; prefer proper loading paths such as `handle_params` when relevant.
+- Ecto: keep clear context boundaries; avoid improper cross-context coupling.
+- OTP: do not introduce a GenServer without a runtime reason (state, concurrency, fault isolation).
 
-## Riscos e Mitigações
-- Risco:
-- Mitigação:
+## Risks and Mitigations
+- Risk:
+- Mitigation:

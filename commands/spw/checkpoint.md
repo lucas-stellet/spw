@@ -1,29 +1,29 @@
 ---
 name: spw:checkpoint
-description: Gate de qualidade entre batches/waves de execução
+description: Quality gate between execution batches/waves
 argument-hint: "<spec-name> [--scope batch|wave|phase]"
 ---
 
 <objective>
-Validar que o lote executado realmente atende spec, qualidade e integração antes de avançar.
+Validate that the executed batch truly meets spec intent, code quality, and integration safety before moving forward.
 </objective>
 
 <checks>
-1. Estado de tarefas (`tasks.md`): coerência `[ ]/[-]/[x]`.
-2. Testes/lint/typecheck do projeto.
-3. Review de conformidade com spec (requirements + design + task).
-4. Review de qualidade de código.
-5. Rastreabilidade: mudanças implementadas vinculadas a `Requirements`.
+1. Task state in `tasks.md`: consistency of `[ ]/[-]/[x]`.
+2. Project checks: tests, lint, and typecheck.
+3. Spec compliance review (requirements + design + task).
+4. Code quality review.
+5. Traceability: implemented changes are linked to `Requirements`.
 </checks>
 
 <output>
-Gerar `.spec-workflow/specs/<spec-name>/CHECKPOINT-REPORT.md` com:
+Generate `.spec-workflow/specs/<spec-name>/CHECKPOINT-REPORT.md` with:
 - status: PASS | BLOCKED
-- problemas críticos
-- ações corretivas
-- próximo passo recomendado
+- critical issues
+- corrective actions
+- recommended next step
 </output>
 
 <gate_rule>
-Se status for BLOCKED, não avançar para próximo batch/wave.
+If status is BLOCKED, do not proceed to the next batch/wave.
 </gate_rule>

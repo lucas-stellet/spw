@@ -1,90 +1,90 @@
 ---
 name: spw:prd
-description: Planejamento do zero em formato PRD (descoberta guiada) para gerar requirements.md
-argument-hint: "<spec-name> [--source <url-ou-arquivo.md>]"
+description: Zero-to-PRD discovery flow to generate requirements.md
+argument-hint: "<spec-name> [--source <url-or-file.md>]"
 ---
 
 <objective>
-Gerar ou atualizar `.spec-workflow/specs/<spec-name>/requirements.md` no formato PRD.
+Create or update `.spec-workflow/specs/<spec-name>/requirements.md` in PRD format.
 
-Este comando combina:
-- GSD: escopo v1/v2/out-of-scope, REQ-ID, criterios testaveis e rastreabilidade.
-- superpowers: perguntas uma por vez, recomendacoes com trade-off, validacao incremental por secao.
+This command combines:
+- GSD strengths: v1/v2/out-of-scope scoping, REQ-IDs, testable criteria, traceability.
+- superpowers strengths: one-question-at-a-time discovery, recommendation + trade-off framing, incremental section validation.
 </objective>
 
 <when_to_use>
-- Use quando a spec ainda NAO tem requirements aprovados (planejamento do zero).
-- Use tambem quando precisar rediscutir requirements com base em novas fontes de produto.
+- Use when the spec does NOT have approved requirements yet (zero-to-PRD).
+- Use when requirements need to be revisited using new product sources.
 </when_to_use>
 
 <out_of_scope>
-- Este comando nao gera `design.md`.
-- Este comando nao gera `tasks.md`.
-- Proximo passo apos aprovacao do PRD: `spw:plan <spec-name>`.
+- This command does not create `design.md`.
+- This command does not create `tasks.md`.
+- Next step after PRD approval: `spw:plan <spec-name>`.
 </out_of_scope>
 
 <inputs>
-- `spec-name` (obrigatorio)
-- `--source` (opcional): URL (GitHub/Linear/ClickUp/etc.) ou arquivo markdown.
+- `spec-name` (required)
+- `--source` (optional): URL (GitHub/Linear/ClickUp/etc.) or markdown file.
 </inputs>
 
 <source_handling>
-Se `--source` for informado e parecer URL (`http://` ou `https://`) ou markdown (`.md`), executar gate de leitura:
+If `--source` is provided and looks like a URL (`http://` or `https://`) or markdown (`.md`), run a source-reading gate:
 
-1. Perguntar com AskUserQuestion:
-   - header: "Fonte"
-   - question: "Detectei uma fonte externa. Quer usar um MCP especifico para ler essa fonte?"
+1. Ask with AskUserQuestion:
+   - header: "Source"
+   - question: "I detected an external source. Do you want to use a specific MCP to read it?"
    - options:
-     - "Sim, escolher MCP (Recomendado)" — Escolher explicitamente o conector
-     - "Auto" — Tentar MCP compativel, com fallback para leitura direta
-     - "Nao" — Ler sem MCP
+     - "Yes, choose MCP (Recommended)" — Explicit connector selection
+     - "Auto" — Try compatible MCP first, fallback to direct read
+     - "No" — Read without MCP
 
-2. Se escolher "Sim, escolher MCP", perguntar:
+2. If user selects "Yes, choose MCP", ask:
    - header: "MCP"
-   - question: "Qual MCP deseja usar para esta fonte?"
+   - question: "Which MCP should be used for this source?"
    - options:
-     - "GitHub" — Issues/PRs/repositorios
-     - "Linear" — Issues/projetos do Linear
-     - "ClickUp" — Tasks/listas do ClickUp
-     - "Web/Browser" — Leitura via web fetch
-     - "Arquivo local markdown" — Leitura direta de arquivo local
+     - "GitHub" — Issues/PRs/repos
+     - "Linear" — Linear issues/projects
+     - "ClickUp" — ClickUp tasks/lists
+     - "Web/Browser" — generic web fetch
+     - "Local markdown file" — direct local file read
 
-3. Se MCP escolhido nao estiver disponivel no ambiente, avisar claramente e perguntar fallback:
-   - "Ler sem MCP"
-   - "Escolher outro MCP"
+3. If selected MCP is unavailable, clearly report and ask fallback:
+   - "Read without MCP"
+   - "Choose another MCP"
 </source_handling>
 
 <workflow>
-1. Ler contexto existente:
-   - `.spec-workflow/specs/<spec-name>/requirements.md` (se existir)
-   - `.spec-workflow/specs/<spec-name>/design.md` (se existir)
-   - `.spec-workflow/steering/*.md` (se existir)
-2. Se houver `--source`, processar fonte com o gate de MCP acima.
-3. Conduzir descoberta com perguntas uma por vez (nao despejar formulario):
-   - problema, publico e contexto de uso
-   - objetivo principal e sucesso esperado
-   - escopo v1, v2 e fora de escopo
-   - restricoes e dependencias
-   - riscos e questoes abertas
-4. Sempre que houver ambiguidade, propor 2-3 opcoes com recomendacao explicita.
-5. Escrever PRD em blocos (200-300 palavras por secao) e validar secao a secao.
-6. Preencher template PRD com prioridade de busca:
-   - `.spec-workflow/user-templates/prd-template.md` (preferencial)
+1. Read existing context:
+   - `.spec-workflow/specs/<spec-name>/requirements.md` (if present)
+   - `.spec-workflow/specs/<spec-name>/design.md` (if present)
+   - `.spec-workflow/steering/*.md` (if present)
+2. If `--source` is present, process source via the MCP gate above.
+3. Run one-question-at-a-time discovery (not a giant form):
+   - problem, audience, and context of use
+   - primary outcome and success conditions
+   - v1 scope, v2 scope, and out-of-scope boundaries
+   - constraints and dependencies
+   - risks and open questions
+4. For ambiguity, propose 2-3 options with an explicit recommendation.
+5. Draft the PRD in 200-300 word sections and validate section-by-section.
+6. Fill PRD template using priority order:
+   - `.spec-workflow/user-templates/prd-template.md` (preferred)
    - fallback: `.spec-workflow/templates/prd-template.md`
-   - fallback final: estrutura embutida deste comando
-7. Salvar artefatos:
-   - Canonico: `.spec-workflow/specs/<spec-name>/requirements.md`
-   - Espelho para produto: `.spec-workflow/specs/<spec-name>/PRD.md`
-8. Confirmar readiness para design:
-   - requisitos funcionais com REQ-ID e criterios de aceitacao
-   - NFRs e metricas
-   - secoes de v2 e out-of-scope
+   - fallback: built-in structure from this command
+7. Save artifacts:
+   - Canonical: `.spec-workflow/specs/<spec-name>/requirements.md`
+   - Product mirror: `.spec-workflow/specs/<spec-name>/PRD.md`
+8. Confirm design-readiness:
+   - functional requirements with REQ-IDs and testable acceptance criteria
+   - NFRs and success metrics
+   - explicit v2 and out-of-scope sections
 </workflow>
 
 <acceptance_criteria>
-- [ ] Documento final esta em formato PRD, mas compativel com o fluxo de requirements do spec-workflow.
-- [ ] Cada requisito funcional tem REQ-ID, prioridade e criterio de aceitacao verificavel.
-- [ ] Existe separacao explicita entre v1, v2 e out-of-scope.
-- [ ] Se `--source` foi usado, houve pergunta explicita sobre uso de MCP.
-- [ ] PRD aprovado pelo usuario antes de avancar para design/tasks.
+- [ ] Final document is PRD format and remains compatible with spec-workflow requirements flow.
+- [ ] Every functional requirement has REQ-ID, priority, and verifiable acceptance criteria.
+- [ ] Explicit separation exists for v1, v2, and out-of-scope.
+- [ ] If `--source` was provided, MCP usage was explicitly asked.
+- [ ] PRD is approved before moving to design/tasks.
 </acceptance_criteria>

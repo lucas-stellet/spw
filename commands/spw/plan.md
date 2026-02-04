@@ -1,38 +1,38 @@
 ---
 name: spw:plan
-description: Planejamento tecnico a partir de requirements existentes, com gate de aprovacao MCP
+description: Technical planning from existing requirements, with MCP approval gate
 argument-hint: "<spec-name> [--max-wave-size 3]"
 ---
 
 <objective>
-Executar o fluxo completo de planejamento tecnico para uma spec que JA tem `requirements.md` existente.
-Antes de seguir, este comando valida e, se preciso, solicita aprovacao via MCP.
-Este comando NAO cria PRD nem faz descoberta inicial de produto.
+Run the full technical planning flow for a spec that already has an existing `requirements.md`.
+Before continuing, this command validates and, if needed, requests approval via MCP.
+This command does NOT create a PRD and does NOT run initial product discovery.
 </objective>
 
 <when_to_use>
-- Use quando a spec ja tem contexto de produto definido e `requirements.md` existente.
-- Entrada esperada: `.spec-workflow/specs/<spec-name>/requirements.md`.
+- Use when the spec already has product context and an existing `requirements.md`.
+- Expected input: `.spec-workflow/specs/<spec-name>/requirements.md`.
 </when_to_use>
 
 <preconditions>
-- `requirements.md` existe para `<spec-name>`.
-- Se nao existir, parar com BLOCKED e orientar: `rode /spw:prd <spec-name>`.
-- Nao assumir aprovacao por existencia de arquivo; validar aprovacao via MCP.
+- `requirements.md` exists for `<spec-name>`.
+- If it does not exist, stop with BLOCKED and instruct: `run /spw:prd <spec-name>`.
+- Do not assume approval from file existence; validate approval via MCP.
 </preconditions>
 
 <pipeline>
-0. Validar existencia de `.spec-workflow/specs/<spec-name>/requirements.md`.
-0.1 Validar status via MCP `spec-status`:
-    - checar `documents.requirements.approved`
-0.2 Se nao aprovado:
-    - solicitar aprovacao via MCP com `request-approval` para `docType: "requirements"`
-    - informar usuario para revisar no dashboard/UI
-    - acompanhar com `get-approval-status`
-    - somente continuar quando status = `approved`
-    - se status = `rejected` ou `changes-requested`, parar com BLOCKED
-0.3 Se ja aprovado:
-    - continuar pipeline normalmente
+0. Validate existence of `.spec-workflow/specs/<spec-name>/requirements.md`.
+0.1 Validate status via MCP `spec-status`:
+    - check `documents.requirements.approved`
+0.2 If not approved:
+    - request approval via MCP `request-approval` for `docType: "requirements"`
+    - ask user to review in dashboard/UI
+    - poll with `get-approval-status`
+    - continue only when status = `approved`
+    - if status = `rejected` or `changes-requested`, stop with BLOCKED
+0.3 If already approved:
+    - continue pipeline
 1. `spw:design-research <spec-name>`
 2. `spw:design-draft <spec-name>`
 3. `spw:tasks-plan <spec-name> --max-wave-size <N>`
@@ -40,8 +40,8 @@ Este comando NAO cria PRD nem faz descoberta inicial de produto.
 </pipeline>
 
 <rules>
-- Se `tasks-check` retornar BLOCKED, corrigir `tasks.md` e reexecutar check.
-- Nao iniciar execucao de codigo sem design e tasks aprovados.
-- Nao tentar "adivinhar requisitos" neste comando; requisitos vem do PRD/requirements com aprovacao MCP.
-- Gate obrigatorio: requirements sem aprovacao MCP bloqueia o `spw:plan`.
+- If `tasks-check` returns BLOCKED, fix `tasks.md` and run the check again.
+- Do not start code execution without approved design and tasks.
+- Do not "infer requirements" in this command; requirements come from PRD/requirements with MCP approval.
+- Mandatory gate: requirements without MCP approval blocks `spw:plan`.
 </rules>
