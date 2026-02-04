@@ -25,6 +25,8 @@ Status schema (minimum):
 - `inputs`: key files used
 - `outputs`: generated artifacts
 - `open_questions`: unresolved items
+- `skills_used`: skills actually used by the subagent
+- `skills_missing`: required skills not available for the subagent (if any)
 
 After planning, write:
 - `<run-dir>/_handoff.md` (orchestrator synthesis and final decisions)
@@ -41,6 +43,7 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 <skills_policy>
 Resolve skill policy from `.spec-workflow/spw-config.toml`:
 - `[skills].enabled`
+- `[skills].load_mode` (`subagent-first|principal-first`)
 - `[skills.design].required`
 - `[skills.design].optional`
 - `[skills.design].enforce_required` (boolean)
@@ -50,11 +53,17 @@ Backward compatibility:
   - `"strict"` -> `true`
   - any other value -> `false`
 
-Skill loading gate (mandatory when `skills.enabled=true`):
-1. Explicitly invoke every required design skill before decomposition/wave planning.
-2. Record loaded/missing skills in:
+Load modes:
+- `subagent-first` (default): orchestrator does availability preflight only and
+  delegates skill loading/use to subagents via briefs.
+- `principal-first` (legacy): orchestrator loads required skills before dispatch.
+
+Skill gate (mandatory when `skills.enabled=true`):
+1. Run availability preflight and write:
    - `.spec-workflow/specs/<spec-name>/SKILLS-TASKS-PLAN.md`
-3. If any required skill is missing/not invoked:
+2. If `load_mode=subagent-first`, avoid loading full skill content in main context.
+3. Require each subagent `status.json` to include `skills_used`/`skills_missing`.
+4. If any required skill is missing/not used where required:
    - `enforce_required=true` -> BLOCKED
    - `enforce_required=false` -> warn and continue
 </skills_policy>
@@ -80,7 +89,7 @@ Skill loading gate (mandatory when `skills.enabled=true`):
 </rules>
 
 <workflow>
-1. Run design skill loading gate and write `SKILLS-TASKS-PLAN.md`.
+1. Run design skills preflight (availability + load mode) and write `SKILLS-TASKS-PLAN.md`.
 2. Create communication run directory:
    - `.spec-workflow/specs/<spec-name>/agent-comms/tasks-plan/<run-id>/`
 3. Read:
@@ -88,11 +97,11 @@ Skill loading gate (mandatory when `skills.enabled=true`):
    - `.spec-workflow/specs/<spec-name>/design.md`
    - `.spec-workflow/user-templates/tasks-template.md` (preferred)
    - fallback: `.spec-workflow/templates/tasks-template.md`
-4. Write briefs and dispatch `task-decomposer`.
-5. Write briefs and dispatch `dependency-graph-builder`.
-6. Write briefs and dispatch `parallel-conflict-checker`.
-7. Write briefs and dispatch `test-policy-enforcer`.
-8. Require subagent `report.md` + `status.json`; BLOCKED if missing.
+4. Write briefs (including required skills per role) and dispatch `task-decomposer`.
+5. Write briefs (including required skills per role) and dispatch `dependency-graph-builder`.
+6. Write briefs (including required skills per role) and dispatch `parallel-conflict-checker`.
+7. Write briefs (including required skills per role) and dispatch `test-policy-enforcer`.
+8. Require subagent `report.md` + `status.json` (with skill fields); BLOCKED if missing.
 9. Dispatch `tasks-writer` with file handoff and save `.spec-workflow/specs/<spec-name>/tasks.md`.
 10. Write `<run-dir>/_handoff.md` with decomposition decisions, DAG rationale, and conflict/test policy outcomes.
 11. Handle approval via MCP only:

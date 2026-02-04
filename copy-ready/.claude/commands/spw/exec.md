@@ -27,6 +27,7 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 <skills_policy>
 Resolve skill policy from `.spec-workflow/spw-config.toml`:
 - `[skills].enabled`
+- `[skills].load_mode` (`subagent-first|principal-first`)
 - `[skills.implementation].required`
 - `[skills.implementation].optional`
 - `[skills.implementation].enforce_required` (boolean)
@@ -36,11 +37,17 @@ Backward compatibility:
   - `"strict"` -> `true`
   - any other value -> `false`
 
-Skill loading gate (mandatory when `skills.enabled=true`):
-1. Explicitly invoke every required implementation skill before task execution.
-2. Record loaded/missing skills in:
+Load modes:
+- `subagent-first` (default): orchestrator does availability preflight only and
+  delegates skill loading/use to task subagents.
+- `principal-first` (legacy): orchestrator loads required skills before dispatch.
+
+Skill gate (mandatory when `skills.enabled=true`):
+1. Run availability preflight and write:
    - `.spec-workflow/specs/<spec-name>/SKILLS-EXEC.md`
-3. If any required skill is missing/not invoked:
+2. If `load_mode=subagent-first`, avoid loading full skill content in main context.
+3. Require task subagent outputs/logs to explicitly mention skills used/missing.
+4. If any required skill is missing/not used where required:
    - `enforce_required=true` -> BLOCKED
    - `enforce_required=false` -> warn and continue
 </skills_policy>
@@ -121,7 +128,7 @@ For complex/critical tasks, run spec-compliance review on `complex_reasoning` mo
 0. Resolve spec directory:
    - `SPEC_DIR=.spec-workflow/specs/<spec-name>`
    - if `SPEC_DIR` does not exist, list available specs from `.spec-workflow/specs/*` and stop BLOCKED.
-1. Run implementation skill loading gate and write `SKILLS-EXEC.md`.
+1. Run implementation skills preflight (availability + load mode) and write `SKILLS-EXEC.md`.
 2. Read files from canonical paths:
    - `.spec-workflow/specs/<spec-name>/tasks.md`
    - `.spec-workflow/specs/<spec-name>/requirements.md`

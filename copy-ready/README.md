@@ -96,6 +96,10 @@ File-first communication (GSD-style):
 - each run writes `_handoff.md`
 - missing communication files cause BLOCKED
 
+Skill load strategy:
+- default is `skills.load_mode = "subagent-first"` to avoid filling main context early
+- set `principal-first` only if you intentionally want skill loading in the orchestrator
+
 `/spw:exec` guardrails:
 - mandatory subagent dispatch per task (including single-task sequential waves)
 - orchestrator-only main context (no direct implementation edits)

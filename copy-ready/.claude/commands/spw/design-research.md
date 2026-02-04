@@ -38,6 +38,8 @@ Status schema (minimum):
 - `inputs`: key files/URLs used
 - `outputs`: generated artifacts
 - `open_questions`: unresolved items
+- `skills_used`: skills actually used by the subagent
+- `skills_missing`: required skills not available for the subagent (if any)
 
 After all dispatches, write:
 - `<run-dir>/_handoff.md` (orchestrator synthesis of subagent outputs)
@@ -55,6 +57,7 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 <skills_policy>
 Resolve skill policy from `.spec-workflow/spw-config.toml`:
 - `[skills].enabled`
+- `[skills].load_mode` (`subagent-first|principal-first`)
 - `[skills.design].required`
 - `[skills.design].optional`
 - `[skills.design].enforce_required` (boolean)
@@ -64,11 +67,17 @@ Backward compatibility:
   - `"strict"` -> `true`
   - any other value -> `false`
 
-Skill loading gate (mandatory when `skills.enabled=true`):
-1. Explicitly invoke every required design skill before running subagents.
-2. Record loaded/missing skills in:
+Load modes:
+- `subagent-first` (default): orchestrator does availability preflight only and
+  delegates skill loading/use to subagents via briefs.
+- `principal-first` (legacy): orchestrator loads required skills before dispatch.
+
+Skill gate (mandatory when `skills.enabled=true`):
+1. Run availability preflight and write:
    - `.spec-workflow/specs/<spec-name>/SKILLS-DESIGN-RESEARCH.md`
-3. If any required skill is missing/not invoked:
+2. If `load_mode=subagent-first`, do not load full skill content in main context.
+3. Require each subagent `status.json` to include `skills_used`/`skills_missing`.
+4. If any required skill is missing/not used where required:
    - `enforce_required=true` -> BLOCKED
    - `enforce_required=false` -> warn and continue
 </skills_policy>
@@ -91,7 +100,7 @@ Skill loading gate (mandatory when `skills.enabled=true`):
 </preconditions>
 
 <workflow>
-1. Run design skill loading gate and write `SKILLS-DESIGN-RESEARCH.md`.
+1. Run design skills preflight (availability + load mode) and write `SKILLS-DESIGN-RESEARCH.md`.
 2. Create communication run directory:
    - `.spec-workflow/specs/<spec-name>/agent-comms/design-research/<run-id>/`
 3. Ensure research directory exists:
@@ -99,10 +108,10 @@ Skill loading gate (mandatory when `skills.enabled=true`):
 4. Read:
    - `.spec-workflow/specs/<spec-name>/requirements.md`
    - `.spec-workflow/steering/*.md` (if present)
-5. Write subagent briefs and dispatch in parallel:
+5. Write subagent briefs (including required skills for each role) and dispatch in parallel:
    - `codebase-pattern-scanner`
    - `web-pattern-scout-*` (2-4 scouts depending on depth)
-6. Require each subagent to write `report.md` + `status.json`; BLOCKED if missing.
+6. Require each subagent to write `report.md` + `status.json` (with skill fields); BLOCKED if missing.
 7. Dispatch `risk-analyst` using outputs from step 5 reports.
 8. Dispatch `research-synthesizer` using all prior reports to produce:
    - `.spec-workflow/specs/<spec-name>/DESIGN-RESEARCH.md`

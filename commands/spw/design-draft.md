@@ -32,6 +32,7 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 <skills_policy>
 Resolve skill policy from `.spec-workflow/spw-config.toml`:
 - `[skills].enabled`
+- `[skills].load_mode` (`subagent-first|principal-first`)
 - `[skills.design].required`
 - `[skills.design].optional`
 - `[skills.design].enforce_required` (boolean)
@@ -41,11 +42,17 @@ Backward compatibility:
   - `"strict"` -> `true`
   - any other value -> `false`
 
-Skill loading gate (mandatory when `skills.enabled=true`):
-1. Explicitly invoke every required design skill before drafting.
-2. Record loaded/missing skills in:
+Load modes:
+- `subagent-first` (default): orchestrator does availability preflight only and
+  delegates skill loading/use to subagents.
+- `principal-first` (legacy): orchestrator loads required skills before dispatch.
+
+Skill gate (mandatory when `skills.enabled=true`):
+1. Run availability preflight and write:
    - `.spec-workflow/specs/<spec-name>/SKILLS-DESIGN-DRAFT.md`
-3. If any required skill is missing/not invoked:
+2. If `load_mode=subagent-first`, avoid loading full skill content in main context.
+3. Require subagent outputs to explicitly mention skills used/missing.
+4. If any required skill is missing/not used where required:
    - `enforce_required=true` -> BLOCKED
    - `enforce_required=false` -> warn and continue
 </skills_policy>
@@ -60,7 +67,7 @@ Skill loading gate (mandatory when `skills.enabled=true`):
 </subagents>
 
 <workflow>
-1. Run design skill loading gate and write `SKILLS-DESIGN-DRAFT.md`.
+1. Run design skills preflight (availability + load mode) and write `SKILLS-DESIGN-DRAFT.md`.
 2. Read:
    - `.spec-workflow/specs/<spec-name>/requirements.md`
    - `.spec-workflow/specs/<spec-name>/DESIGN-RESEARCH.md` (required)

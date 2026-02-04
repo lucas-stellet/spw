@@ -50,3 +50,6 @@ After install:
 
 File-first subagent communication is enabled for planning/validation flows and
 stored under `.spec-workflow/specs/<spec-name>/agent-comms/<command>/<run-id>/`.
+
+Skills are configured to be `subagent-first` by default to reduce main-context
+growth (`skills.load_mode = "subagent-first"`).

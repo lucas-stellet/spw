@@ -25,6 +25,8 @@ Status schema (minimum):
 - `inputs`: evidence sources used
 - `outputs`: generated artifacts
 - `open_questions`: unresolved items
+- `skills_used`: skills actually used by the subagent
+- `skills_missing`: required skills not available for the subagent (if any)
 
 After checkpoint, write:
 - `<run-dir>/_handoff.md` (orchestrator final go/no-go reasoning)
@@ -41,6 +43,7 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 <skills_policy>
 Resolve skill policy from `.spec-workflow/spw-config.toml`:
 - `[skills].enabled`
+- `[skills].load_mode` (`subagent-first|principal-first`)
 - `[skills.implementation].required`
 - `[skills.implementation].optional`
 - `[skills.implementation].enforce_required` (boolean)
@@ -50,11 +53,17 @@ Backward compatibility:
   - `"strict"` -> `true`
   - any other value -> `false`
 
-Skill loading gate (mandatory when `skills.enabled=true`):
-1. Explicitly invoke every required implementation skill before checkpoint analysis.
-2. Record loaded/missing skills in:
+Load modes:
+- `subagent-first` (default): orchestrator does availability preflight only and
+  delegates skill loading/use to subagents via briefs.
+- `principal-first` (legacy): orchestrator loads required skills before dispatch.
+
+Skill gate (mandatory when `skills.enabled=true`):
+1. Run availability preflight and write:
    - `.spec-workflow/specs/<spec-name>/SKILLS-CHECKPOINT.md`
-3. If any required skill is missing/not invoked:
+2. If `load_mode=subagent-first`, avoid loading full skill content in main context.
+3. Require each subagent `status.json` to include `skills_used`/`skills_missing`.
+4. If any required skill is missing/not used where required:
    - `enforce_required=true` -> BLOCKED
    - `enforce_required=false` -> warn and continue
 </skills_policy>
@@ -78,14 +87,14 @@ If enabled:
 </git_gate>
 
 <workflow>
-1. Run implementation skill loading gate and write `SKILLS-CHECKPOINT.md`.
+1. Run implementation skills preflight (availability + load mode) and write `SKILLS-CHECKPOINT.md`.
 2. Create communication run directory:
    - `.spec-workflow/specs/<spec-name>/agent-comms/checkpoint/<run-id>/`
-3. Write brief and dispatch `evidence-collector`.
-4. Require `evidence-collector` output files (`report.md`, `status.json`); BLOCKED if missing.
-5. Write brief and dispatch `traceability-judge` using collected evidence files.
-6. Require `traceability-judge` output files (`report.md`, `status.json`); BLOCKED if missing.
-7. Write brief and dispatch `release-gate-decider` using prior reports.
+3. Write brief (including required skills for role) and dispatch `evidence-collector`.
+4. Require `evidence-collector` output files (`report.md`, `status.json` with skill fields); BLOCKED if missing.
+5. Write brief (including required skills for role) and dispatch `traceability-judge` using collected evidence files.
+6. Require `traceability-judge` output files (`report.md`, `status.json` with skill fields); BLOCKED if missing.
+7. Write brief (including required skills for role) and dispatch `release-gate-decider` using prior reports.
 8. Generate `.spec-workflow/specs/<spec-name>/CHECKPOINT-REPORT.md` with:
    - status: PASS | BLOCKED
    - critical issues

@@ -62,6 +62,7 @@ Note: in spec-workflow, a custom template in `user-templates/` fully overrides t
   - `execution.tdd_default = false|true`
   - `templates.tasks_template_mode = auto|on|off`
   - `skills.*` sections for required/optional skills by phase
+  - `skills.load_mode = subagent-first|principal-first`
   - per-stage enforcement booleans:
     - `skills.design.enforce_required = true|false`
     - `skills.implementation.enforce_required = true|false`
@@ -80,6 +81,11 @@ SPW can load skills from `.spec-workflow/spw-config.toml`:
 - `[skills]` (enable + legacy fallback enforcement)
 - `[skills.design]` (design/planning stages)
 - `[skills.implementation]` (execution/checkpoint stages)
+
+Load strategy:
+- `subagent-first` (default): main agent runs availability preflight only, and
+  subagents load/apply skills per task/role.
+- `principal-first` (legacy): main agent loads skills before dispatch.
 
 Enforcement model:
 - `enforce_required=true` -> stage is BLOCKED if any required skill is missing/not invoked.

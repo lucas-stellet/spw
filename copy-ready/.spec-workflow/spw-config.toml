@@ -102,6 +102,17 @@ use_opus_for_complex_task_review = true
 # false -> commands skip skill loading behavior
 enabled = true
 
+# Skill load strategy:
+#
+# - "subagent-first" (recommended):
+#   main orchestrator does only availability preflight and delegates actual
+#   skill loading/use to subagents. This keeps main-context smaller.
+# - "principal-first" (legacy):
+#   main orchestrator loads required skills before dispatching subagents.
+#
+# If missing, commands should default to "subagent-first".
+load_mode = "subagent-first"
+
 # Legacy global enforcement mode (kept for backward compatibility):
 #
 # - "advisory": missing required skills warn and continue

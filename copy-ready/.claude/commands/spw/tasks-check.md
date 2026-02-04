@@ -25,6 +25,8 @@ Status schema (minimum):
 - `inputs`: key files used
 - `outputs`: generated artifacts
 - `open_questions`: unresolved items
+- `skills_used`: skills actually used by the subagent
+- `skills_missing`: required skills not available for the subagent (if any)
 
 After validation, write:
 - `<run-dir>/_handoff.md` (orchestrator summary of audit results)
@@ -41,6 +43,7 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 <skills_policy>
 Resolve skill policy from `.spec-workflow/spw-config.toml`:
 - `[skills].enabled`
+- `[skills].load_mode` (`subagent-first|principal-first`)
 - `[skills.design].required`
 - `[skills.design].optional`
 - `[skills.design].enforce_required` (boolean)
@@ -50,11 +53,17 @@ Backward compatibility:
   - `"strict"` -> `true`
   - any other value -> `false`
 
-Skill loading gate (mandatory when `skills.enabled=true`):
-1. Explicitly invoke every required design skill before validation.
-2. Record loaded/missing skills in:
+Load modes:
+- `subagent-first` (default): orchestrator does availability preflight only and
+  delegates skill loading/use to subagents via briefs.
+- `principal-first` (legacy): orchestrator loads required skills before dispatch.
+
+Skill gate (mandatory when `skills.enabled=true`):
+1. Run availability preflight and write:
    - `.spec-workflow/specs/<spec-name>/SKILLS-TASKS-CHECK.md`
-3. If any required skill is missing/not invoked:
+2. If `load_mode=subagent-first`, avoid loading full skill content in main context.
+3. Require each subagent `status.json` to include `skills_used`/`skills_missing`.
+4. If any required skill is missing/not used where required:
    - `enforce_required=true` -> BLOCKED
    - `enforce_required=false` -> warn and continue
 </skills_policy>
@@ -67,15 +76,15 @@ Skill loading gate (mandatory when `skills.enabled=true`):
 </subagents>
 
 <workflow>
-1. Run design skill loading gate and write `SKILLS-TASKS-CHECK.md`.
+1. Run design skills preflight (availability + load mode) and write `SKILLS-TASKS-CHECK.md`.
 2. Create communication run directory:
    - `.spec-workflow/specs/<spec-name>/agent-comms/tasks-check/<run-id>/`
 3. Read `.spec-workflow/specs/<spec-name>/tasks.md` + requirements/design docs.
-4. Write briefs and dispatch in parallel:
+4. Write briefs (including required skills per role) and dispatch in parallel:
    - `traceability-auditor`
    - `dag-validator`
    - `test-policy-auditor`
-5. Require auditor `report.md` + `status.json`; BLOCKED if missing.
+5. Require auditor `report.md` + `status.json` (with skill fields); BLOCKED if missing.
 6. Dispatch `decision-aggregator` with file handoff to produce PASS/BLOCKED decision.
 7. Generate `.spec-workflow/specs/<spec-name>/TASKS-CHECK.md` containing:
    - PASS/BLOCKED
