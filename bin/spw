@@ -41,6 +41,86 @@ require_cmd() {
   fi
 }
 
+base64_decode() {
+  if printf 'dGVzdA==' | base64 --decode >/dev/null 2>&1; then
+    base64 --decode
+    return 0
+  fi
+
+  if printf 'dGVzdA==' | base64 -D >/dev/null 2>&1; then
+    base64 -D
+    return 0
+  fi
+
+  echo "[spw] Could not decode base64 with this system 'base64' command." >&2
+  return 1
+}
+
+download_remote_wrapper() {
+  local target_file="$1"
+  require_cmd gh
+
+  gh api "repos/${SPW_REPO}/contents/bin/spw?ref=${SPW_REF}" --jq '.content' \
+    | tr -d '\n' \
+    | base64_decode >"$target_file"
+  chmod +x "$target_file"
+}
+
+resolve_self_bin_path() {
+  local source_path="${BASH_SOURCE[0]}"
+  local source_dir
+  local link_target
+
+  if [[ "$source_path" != /* ]]; then
+    source_dir="$(cd "$(dirname "$source_path")" && pwd -P)"
+    source_path="${source_dir}/$(basename "$source_path")"
+  fi
+
+  if [ -L "$source_path" ]; then
+    link_target="$(readlink "$source_path")"
+    if [[ "$link_target" = /* ]]; then
+      source_path="$link_target"
+    else
+      source_dir="$(cd "$(dirname "$source_path")" && pwd -P)"
+      source_path="${source_dir}/${link_target}"
+    fi
+  fi
+
+  printf '%s' "$source_path"
+}
+
+self_update_wrapper_and_reexec() {
+  local self_bin
+  local tmp_bin
+
+  if [ "${SPW_SELF_UPDATED:-false}" = "true" ]; then
+    return 0
+  fi
+
+  self_bin="$(resolve_self_bin_path)"
+  if [ -z "$self_bin" ]; then
+    echo "[spw] Could not resolve current wrapper path; continuing cache update only." >&2
+    return 0
+  fi
+
+  tmp_bin="$(mktemp "${TMPDIR:-/tmp}/spw-wrapper.XXXXXX")"
+  download_remote_wrapper "$tmp_bin"
+
+  if cmp -s "$tmp_bin" "$self_bin"; then
+    rm -f "$tmp_bin"
+    echo "[spw] Wrapper already up to date: $self_bin" >&2
+    return 0
+  fi
+
+  cp "$tmp_bin" "$self_bin"
+  chmod +x "$self_bin"
+  rm -f "$tmp_bin"
+  echo "[spw] Updated wrapper: $self_bin (${SPW_REPO}@${SPW_REF})" >&2
+  echo "[spw] Re-running update with the new wrapper" >&2
+
+  exec env SPW_SELF_UPDATED=true "$self_bin" update
+}
+
 record_last_updated() {
   mkdir -p "$state_dir"
   date -u +"%Y-%m-%dT%H:%M:%SZ" >"$last_updated_file"
@@ -188,6 +268,7 @@ case "$cmd" in
       echo "[spw] SPW_KIT_DIR is set; skipping remote update." >&2
       exit 0
     fi
+    self_update_wrapper_and_reexec
     purge_cache_for_update
     update_repo
     exit 0

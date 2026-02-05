@@ -34,7 +34,7 @@ Observação:
 6. Em `spw:exec`, execução é via subagentes por tarefa (inclusive waves sequenciais de 1 tarefa); orquestrador não implementa código direto.
 7. Se `execution.require_user_approval_between_waves=true`, não avançar wave sem autorização explícita do usuário.
 8. Se `execution.commit_per_task=true`, exigir commit atômico por tarefa; respeitar gate de worktree limpo quando habilitado.
-9. `spw update` deve limpar cache local do kit antes de atualizar, para evitar templates/comandos stale.
+9. `spw update` deve atualizar primeiro o próprio binário (`spw`) e, em seguida, limpar cache local do kit antes de atualizar, para evitar templates/comandos stale.
 
 ## File-first comms (não quebrar)
 
