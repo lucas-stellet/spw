@@ -3,18 +3,20 @@
 const {
   emitViolation,
   extractPrompt,
+  extractSpecArg,
   firstSpwCommand,
   getHookConfig,
   getWorkspaceRoot,
   hasSpecArg,
-  readStdinJson
+  readStdinJson,
+  writeStatuslineCache
 } = require("./spw-hook-lib");
 
 const payload = readStdinJson();
 const workspaceRoot = getWorkspaceRoot(payload);
 const config = getHookConfig(workspaceRoot);
 
-if (!config.enabled || !config.guardPromptRequireSpec) {
+if (!config.enabled) {
   process.exit(0);
 }
 
@@ -43,7 +45,12 @@ if (!requiresSpec.has(parsed.command)) {
   process.exit(0);
 }
 
-if (!hasSpecArg(parsed.argsLine)) {
+const specName = extractSpecArg(parsed.argsLine);
+if (specName) {
+  writeStatuslineCache(workspaceRoot, specName, { source: "spw-command", sticky: true });
+}
+
+if (config.guardPromptRequireSpec && !hasSpecArg(parsed.argsLine)) {
   emitViolation(config, `Missing <spec-name> for /spw:${parsed.command}`, [
     `Expected usage: /spw:${parsed.command} <spec-name>`,
     "Tip: use /spw:status if you need help discovering the current stage."
@@ -51,4 +58,3 @@ if (!hasSpecArg(parsed.argsLine)) {
 }
 
 process.exit(0);
-

@@ -6,6 +6,15 @@ Core hooks:
 - `session-start-sync-tasks-template.sh` (SessionStart)
 - `spw-statusline.js` (status line)
 
+Statusline spec detection (fast -> slow):
+1) cached spec (TTL in `[statusline].cache_ttl_seconds`)
+2) git diff vs base branch (current branch upstream first, then `[statusline].base_branches`)
+3) fallback to most-recently-modified spec artifacts
+
+Sticky mode:
+- `[statusline].sticky_spec = true` keeps the cached spec until another `/spw:* <spec-name>`
+  command runs (cache refreshed by the prompt hook). This avoids frequent git calls.
+
 Enforcement hooks:
 - `spw-guard-user-prompt.js` (UserPromptSubmit)
 - `spw-guard-paths.js` (PreToolUse for Write/Edit/MultiEdit)

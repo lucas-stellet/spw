@@ -240,6 +240,28 @@ tasks_template_tdd_on_file = "tasks-template.tdd-on.md"
 # Variant file name when TDD is OFF.
 tasks_template_tdd_off_file = "tasks-template.tdd-off.md"
 
+[statusline]
+# Controls SPW statusline spec detection and caching.
+#
+# cache_ttl_seconds:
+# - Keeps statusline fast by caching the detected spec.
+# - Lower values refresh more often but increase git calls.
+# - Default used by the hook: 10 seconds.
+cache_ttl_seconds = 10
+#
+# base_branches:
+# - Used to discover the base branch for git diff spec detection.
+# - If the current branch has an upstream (e.g. origin/main), that is used first.
+# - Otherwise, these are checked in order.
+base_branches = ["main", "master", "staging", "develop"]
+
+# sticky_spec:
+# - If true, statusline uses the cached spec until a new SPW command runs
+#   with a different <spec-name> (cache is refreshed by the prompt hook).
+# - Avoids frequent git calls and keeps spec stable during a workflow.
+# - If false, cache respects cache_ttl_seconds and falls back to git/mtime.
+sticky_spec = true
+
 [safety]
 # If true, the hook creates a backup of active template before overwrite.
 # Format: tasks-template.md.bak-YYYYMMDDHHMMSS

@@ -215,6 +215,18 @@ function tokenizeArgs(argsLine) {
   return argsLine.match(/"[^"]*"|'[^']*'|\S+/g) || [];
 }
 
+function extractSpecArg(argsLine) {
+  const tokens = tokenizeArgs(argsLine).map((token) =>
+    token.replace(/^["']|["']$/g, "")
+  );
+  for (const token of tokens) {
+    if (!token) continue;
+    if (token.startsWith("--")) continue;
+    return token;
+  }
+  return "";
+}
+
 function hasSpecArg(argsLine) {
   const tokens = tokenizeArgs(argsLine).map((token) =>
     token.replace(/^["']|["']$/g, "")
@@ -225,6 +237,31 @@ function hasSpecArg(argsLine) {
     return true;
   }
   return false;
+}
+
+function writeStatuslineCache(workspaceRoot, spec, meta = {}) {
+  if (!spec) return false;
+  const cacheDir = path.join(workspaceRoot, ".spec-workflow", ".spw-cache");
+  const cacheFile = path.join(cacheDir, "statusline.json");
+
+  try {
+    fs.mkdirSync(cacheDir, { recursive: true });
+    fs.writeFileSync(
+      cacheFile,
+      JSON.stringify(
+        {
+          ts: Date.now(),
+          spec,
+          ...meta
+        },
+        null,
+        2
+      )
+    );
+    return true;
+  } catch (_error) {
+    return false;
+  }
 }
 
 function listSpecDirs(workspaceRoot) {
@@ -312,6 +349,7 @@ module.exports = {
   collectRunDirs,
   emitInfo,
   emitViolation,
+  extractSpecArg,
   extractPrompt,
   firstSpwCommand,
   getHookConfig,
@@ -323,6 +361,6 @@ module.exports = {
   listSpecDirs,
   normalizeSlashes,
   readStdinJson,
-  resolveTargetPath
+  resolveTargetPath,
+  writeStatuslineCache
 };
-
