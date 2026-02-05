@@ -47,6 +47,35 @@ After all dispatches, write:
 If a required `report.md` or `status.json` is missing, stop BLOCKED.
 </file_handoff_protocol>
 
+<resume_policy>
+Before creating a new run, inspect existing design-research run folders:
+- `.spec-workflow/specs/<spec-name>/agent-comms/design-research/<run-id>/`
+
+A run is `unfinished` when any of these is true:
+- `_handoff.md` is missing
+- any subagent directory is missing `brief.md`, `report.md`, or `status.json`
+- any subagent `status.json` reports `status=blocked`
+
+Resume decision gate (mandatory):
+1. Find latest unfinished run (if multiple, sort by mtime descending and use the newest).
+2. If found, ask user once (AskUserQuestion) with options:
+   - `continue-unfinished`: continue with that run directory.
+   - `delete-and-restart`: delete that unfinished run directory and start a new run.
+3. Do not create a new run-id or team before this decision.
+4. Recommendation default: `continue-unfinished`.
+
+If user chooses `continue-unfinished`:
+- Reuse the same run dir.
+- Reuse completed subagent outputs (`report.md` + `status.json` with `status=pass`).
+- Redispatch only missing/blocked subagents.
+- Always rerun `risk-analyst` and `research-synthesizer` before final synthesis.
+
+If user chooses `delete-and-restart`:
+- Delete the selected unfinished run dir.
+- Continue workflow with a fresh run-id.
+- Record deleted path in final output.
+</resume_policy>
+
 <model_policy>
 Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - web_research -> default `haiku`
@@ -114,32 +143,37 @@ When `enabled=true` and `design-research` is included in `use_for_phases`:
 
 <workflow>
 1. Run design skills preflight (availability + load mode) and write `SKILLS-DESIGN-RESEARCH.md`.
-2. Create communication run directory:
-   - `.spec-workflow/specs/<spec-name>/agent-comms/design-research/<run-id>/`
-3. Ensure research directory exists:
+2. Inspect existing design-research run dirs and apply `<resume_policy>` decision gate.
+3. Determine active run directory:
+   - `continue-unfinished` -> reuse latest unfinished run dir
+   - `delete-and-restart` or no unfinished run -> create:
+     `.spec-workflow/specs/<spec-name>/agent-comms/design-research/<run-id>/`
+4. Ensure research directory exists:
    - `.spec-workflow/specs/<spec-name>/research/`
-4. Read:
+5. Read:
    - `.spec-workflow/specs/<spec-name>/requirements.md`
    - `.spec-workflow/steering/*.md` (if present)
-5. If Agent Teams are enabled for this phase, create a team and assign subagent roles to teammates.
-6. Write subagent briefs (including required skills for each role) and dispatch in parallel:
+6. If Agent Teams are enabled for this phase, create a team and assign only pending subagent roles to teammates.
+7. Write subagent briefs (including required skills for each role) and dispatch:
    - `codebase-pattern-scanner`
    - `web-pattern-scout-*` (2-4 scouts depending on depth)
-7. Require each subagent to write `report.md` + `status.json` (with skill fields); BLOCKED if missing.
-8. Dispatch `risk-analyst` using outputs from step 6 reports.
-9. Dispatch `research-synthesizer` using all prior reports to produce:
+   - if resuming, redispatch only missing/blocked subagents
+8. Require each subagent to write `report.md` + `status.json` (with skill fields); BLOCKED if missing.
+9. Dispatch `risk-analyst` using outputs from step 7 reports.
+10. Dispatch `research-synthesizer` using all prior reports to produce:
    - `.spec-workflow/specs/<spec-name>/DESIGN-RESEARCH.md`
    - optional supporting files only under `.spec-workflow/specs/<spec-name>/research/`
-10. Write `<run-dir>/_handoff.md` with:
+11. Write `<run-dir>/_handoff.md` with:
    - recommendation summary
    - unresolved risks/questions
    - references to all subagent report files
-11. Ensure final sections include:
+   - resume decision taken (`continue-unfinished` or `delete-and-restart`)
+12. Ensure final sections include:
    - primary recommendations
    - alternatives and trade-offs
    - references/patterns to adopt
    - technical risks and mitigations
-12. If any generated research file is outside the spec directory, move it into
+13. If any generated research file is outside the spec directory, move it into
    `.spec-workflow/specs/<spec-name>/research/` and report relocation in output.
 </workflow>
 
@@ -149,6 +183,7 @@ When `enabled=true` and `design-research` is included in `use_for_phases`:
 - [ ] Risks and recommended decisions section is included.
 - [ ] Web-only findings came from web_research model.
 - [ ] File-based handoff exists under `.spec-workflow/specs/<spec-name>/agent-comms/design-research/<run-id>/`.
+- [ ] If unfinished run exists, explicit user decision (`continue-unfinished` or `delete-and-restart`) was respected.
 </acceptance_criteria>
 
 <completion_guidance>

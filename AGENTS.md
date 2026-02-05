@@ -34,6 +34,7 @@ Observação:
 6. Em `spw:exec`, execução é via subagentes por tarefa (inclusive waves sequenciais de 1 tarefa); orquestrador não implementa código direto.
 7. Se `execution.require_user_approval_between_waves=true`, não avançar wave sem autorização explícita do usuário.
 8. Se `execution.commit_per_task=true`, exigir commit atômico por tarefa; respeitar gate de worktree limpo quando habilitado.
+9. Em `spw:design-research`, antes de criar novo `<run-id>`, detectar run não finalizado e perguntar ao usuário: `continue-unfinished` ou `delete-and-restart`; nunca iniciar novo time/run sem essa decisão.
 
 ## File-first comms (não quebrar)
 
