@@ -200,6 +200,9 @@ If waiting on manual task:
 - keep manual task unchecked unless user explicitly confirms it started/completed.
 
 After full execution success:
+- If no further executable waves are planned, recommend:
+  - `spw:tasks-plan <spec-name> --mode next-wave --max-wave-size <N>`
+  - then `spw:tasks-check <spec-name>`
 - Recommend final validation review and optionally `/clear` before any new planning cycle.
 
 If blocked by spec resolution:

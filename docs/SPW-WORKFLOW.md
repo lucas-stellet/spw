@@ -176,6 +176,8 @@ If requirements status is `needs-revision`/`changes-requested`/`rejected`, it bl
 Pipeline executed by `spw:plan`:
 `design-research -> design-draft -> tasks-plan -> tasks-check`
 
+`spw:plan` uses `spw:tasks-plan --mode initial`, so initial planning creates only Wave 1 executable tasks.
+
 ### 3) `spw:design-research` (manual/advanced)
 Technical research (codebase + web + Elixir/Phoenix/Ecto/OTP guardrails) and outputs `DESIGN-RESEARCH.md`.
 
@@ -188,6 +190,9 @@ Generates `tasks.md` with:
 - explicit dependencies
 - wave-based parallelism
 - per-task tests (or justified exception)
+- planning modes:
+  - `--mode initial` -> only Wave 1 executable tasks
+  - `--mode next-wave` -> append only the next executable wave
 
 ### 6) `spw:tasks-check` (manual/advanced)
 Validates `tasks.md` consistency (traceability, cycles, wave conflicts, tests).
@@ -223,7 +228,7 @@ Use this when you want full control instead of `spw:plan` orchestration:
 ```bash
 /spw:design-research <spec-name>
 /spw:design-draft <spec-name>
-/spw:tasks-plan <spec-name> --max-wave-size 3
+/spw:tasks-plan <spec-name> --mode initial --max-wave-size 3
 /spw:tasks-check <spec-name>
 ```
 
@@ -248,13 +253,13 @@ For design refinements:
 
 For tasks refinements:
 ```bash
-/spw:tasks-plan <spec-name> --max-wave-size 3
+/spw:tasks-plan <spec-name> --mode next-wave --max-wave-size 3
 /spw:tasks-check <spec-name>
 ```
 
 After design changes that affect implementation structure, rerun tasks planning/check:
 ```bash
-/spw:tasks-plan <spec-name> --max-wave-size 3
+/spw:tasks-plan <spec-name> --mode next-wave --max-wave-size 3
 /spw:tasks-check <spec-name>
 ```
 

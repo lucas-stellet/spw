@@ -44,6 +44,7 @@ After install:
 
 - `spw:prd` -> zero-to-PRD requirements flow
 - `spw:plan` -> design/tasks planning from existing requirements (with MCP approval gate)
+- `spw:tasks-plan --mode initial|next-wave` -> rolling-wave task generation
 - `spw:exec` -> batch execution with checkpoints
 - `spw:checkpoint` -> quality gate report (PASS/BLOCKED)
 - `spw:status` -> summarize where workflow stopped + next commands

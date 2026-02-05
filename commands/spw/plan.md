@@ -65,7 +65,7 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 1. Dispatch `planning-stage-orchestrator` for:
    - `spw:design-research <spec-name>`
    - `spw:design-draft <spec-name>`
-   - `spw:tasks-plan <spec-name> --max-wave-size <N>`
+   - `spw:tasks-plan <spec-name> --mode initial --max-wave-size <N>`
    - `spw:tasks-check <spec-name>`
 2. If `tasks-check` is BLOCKED, revise and repeat stage 1 as needed.
 </pipeline>

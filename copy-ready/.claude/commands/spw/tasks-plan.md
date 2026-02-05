@@ -1,12 +1,26 @@
 ---
 name: spw:tasks-plan
 description: Subagent-driven tasks.md generation for waves, parallelism, and per-task TDD
-argument-hint: "<spec-name> [--max-wave-size 3] [--allow-no-test-exception true|false]"
+argument-hint: "<spec-name> [--mode initial|next-wave] [--max-wave-size 3] [--allow-no-test-exception true|false]"
 ---
 
 <objective>
 Generate `.spec-workflow/specs/<spec-name>/tasks.md` for predictable parallel execution.
 </objective>
+
+<mode_policy>
+`--mode` controls how tasks are generated:
+- `initial`:
+  - create only Wave 1 executable tasks
+  - keep later ideas only as deferred notes/backlog (not executable waves)
+- `next-wave`:
+  - append/update only the next executable wave based on implemented reality
+  - do not regenerate or rewrite completed waves
+
+If `--mode` is omitted:
+- if `tasks.md` does not exist -> behave as `initial`
+- if `tasks.md` exists -> behave as `next-wave`
+</mode_policy>
 
 <file_handoff_protocol>
 Subagent communication must be file-first (no implicit-only handoff).
@@ -86,25 +100,34 @@ Skill gate (mandatory when `skills.enabled=true`):
 - Each task must include tests and a verification command.
 - No-test exception is allowed only with explicit justification.
 - Plan dependencies to maximize safe parallelism per wave.
+- In `initial` mode, do not emit Wave 2+ executable tasks.
+- In `next-wave` mode, emit exactly one new executable wave.
 </rules>
 
 <workflow>
 1. Run design skills preflight (availability + load mode) and write `SKILLS-TASKS-PLAN.md`.
 2. Create communication run directory:
    - `.spec-workflow/specs/<spec-name>/agent-comms/tasks-plan/<run-id>/`
-3. Read:
+3. Resolve `mode` from args or defaults (per mode_policy) and validate preconditions:
+   - `initial` requires no prior completed executable wave
+   - `next-wave` requires existing `tasks.md` plus at least one completed or checkpointed wave
+4. Read:
    - `.spec-workflow/specs/<spec-name>/requirements.md`
    - `.spec-workflow/specs/<spec-name>/design.md`
+   - `.spec-workflow/specs/<spec-name>/tasks.md` (required for `next-wave`)
+   - `.spec-workflow/specs/<spec-name>/CHECKPOINT-REPORT.md` (if present, for reconciliation)
    - `.spec-workflow/user-templates/tasks-template.md` (preferred)
    - fallback: `.spec-workflow/templates/tasks-template.md`
-4. Write briefs (including required skills per role) and dispatch `task-decomposer`.
-5. Write briefs (including required skills per role) and dispatch `dependency-graph-builder`.
-6. Write briefs (including required skills per role) and dispatch `parallel-conflict-checker`.
-7. Write briefs (including required skills per role) and dispatch `test-policy-enforcer`.
-8. Require subagent `report.md` + `status.json` (with skill fields); BLOCKED if missing.
-9. Dispatch `tasks-writer` with file handoff and save `.spec-workflow/specs/<spec-name>/tasks.md`.
-10. Write `<run-dir>/_handoff.md` with decomposition decisions, DAG rationale, and conflict/test policy outcomes.
-11. Handle approval via MCP only:
+5. Write briefs (including mode + required skills per role) and dispatch `task-decomposer`.
+6. Write briefs (including mode + required skills per role) and dispatch `dependency-graph-builder`.
+7. Write briefs (including mode + required skills per role) and dispatch `parallel-conflict-checker`.
+8. Write briefs (including mode + required skills per role) and dispatch `test-policy-enforcer`.
+9. Require subagent `report.md` + `status.json` (with skill fields); BLOCKED if missing.
+10. Dispatch `tasks-writer` with file handoff and save `.spec-workflow/specs/<spec-name>/tasks.md`:
+    - `initial`: only Wave 1 executable tasks
+    - `next-wave`: only one newly appended executable wave
+11. Write `<run-dir>/_handoff.md` with mode decisions, DAG rationale, and conflict/test policy outcomes.
+12. Handle approval via MCP only:
    - call `spec-status`
    - resolve tasks status from:
      - `documents.tasks.approved`
@@ -125,16 +148,21 @@ Skill gate (mandatory when `skills.enabled=true`):
 - [ ] All tasks have tests or a documented exception.
 - [ ] Waves respect the configured limit.
 - [ ] Conflict checker returns no critical same-wave file collisions.
+- [ ] `initial` mode produced only Wave 1 executable tasks.
+- [ ] `next-wave` mode produced exactly one new executable wave.
 - [ ] File-based handoff exists under `.spec-workflow/specs/<spec-name>/agent-comms/tasks-plan/<run-id>/`.
 </acceptance_criteria>
 
 <completion_guidance>
 On success:
 - Confirm output path: `.spec-workflow/specs/<spec-name>/tasks.md`.
+- Confirm mode used (`initial` or `next-wave`).
 - Confirm approval request status for tasks.
 - Recommend next command: `spw:tasks-check <spec-name>`.
 
 If blocked:
-- Show decomposition/dependency/conflict/test-policy failures.
-- Provide rerun command: `spw:tasks-plan <spec-name> --max-wave-size <N>`.
+- Show mode/precondition/decomposition/dependency/conflict/test-policy failures.
+- Provide rerun command:
+  - `spw:tasks-plan <spec-name> --mode initial --max-wave-size <N>`
+  - or `spw:tasks-plan <spec-name> --mode next-wave --max-wave-size <N>`.
 </completion_guidance>

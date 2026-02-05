@@ -119,7 +119,14 @@ If you want to run planning stages manually (instead of `/spw:plan`):
 ```bash
 /spw:design-research <spec-name>
 /spw:design-draft <spec-name>
-/spw:tasks-plan <spec-name> --max-wave-size 3
+/spw:tasks-plan <spec-name> --mode initial --max-wave-size 3
+/spw:tasks-check <spec-name>
+```
+
+Rolling-wave follow-up after a wave is executed:
+
+```bash
+/spw:tasks-plan <spec-name> --mode next-wave --max-wave-size 3
 /spw:tasks-check <spec-name>
 ```
 
