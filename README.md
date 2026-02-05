@@ -108,6 +108,14 @@ Optional: Agent Teams (disabled by default)
 - `spw:checkpoint` -> quality gate report (PASS/BLOCKED)
 - `spw:status` -> summarize where workflow stopped + next commands
 
+`spw:design-research` unfinished-run handling:
+- Before creating a new run-id, it must inspect `.spec-workflow/specs/<spec-name>/agent-comms/design-research/*`.
+- If latest unfinished run exists, it must ask explicit user decision:
+  - `continue-unfinished`
+  - `delete-and-restart`
+- It must never choose automatically.
+- If explicit decision is unavailable, it must stop with `WAITING_FOR_USER_DECISION`.
+
 File-first subagent communication is enabled for planning/validation flows and
 stored under:
 - planning/research: `.spec-workflow/specs/<spec-name>/agent-comms/<command>/<run-id>/`

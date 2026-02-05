@@ -35,6 +35,7 @@ Observação:
 7. Se `execution.require_user_approval_between_waves=true`, não avançar wave sem autorização explícita do usuário.
 8. Se `execution.commit_per_task=true`, exigir commit atômico por tarefa; respeitar gate de worktree limpo quando habilitado.
 9. `spw update` deve atualizar primeiro o próprio binário (`spw`) e, em seguida, limpar cache local do kit antes de atualizar, para evitar templates/comandos stale.
+10. Em `spw:design-research`, se existir run incompleto, é obrigatório AskUserQuestion (`continue-unfinished` ou `delete-and-restart`); o agente não pode escolher reiniciar sozinho.
 
 ## File-first comms (não quebrar)
 

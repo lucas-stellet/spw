@@ -7,6 +7,6 @@ Copy-ready package summary:
 - Source of truth for usage/workflow: `README.md`
 - Agent/contributor rules: `AGENTS.md`
 
-SPW CLI update behavior (self-update of `spw` wrapper plus cache purge/refresh) is documented in `README.md`.
+SPW behavior updates (CLI cache/update and command guardrails such as unfinished-run handling in `spw:design-research`) are documented in `README.md`.
 
 If you are installing SPW in another project, follow the steps in `README.md`.
