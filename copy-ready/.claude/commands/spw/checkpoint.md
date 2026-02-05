@@ -93,6 +93,18 @@ If enabled:
 - recommend exact commit commands before rerunning checkpoint
 </git_gate>
 
+<implementation_log_gate>
+Checkpoint must enforce implementation logs for completed tasks in the evaluated scope.
+
+Rules:
+- For every task marked `[x]` in the current batch/wave, there must be a corresponding implementation log entry.
+- `evidence-collector` must output a mapping:
+  - completed task IDs
+  - implementation log IDs/paths
+  - missing log entries (if any)
+- If one or more completed tasks are missing implementation logs, return BLOCKED.
+</implementation_log_gate>
+
 <workflow>
 1. Run implementation skills preflight (availability + load mode) and write `SKILLS-CHECKPOINT.md`.
 2. Resolve current wave ID (`wave-<NN>`) and create canonical wave directory:
@@ -109,6 +121,7 @@ If enabled:
    - critical issues
    - corrective actions
    - recommended next step
+   - implementation log coverage by task ID
 10. Write `<run-dir>/_handoff.md` linking all subagent outputs and final decision.
 11. Update wave-level pointers/summaries in:
     - `<wave-dir>/_latest.json`
@@ -123,6 +136,7 @@ If status is BLOCKED, do not proceed to the next batch/wave.
 - [ ] File-based handoff exists under `.spec-workflow/specs/<spec-name>/agent-comms/waves/wave-<NN>/checkpoint/<run-id>/`.
 - [ ] `CHECKPOINT-REPORT.md` decision is traceable to subagent reports.
 - [ ] Wave-level summary/pointers are updated (`_wave-summary.md`, `_latest.json`).
+- [ ] Every completed task in scope has a corresponding implementation log entry.
 </acceptance_criteria>
 
 <completion_guidance>

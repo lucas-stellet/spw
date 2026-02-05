@@ -110,6 +110,7 @@ Skill load strategy:
 - Conventional Commits for task-level commits (`<type>(<spec>): task <id> - <title>`)
 - default clean-worktree requirement before wave progression
 - manual/human-gated tasks stop in handoff mode (no automatic in-progress mark)
+- missing implementation logs are enforced at `/spw:checkpoint` (BLOCKED if absent)
 
 ## Manual planning/refinement flow
 

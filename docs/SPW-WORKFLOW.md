@@ -202,6 +202,7 @@ Execution rule: manual/human-gated tasks are handed off to the user (no automati
 
 ### 8) `spw:checkpoint` (quality gate)
 Quality gate between batches/waves with PASS/BLOCKED output.
+It is the enforcement point for implementation logs: completed tasks without logs block progression.
 
 ### 9) `spw:status` (resume helper)
 Summarizes where the process stopped (artifacts + approvals + task progress), shows blockers, and provides ordered next commands.

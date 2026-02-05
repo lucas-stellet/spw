@@ -114,7 +114,8 @@ Resolve from `.spec-workflow/spw-config.toml` `[execution]`:
 
 Rules:
 - For each completed implementation task, create an atomic commit before moving forward.
-- Commit must include task-scoped code changes plus task status artifacts (`tasks.md`, implementation logs).
+- Commit must include task-scoped code changes plus task status artifacts (`tasks.md`).
+- Implementation logs should be recorded during execution, but missing logs are enforced only at `spw:checkpoint`.
 - Commit message must follow Conventional Commits:
   - `<type>(<spec-name>): task <task-id> - <short-title>`
   - type guidance: `feat|fix|refactor|test|docs|chore`
