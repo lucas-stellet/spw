@@ -7,4 +7,6 @@ Hooks reference:
 - Agent/contributor rules: `AGENTS.md`
 - Runtime hook settings: `.spec-workflow/spw-config.toml` (`[hooks]` section)
 
+SPW CLI cache/update behavior (including `spw update` cache purge) is tracked in `README.md`.
+
 Hook scripts live in this folder (`hooks/*.js`, `hooks/*.sh`).

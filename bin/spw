@@ -91,6 +91,25 @@ commit_date_line() {
   printf 'unknown'
 }
 
+purge_cache_for_update() {
+  local cache_root="${SPW_HOME%/}"
+
+  if [ -z "$cache_root" ] || [ "$cache_root" = "/" ]; then
+    echo "[spw] Refusing to purge unsafe cache path: '$SPW_HOME'" >&2
+    exit 1
+  fi
+
+  if [ "$cache_root" = "$HOME" ]; then
+    echo "[spw] Refusing to purge home directory as cache path: '$SPW_HOME'" >&2
+    exit 1
+  fi
+
+  if [ -d "$cache_root" ]; then
+    echo "[spw] Clearing cache directory: $cache_root" >&2
+    rm -rf "$cache_root"
+  fi
+}
+
 ensure_repo() {
   require_cmd gh
   require_cmd git
@@ -169,6 +188,7 @@ case "$cmd" in
       echo "[spw] SPW_KIT_DIR is set; skipping remote update." >&2
       exit 0
     fi
+    purge_cache_for_update
     update_repo
     exit 0
     ;;

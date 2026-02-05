@@ -6,6 +6,8 @@ The canonical workflow/usage documentation is centralized in:
 - `README.md`
 - `AGENTS.md`
 
+Latest SPW CLI cache/update behavior (including `spw update` cache purge) is documented in `README.md`.
+
 Use this file only as an entry point when someone opens `docs/` first.
 
 ## Go to the source of truth
