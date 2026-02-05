@@ -29,6 +29,10 @@ This package implements the discussed model: use `spec-workflow-mcp` as the sour
 - `spw/config/spw-config.toml`
 - `spw/hooks/session-start-sync-tasks-template.sh`
 - `spw/hooks/spw-statusline.js`
+- `spw/hooks/spw-guard-user-prompt.js`
+- `spw/hooks/spw-guard-paths.js`
+- `spw/hooks/spw-guard-stop.js`
+- `spw/hooks/spw-hook-lib.js`
 - `spw/hooks/README.md`
 
 ## Artifact locality rule
@@ -61,6 +65,7 @@ Note: in spec-workflow, a custom template in `user-templates/` fully overrides t
     - `implementation = sonnet`
   - `execution.tdd_default = false|true`
   - `templates.tasks_template_mode = auto|on|off`
+  - `hooks.enforcement_mode = warn|block`
   - `skills.*` sections for required/optional skills by phase
   - `skills.load_mode = subagent-first|principal-first`
   - per-stage enforcement booleans:
@@ -74,6 +79,11 @@ Note: in spec-workflow, a custom template in `user-templates/` fully overrides t
   - active spec + phase + tasks progress (best effort)
   - scaled context usage bar
 - With this setup, you do not need a TDD flag in command calls; behavior comes from project config.
+
+Hook guard model:
+- `warn` mode: report rule violations, continue execution
+- `block` mode: deny violating action
+- Guards enforce prompt completeness, artifact path rules, wave layout, and recent handoff completeness.
 
 ## Skills policy (config-driven)
 

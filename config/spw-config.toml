@@ -264,3 +264,34 @@ dry_run = false
 # If true, hook exits with code 1 when variant/config is missing.
 # If false, it logs a warning and exits without breaking the session.
 fail_hard_on_missing_template = false
+
+[hooks]
+# Enables SPW runtime guard hooks (PreToolUse/UserPromptSubmit/Stop).
+#
+# true  -> hook scripts run and enforce/warn according to `enforcement_mode`
+# false -> hook scripts exit immediately (no-op)
+enabled = true
+
+# Hook enforcement mode:
+#
+# - "warn": emit warnings but do not block execution
+# - "block": deny violating actions (hook exits with blocking status)
+#
+# Recommended rollout:
+# 1) start with "warn"
+# 2) move to "block" after team validation
+enforcement_mode = "warn"
+
+# If true, hooks print explicit diagnostics when a rule is triggered.
+# If false, hooks stay quieter (still enforce).
+verbose = true
+
+# Window (in minutes) used by Stop hook to evaluate "recent" run folders for
+# file-first handoff completeness. Older runs are ignored by the guard.
+recent_run_window_minutes = 30
+
+# Per-guard toggles
+guard_prompt_require_spec = true
+guard_paths = true
+guard_wave_layout = true
+guard_stop_handoff = true

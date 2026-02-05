@@ -32,6 +32,11 @@ If you do not want `.bak` accumulation for `tasks-template.md`, set:
 - `safety.cleanup_backups_after_sync = true`
 - `safety.backup_retention_count = 0` (delete all backups after sync)
 
+Hook enforcement levels:
+- `hooks.enforcement_mode = "warn"` (recommended rollout)
+- `hooks.enforcement_mode = "block"` (strict mode)
+- see `.claude/hooks/*` and `spw/hooks/README.md` for guard behavior
+
 ## spec-workflow compatibility
 
 This kit only uses:
@@ -96,6 +101,11 @@ File-first communication (GSD-style):
 - each subagent writes `brief.md`, `report.md`, `status.json`
 - each run writes `_handoff.md`
 - missing communication files cause BLOCKED
+
+Runtime guard hooks (optional, configurable in `[hooks]`):
+- prompt guard: requires `<spec-name>` on critical `/spw:*` commands
+- path guard: enforces SPW artifact paths + wave folder layout
+- stop guard: enforces recent run handoff file completeness
 
 Skill load strategy:
 - default is `skills.load_mode = "subagent-first"` to avoid filling main context early

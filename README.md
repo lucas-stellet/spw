@@ -39,6 +39,7 @@ After install:
 5. (Optional) Enable SPW statusline from `.claude/settings.json.example`.
 6. Default SPW skills are copied into `.claude/skills/` when local sources are found (best effort).
 7. (Optional) auto-clean template backups with `safety.cleanup_backups_after_sync=true` in `.spec-workflow/spw-config.toml`.
+8. (Optional) enable SPW enforcement hooks with `hooks.enforcement_mode=warn|block`.
 
 ## Command entry points
 
@@ -56,3 +57,8 @@ stored under:
 
 Skills are configured to be `subagent-first` by default to reduce main-context
 growth (`skills.load_mode = "subagent-first"`).
+
+Hook enforcement:
+- `warn` -> diagnostics only
+- `block` -> deny violating actions
+- details: `spw/hooks/README.md`
