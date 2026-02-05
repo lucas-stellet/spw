@@ -15,6 +15,28 @@ SPW is a command/template kit that combines:
 - Hook setup details: `spw/hooks/README.md`
 - Manual planning order + refinement loops: see `spw/docs/SPW-WORKFLOW.md` ("Manual planning order (explicit)")
 
+## Install `spw` CLI
+
+From this repository:
+
+```bash
+bash ./scripts/install-spw-bin.sh
+```
+
+From anywhere with GitHub CLI:
+
+```bash
+tmp_dir="$(mktemp -d)"
+gh repo clone lucas-stellet/spw "${tmp_dir}/spw"
+bash "${tmp_dir}/spw/scripts/install-spw-bin.sh"
+rm -rf "${tmp_dir}"
+```
+
+The installed `spw` wrapper caches the kit from GitHub and runs `copy-ready/install.sh`.
+Useful commands:
+- `spw update` (refresh cached repo/ref)
+- `spw doctor` (show current repo/ref/cache configuration)
+
 ## Quick install in another project
 
 Option 1 (recommended, from target project root):
@@ -28,6 +50,8 @@ Optional:
 ```bash
 spw status
 spw skills
+spw update
+spw doctor
 ```
 
 `spw status` prints a quick kit/skills summary.  
@@ -54,6 +78,7 @@ After install:
 Optional: Agent Teams (disabled by default)
 - Enable via installer: `spw install --enable-teams`
 - The installer overlays team command variants from `.claude/commands/spw-teams/` into `.claude/commands/spw/`.
+- To return active commands to default mode, run `spw install` without `--enable-teams`.
 - Or manually:
   - set `[agent_teams].enabled = true` in `.spec-workflow/spw-config.toml`
   - add `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1"` in `.claude/settings.json`
@@ -61,6 +86,7 @@ Optional: Agent Teams (disabled by default)
   - copy team command variants from `.claude/commands/spw-teams/` into `.claude/commands/spw/`
 - When enabled and the phase is listed in `[agent_teams].use_for_phases`, SPW creates a team.
 - `spw:exec` enforces delegate mode when `[agent_teams].require_delegate_mode = true`.
+- Running `spw install` after enabling teams does not remove `.claude/commands/spw-teams/` or existing teams keys in `.claude/settings.json`.
 
 ## Command entry points
 

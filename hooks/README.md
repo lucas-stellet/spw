@@ -117,6 +117,8 @@ To enable:
 - Set `teammateMode = "in-process"` (change to `"tmux"` manually if desired)
 - Activate team command variants from `.claude/commands/spw-teams/*.md`
   (or run `spw install --enable-teams` to apply them automatically)
+- Run `spw install` without `--enable-teams` to restore active commands in `.claude/commands/spw/` to default mode.
+- Restoring default mode does not remove `.claude/commands/spw-teams/` or existing teams keys from `.claude/settings.json`.
 
 When enabled, SPW commands will create teams only for phases listed in
 `[agent_teams].use_for_phases`, and `spw:exec` will require delegate mode
@@ -147,6 +149,8 @@ Optional installer CLI:
 - `spw` (default) copies the kit into the project.
 - `spw skills` installs only the default SPW skills.
 - `spw status` prints a quick kit/skills summary.
+- `spw update` refreshes the cached GitHub kit for the `spw` wrapper.
+- `spw doctor` prints wrapper repo/ref/cache settings.
 
 ## Quick manual tests
 

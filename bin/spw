@@ -1,0 +1,127 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SPW_REPO="${SPW_REPO:-lucas-stellet/spw}"
+SPW_REF="${SPW_REF:-main}"
+SPW_HOME="${SPW_HOME:-${XDG_DATA_HOME:-$HOME/.local/share}/spw}"
+SPW_AUTO_UPDATE="${SPW_AUTO_UPDATE:-false}"
+
+repo_key="${SPW_REPO//\//__}"
+repo_dir="${SPW_HOME}/repos/${repo_key}"
+
+show_help() {
+  cat <<'USAGE'
+spw - install or inspect the SPW kit in the current project
+
+Usage:
+  spw
+  spw install
+  spw install --enable-teams
+  spw skills
+  spw status
+  spw update
+  spw doctor
+
+Environment:
+  SPW_REPO         GitHub repository (default: lucas-stellet/spw)
+  SPW_REF          Branch/tag/sha to use (default: main)
+  SPW_HOME         Cache root (default: ~/.local/share/spw)
+  SPW_KIT_DIR      Explicit kit directory override
+  SPW_AUTO_UPDATE  true|false (default: false)
+USAGE
+}
+
+require_cmd() {
+  local cmd="$1"
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    echo "[spw] Required command not found: $cmd" >&2
+    exit 1
+  fi
+}
+
+ensure_repo() {
+  require_cmd gh
+  require_cmd git
+  mkdir -p "$(dirname "$repo_dir")"
+  if [ ! -d "$repo_dir/.git" ]; then
+    echo "[spw] Cloning ${SPW_REPO} into ${repo_dir}" >&2
+    gh repo clone "$SPW_REPO" "$repo_dir" -- --quiet
+  fi
+}
+
+checkout_ref() {
+  if git -C "$repo_dir" rev-parse --verify --quiet "origin/$SPW_REF" >/dev/null; then
+    git -C "$repo_dir" checkout -B "$SPW_REF" "origin/$SPW_REF" >/dev/null 2>&1
+  else
+    git -C "$repo_dir" checkout "$SPW_REF" >/dev/null 2>&1
+  fi
+}
+
+update_repo() {
+  ensure_repo
+  echo "[spw] Updating ${SPW_REPO} (${SPW_REF})" >&2
+  git -C "$repo_dir" fetch --prune origin >/dev/null 2>&1
+  checkout_ref
+}
+
+resolve_kit_dir() {
+  if [ -n "${SPW_KIT_DIR:-}" ]; then
+    printf '%s' "$SPW_KIT_DIR"
+    return 0
+  fi
+
+  ensure_repo
+  if [ "$SPW_AUTO_UPDATE" = "true" ]; then
+    update_repo
+  else
+    checkout_ref
+  fi
+  printf '%s' "$repo_dir/copy-ready"
+}
+
+doctor() {
+  local kit_dir
+  if [ -n "${SPW_KIT_DIR:-}" ]; then
+    kit_dir="$SPW_KIT_DIR"
+  else
+    kit_dir="$repo_dir/copy-ready"
+  fi
+
+  echo "spw doctor"
+  echo "repo: $SPW_REPO"
+  echo "ref: $SPW_REF"
+  echo "home: $SPW_HOME"
+  echo "cache repo dir: $repo_dir"
+  echo "kit dir: $kit_dir"
+  echo "gh: $(command -v gh || echo missing)"
+  echo "git: $(command -v git || echo missing)"
+}
+
+cmd="${1:-install}"
+
+case "$cmd" in
+  -h|--help|help)
+    show_help
+    exit 0
+    ;;
+  update)
+    if [ -n "${SPW_KIT_DIR:-}" ]; then
+      echo "[spw] SPW_KIT_DIR is set; skipping remote update." >&2
+      exit 0
+    fi
+    update_repo
+    exit 0
+    ;;
+  doctor)
+    doctor
+    exit 0
+    ;;
+esac
+
+kit_dir="$(resolve_kit_dir)"
+if [ ! -x "$kit_dir/install.sh" ]; then
+  echo "[spw] install.sh not found or not executable at: $kit_dir/install.sh" >&2
+  exit 1
+fi
+
+exec bash "$kit_dir/install.sh" "$@"

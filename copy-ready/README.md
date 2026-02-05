@@ -31,8 +31,11 @@ Then:
 
 Optional installer commands:
 - `spw install --enable-teams` enables Agent Teams in config/settings and overlays `.claude/commands/spw-teams/*.md` into `.claude/commands/spw/`.
+- `spw install` (without `--enable-teams`) restores active commands in `.claude/commands/spw/` to the default pack.
 - `spw skills` installs only the default SPW skills.
 - `spw status` prints a quick kit/skills summary.
+- `spw update` refreshes the cached kit repo when using the GitHub-backed wrapper.
+- `spw doctor` shows wrapper repo/ref/cache settings.
 
 If you do not want `.bak` accumulation for `tasks-template.md`, set:
 - `safety.cleanup_backups_after_sync = true`
@@ -80,6 +83,8 @@ Enablement:
 - Set `teammateMode = "in-process"` (change to `"tmux"` manually if desired).
 - Ensure team command variants are active by overlaying `.claude/commands/spw-teams/*.md` into `.claude/commands/spw/`
   (`spw install --enable-teams` does this automatically).
+- To revert active commands to non-team mode, run `spw install` again without `--enable-teams`.
+- Reverting to non-team mode does not remove `.claude/commands/spw-teams/` or existing teams keys from `.claude/settings.json`.
 
 When enabled and the phase is listed in `[agent_teams].use_for_phases`, SPW creates a team.
 `spw:exec` enforces delegate mode when `[agent_teams].require_delegate_mode = true`.

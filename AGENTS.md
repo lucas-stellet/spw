@@ -15,6 +15,7 @@ SPW é um kit de comandos/templates para `spec-workflow-mcp`, com execução sub
 ## Mapa de arquivos que devem ficar em espelho
 
 - `commands/spw/*.md` <-> `copy-ready/.claude/commands/spw/*.md`
+- `commands/spw-teams/*.md` <-> `copy-ready/.claude/commands/spw-teams/*.md`
 - `templates/user-templates/**` <-> `copy-ready/.spec-workflow/user-templates/**`
 - `config/spw-config.toml` <-> `copy-ready/.spec-workflow/spw-config.toml`
 - `hooks/*.js|*.sh` <-> `copy-ready/.claude/hooks/*`
@@ -46,6 +47,8 @@ Ausência desses arquivos deve resultar em `BLOCKED`.
 
 ## Checklist mínimo de validação
 
+- `bash -n bin/spw`
+- `bash -n scripts/install-spw-bin.sh`
 - `bash -n hooks/session-start-sync-tasks-template.sh`
 - `bash -n copy-ready/install.sh`
 - `node hooks/spw-statusline.js <<< '{"workspace":{"current_dir":"'"$(pwd)"'"}}'`

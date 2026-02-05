@@ -31,6 +31,8 @@ This package implements the discussed model: use `spec-workflow-mcp` as the sour
 - `spw/templates/user-templates/variants/tasks-template.tdd-on.md`
 - `spw/templates/user-templates/variants/tasks-template.tdd-off.md`
 - `spw/config/spw-config.toml`
+- `spw/bin/spw`
+- `spw/scripts/install-spw-bin.sh`
 - `spw/hooks/session-start-sync-tasks-template.sh`
 - `spw/hooks/spw-statusline.js`
 - `spw/hooks/spw-guard-user-prompt.js`
@@ -131,6 +133,8 @@ Default lists include Elixir-focused skills plus optional:
 `spw` attempts to copy these defaults into `.claude/skills/` from local skill directories when available.
 Installer subcommands: `spw skills` installs only the default skills, and
 `spw status` prints a quick kit/skills summary.
+Wrapper commands: `spw update` refreshes the cached GitHub kit, and
+`spw doctor` prints current wrapper repo/ref/cache settings.
 
 ## Subagent strategy (default)
 
@@ -152,11 +156,13 @@ Enablement:
 - Set `teammateMode = "in-process"` (change to `"tmux"` manually if desired)
 - Use the team command pack (`commands/spw-teams/*.md`) instead of default command specs.
   - `spw install --enable-teams` applies this overlay automatically.
+  - `spw install` (without `--enable-teams`) restores active commands to default `spw/*.md`.
 
 Behavior:
 - When enabled and the phase is listed in `[agent_teams].use_for_phases`, SPW creates a team.
 - `spw:exec` enforces delegate mode when `[agent_teams].require_delegate_mode = true`.
 - File-first handoff rules remain mandatory for every teammate.
+- Reverting to default mode does not remove `spw-teams` files or existing teams keys from `.claude/settings.json`.
 
 ## File-first subagent communication (GSD-style)
 
