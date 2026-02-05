@@ -7,6 +7,7 @@ set -euo pipefail
 #
 # Behavior:
 # - install (default): copies kit files into current project
+# - install --enable-teams: enables Agent Teams in config/settings and overlays team command pack
 # - skills: installs default SPW skills into .claude/skills (best effort)
 # - status: prints a quick summary of kit presence + default skills
 # - Does not overwrite .claude/settings.json (prints merge instruction instead)
@@ -37,11 +38,13 @@ spw - install or inspect the SPW kit in the current project
 Usage:
   spw
   spw install
+  spw install --enable-teams
   spw skills
   spw status
 
 Behavior:
 - install (default): copies commands, hooks, templates, and config into cwd.
+- install --enable-teams: enables Agent Teams in config/settings and overlays team command pack.
 - skills: installs default SPW skills into .claude/skills (best effort).
 - status: prints a quick summary of kit presence + default skills.
 
@@ -91,6 +94,67 @@ toml_bool_value() {
     false|0|no|off) printf 'false' ;;
     *) printf '%s' "$default_value" ;;
   esac
+}
+
+enable_agent_teams() {
+  if [ ! -f "$CONFIG_PATH" ]; then
+    echo "[spw-kit] Unable to enable Agent Teams: missing ${CONFIG_PATH}" >&2
+    return 0
+  fi
+
+  local tmp_file
+  tmp_file="$(mktemp)"
+
+  awk '
+    BEGIN { in_section = 0 }
+    /^[ \t]*\[/ {
+      in_section = ($0 == "[agent_teams]")
+    }
+    {
+      if (in_section && $0 ~ /^[ \t]*enabled[ \t]*=/) {
+        print "enabled = true"
+        next
+      }
+      print
+    }
+  ' "$CONFIG_PATH" > "$tmp_file"
+
+  mv "$tmp_file" "$CONFIG_PATH"
+}
+
+apply_teams_settings() {
+  local settings_path="${TARGET_ROOT}/.claude/settings.json"
+  if ! command -v node >/dev/null 2>&1; then
+    echo "[spw-kit] Node not found; add Agent Teams settings manually:"
+    echo "[spw-kit] - env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = \"1\""
+    echo "[spw-kit] - teammateMode = \"in-process\" (or \"tmux\")"
+    return 0
+  fi
+
+  node -e '
+    const fs = require("fs");
+    const path = process.argv[1];
+    const data = JSON.parse(fs.readFileSync(path, "utf8"));
+    data.env = data.env || {};
+    data.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
+    data.teammateMode = "in-process";
+    fs.writeFileSync(path, JSON.stringify(data, null, 2));
+  ' "$settings_path"
+  echo "[spw-kit] Enabled Agent Teams in ${settings_path} (teammateMode=in-process)."
+}
+
+apply_teams_command_pack() {
+  local source_dir="${SCRIPT_DIR}/.claude/commands/spw-teams"
+  local target_dir="${TARGET_ROOT}/.claude/commands/spw"
+
+  if [ ! -d "$source_dir" ]; then
+    echo "[spw-kit] Team command pack not found at ${source_dir}; skipping overlay."
+    return 0
+  fi
+
+  mkdir -p "$target_dir"
+  rsync -a "${source_dir}/" "${target_dir}/"
+  echo "[spw-kit] Applied team command pack from .claude/commands/spw-teams to .claude/commands/spw."
 }
 
 find_skill_source_dir() {
@@ -166,10 +230,19 @@ status_default_skills() {
 }
 
 cmd_install() {
-  if [ "$#" -gt 0 ]; then
-    echo "[spw-kit] Unexpected arguments for install: $*" >&2
-    exit 1
-  fi
+  local enable_teams="false"
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --enable-teams)
+        enable_teams="true"
+        shift
+        ;;
+      *)
+        echo "[spw-kit] Unexpected arguments for install: $*" >&2
+        exit 1
+        ;;
+    esac
+  done
 
   echo "[spw-kit] Installing into project: ${TARGET_ROOT}"
 
@@ -177,10 +250,12 @@ cmd_install() {
   rsync -a "${SCRIPT_DIR}/.claude/" "${TARGET_ROOT}/.claude/"
   rsync -a "${SCRIPT_DIR}/.spec-workflow/" "${TARGET_ROOT}/.spec-workflow/"
 
+  local created_settings="false"
   if [ ! -f "${TARGET_ROOT}/.claude/settings.json" ]; then
     mkdir -p "${TARGET_ROOT}/.claude"
     cp "${SCRIPT_DIR}/.claude/settings.json.example" "${TARGET_ROOT}/.claude/settings.json"
     echo "[spw-kit] Created .claude/settings.json with SessionStart hook."
+    created_settings="true"
   else
     echo "[spw-kit] .claude/settings.json already exists."
     echo "[spw-kit] Manually merge hook block from ${SCRIPT_DIR}/.claude/settings.json.example"
@@ -194,6 +269,19 @@ cmd_install() {
     install_default_skills
   else
     echo "[spw-kit] Skipping default skills install (auto_install_defaults_on_spw_install=false)."
+  fi
+
+  if [ "$enable_teams" = "true" ]; then
+    enable_agent_teams
+    apply_teams_command_pack
+    if [ "$created_settings" = "true" ]; then
+      apply_teams_settings
+    else
+      echo "[spw-kit] Agent Teams enabled in config."
+      echo "[spw-kit] Add to .claude/settings.json manually:"
+      echo "[spw-kit] - env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = \"1\""
+      echo "[spw-kit] - teammateMode = \"in-process\" (or \"tmux\")"
+    fi
   fi
 
   echo "[spw-kit] Installation complete."

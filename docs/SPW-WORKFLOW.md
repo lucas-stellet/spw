@@ -20,6 +20,10 @@ This package implements the discussed model: use `spec-workflow-mcp` as the sour
 - `spw/commands/spw/exec.md`
 - `spw/commands/spw/checkpoint.md`
 - `spw/commands/spw/status.md`
+- `spw/commands/spw-teams/design-research.md`
+- `spw/commands/spw-teams/tasks-check.md`
+- `spw/commands/spw-teams/checkpoint.md`
+- `spw/commands/spw-teams/exec.md`
 - `spw/templates/user-templates/prd-template.md`
 - `spw/templates/user-templates/requirements-template.md`
 - `spw/templates/user-templates/design-template.md`
@@ -82,6 +86,12 @@ Fields used:
   - per-stage enforcement booleans:
     - `skills.design.enforce_required = true|false`
     - `skills.implementation.enforce_required = true|false`
+  - `[agent_teams]` (optional, disabled by default):
+    - `enabled = false|true`
+    - `teammate_mode = "in-process"|"tmux"`
+    - `require_delegate_mode = true|false`
+    - `max_teammates = <N>`
+    - `use_for_phases = ["design-research","tasks-check","checkpoint","exec"]`
 - SessionStart hook auto-syncs:
   - source: `.spec-workflow/user-templates/variants/tasks-template.tdd-*.md`
   - target: `.spec-workflow/user-templates/tasks-template.md`
@@ -130,6 +140,23 @@ Installer subcommands: `spw skills` installs only the default skills, and
   - complex reasoning/synthesis/gates -> `opus`
   - implementation/drafting/execution -> `sonnet`
 - Commands `spw:prd`, `spw:plan`, `spw:design-research`, `spw:design-draft`, `spw:tasks-plan`, `spw:tasks-check`, `spw:exec`, `spw:checkpoint`, and `spw:status` are all defined as subagent-driven workflows.
+
+## Agent Teams (optional)
+
+Agent Teams are experimental in Claude Code and disabled by default in SPW.
+Enable them only when you want multi-agent collaboration with a shared task list.
+
+Enablement:
+- Set `[agent_teams].enabled = true` in `.spec-workflow/spw-config.toml`
+- Add `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1"` to `.claude/settings.json`
+- Set `teammateMode = "in-process"` (change to `"tmux"` manually if desired)
+- Use the team command pack (`commands/spw-teams/*.md`) instead of default command specs.
+  - `spw install --enable-teams` applies this overlay automatically.
+
+Behavior:
+- When enabled and the phase is listed in `[agent_teams].use_for_phases`, SPW creates a team.
+- `spw:exec` enforces delegate mode when `[agent_teams].require_delegate_mode = true`.
+- File-first handoff rules remain mandatory for every teammate.
 
 ## File-first subagent communication (GSD-style)
 

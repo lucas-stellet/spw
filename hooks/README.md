@@ -108,6 +108,20 @@ cleanup_backups_after_sync = true
 backup_retention_count = 0
 ```
 
+## Agent Teams (optional)
+
+Agent Teams are experimental in Claude Code and disabled by default in SPW.
+To enable:
+- Set `[agent_teams].enabled = true` in `.spec-workflow/spw-config.toml`
+- Add `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1"` to `.claude/settings.json`
+- Set `teammateMode = "in-process"` (change to `"tmux"` manually if desired)
+- Activate team command variants from `.claude/commands/spw-teams/*.md`
+  (or run `spw install --enable-teams` to apply them automatically)
+
+When enabled, SPW commands will create teams only for phases listed in
+`[agent_teams].use_for_phases`, and `spw:exec` will require delegate mode
+when `[agent_teams].require_delegate_mode = true`.
+
 ## Project installation
 
 1) Copy config:

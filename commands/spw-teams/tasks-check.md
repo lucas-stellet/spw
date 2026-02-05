@@ -1,0 +1,127 @@
+---
+name: spw:tasks-check
+description: Subagent-driven tasks.md validation (traceability, dependencies, tests)
+argument-hint: "<spec-name>"
+---
+
+<objective>
+Validate whether `tasks.md` is ready for subagent execution.
+</objective>
+
+<file_handoff_protocol>
+Subagent communication must be file-first (no implicit-only handoff).
+
+Create a run folder:
+- `.spec-workflow/specs/<spec-name>/agent-comms/tasks-check/<run-id>/`
+
+For each subagent, use:
+- `<run-dir>/<subagent>/brief.md` (written by orchestrator before dispatch)
+- `<run-dir>/<subagent>/report.md` (written by subagent after execution)
+- `<run-dir>/<subagent>/status.json` (written by subagent)
+
+Status schema (minimum):
+- `status`: `pass|blocked`
+- `summary`: short result
+- `inputs`: key files used
+- `outputs`: generated artifacts
+- `open_questions`: unresolved items
+- `skills_used`: skills actually used by the subagent
+- `skills_missing`: required skills not available for the subagent (if any)
+
+After validation, write:
+- `<run-dir>/_handoff.md` (orchestrator summary of audit results)
+
+If a required `report.md` or `status.json` is missing, stop BLOCKED.
+</file_handoff_protocol>
+
+<model_policy>
+Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
+- complex_reasoning -> default `opus`
+- implementation -> default `sonnet`
+</model_policy>
+
+<skills_policy>
+Resolve skill policy from `.spec-workflow/spw-config.toml`:
+- `[skills].enabled`
+- `[skills].load_mode` (`subagent-first|principal-first`)
+- `[skills.design].required`
+- `[skills.design].optional`
+- `[skills.design].enforce_required` (boolean)
+
+Backward compatibility:
+- if `[skills.design].enforce_required` is absent, map `[skills].enforcement`:
+  - `"strict"` -> `true`
+  - any other value -> `false`
+
+Load modes:
+- `subagent-first` (default): orchestrator does availability preflight only and
+  delegates skill loading/use to subagents via briefs.
+- `principal-first` (legacy): orchestrator loads required skills before dispatch.
+
+Skill gate (mandatory when `skills.enabled=true`):
+1. Run availability preflight and write:
+   - `.spec-workflow/specs/<spec-name>/SKILLS-TASKS-CHECK.md`
+2. If `load_mode=subagent-first`, avoid loading full skill content in main context.
+3. Require each subagent `status.json` to include `skills_used`/`skills_missing`.
+4. If any required skill is missing/not used where required:
+   - `enforce_required=true` -> BLOCKED
+   - `enforce_required=false` -> warn and continue
+</skills_policy>
+
+<agent_teams_policy>
+Resolve Agent Teams config from `.spec-workflow/spw-config.toml` `[agent_teams]`:
+- `enabled` (default `false`)
+- `teammate_mode` (default `"in-process"`)
+- `max_teammates`
+- `use_for_phases`
+
+When `enabled=true` and `tasks-check` is included in `use_for_phases`:
+- create a team and set `teammate_mode`
+- map subagent roles to teammates (do not exceed `max_teammates`)
+- each teammate must still write `brief.md`, `report.md`, `status.json` in the run dir
+</agent_teams_policy>
+
+<subagents>
+- `traceability-auditor` (model: complex_reasoning)
+- `dag-validator` (model: implementation)
+- `test-policy-auditor` (model: complex_reasoning)
+- `decision-aggregator` (model: complex_reasoning)
+</subagents>
+
+<workflow>
+1. Run design skills preflight (availability + load mode) and write `SKILLS-TASKS-CHECK.md`.
+2. Create communication run directory:
+   - `.spec-workflow/specs/<spec-name>/agent-comms/tasks-check/<run-id>/`
+3. Read `.spec-workflow/specs/<spec-name>/tasks.md` + requirements/design docs.
+4. If Agent Teams are enabled for this phase, create a team and assign subagent roles to teammates.
+5. Write briefs (including required skills per role) and dispatch in parallel:
+   - `traceability-auditor`
+   - `dag-validator`
+   - `test-policy-auditor`
+6. Require auditor `report.md` + `status.json` (with skill fields); BLOCKED if missing.
+7. Dispatch `decision-aggregator` with file handoff to produce PASS/BLOCKED decision.
+8. Generate `.spec-workflow/specs/<spec-name>/TASKS-CHECK.md` containing:
+   - PASS/BLOCKED
+   - findings by severity
+   - recommended fixes
+9. Write `<run-dir>/_handoff.md` linking all auditor/aggregator outputs.
+</workflow>
+
+<acceptance_criteria>
+- [ ] Every task references at least one requirement.
+- [ ] Every requirement maps to at least one task.
+- [ ] DAG has no cycles and wave order is valid.
+- [ ] Test policy gate is satisfied.
+- [ ] File-based handoff exists under `.spec-workflow/specs/<spec-name>/agent-comms/tasks-check/<run-id>/`.
+</acceptance_criteria>
+
+<completion_guidance>
+On PASS:
+- Confirm output path: `.spec-workflow/specs/<spec-name>/TASKS-CHECK.md`.
+- Recommend next command: `spw:exec <spec-name> --batch-size <N>`.
+- Recommend running `/clear` before execution.
+
+On BLOCKED:
+- Show findings by severity and required fixes.
+- Recommend fix path: update `tasks.md`, then rerun `spw:tasks-check <spec-name>`.
+</completion_guidance>

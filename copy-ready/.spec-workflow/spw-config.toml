@@ -95,6 +95,30 @@ max_parallel_web_scouts = 3
 # to complex_reasoning model. If false, always use implementation model.
 use_opus_for_complex_task_review = true
 
+[agent_teams]
+# Experimental Claude Code Agent Teams integration.
+#
+# enabled:
+# - false (default) keeps SPW on subagent-first orchestration only.
+# - true enables team creation in selected phases when supported by the client.
+enabled = false
+
+# teammate_mode:
+# - "in-process" (default) works in all terminals.
+# - "tmux" requires tmux/iTerm2 split panes.
+# Adjust manually if you want tmux layouts.
+teammate_mode = "in-process"
+
+# If true, `spw:exec` must run with delegate mode when teams are enabled,
+# so the lead agent only orchestrates and never edits code directly.
+require_delegate_mode = true
+
+# Upper bound for number of teammates created per team.
+max_teammates = 4
+
+# Phases allowed to use teams when enabled.
+use_for_phases = ["design-research", "tasks-check", "checkpoint", "exec"]
+
 [skills]
 # Enables skill-aware behavior in SPW commands.
 #
@@ -127,7 +151,7 @@ load_mode = "subagent-first"
 # - enforcement="advisory" -> enforce_required=false
 enforcement = "strict"
 
-# If true, `spw-install` will try to copy default skills into
+# If true, `spw` will try to copy default skills into
 # `.claude/skills/` from local/global skill directories when available.
 # Missing skills do not fail installation.
 auto_install_defaults_on_spw_install = true

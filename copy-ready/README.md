@@ -5,6 +5,7 @@ Ready-to-copy package for any project using `spec-workflow-mcp`.
 ## What the kit includes
 
 - `.claude/commands/spw/*.md` (planning/execution/checkpoint commands)
+- `.claude/commands/spw-teams/*.md` (Agent Teams command variants)
 - `.claude/hooks/session-start-sync-tasks-template.sh` (sync hook)
 - `.claude/hooks/spw-statusline.js` (statusline: project/spec/context)
 - `.claude/settings.json.example` (hook config snippet)
@@ -29,6 +30,7 @@ Then:
 4. `spw` also tries to install default SPW skills into `.claude/skills/` (best effort, non-blocking).
 
 Optional installer commands:
+- `spw install --enable-teams` enables Agent Teams in config/settings and overlays `.claude/commands/spw-teams/*.md` into `.claude/commands/spw/`.
 - `spw skills` installs only the default SPW skills.
 - `spw status` prints a quick kit/skills summary.
 
@@ -68,6 +70,20 @@ approvals or status.
   - web-only research/scouting -> `haiku`
   - complex synthesis/validation gates -> `opus`
   - implementation/drafting -> `sonnet`
+
+## Agent Teams (optional)
+
+Agent Teams are experimental in Claude Code and disabled by default in SPW.
+Enablement:
+- Run `spw install --enable-teams`, or set `[agent_teams].enabled = true` manually.
+- Add `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1"` to `.claude/settings.json`.
+- Set `teammateMode = "in-process"` (change to `"tmux"` manually if desired).
+- Ensure team command variants are active by overlaying `.claude/commands/spw-teams/*.md` into `.claude/commands/spw/`
+  (`spw install --enable-teams` does this automatically).
+
+When enabled and the phase is listed in `[agent_teams].use_for_phases`, SPW creates a team.
+`spw:exec` enforces delegate mode when `[agent_teams].require_delegate_mode = true`.
+File-first handoff rules remain mandatory for every teammate.
 
 ## Default skills (installed by `spw` when found locally)
 

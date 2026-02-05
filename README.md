@@ -51,6 +51,17 @@ After install:
 7. (Optional) auto-clean template backups with `safety.cleanup_backups_after_sync=true` in `.spec-workflow/spw-config.toml`.
 8. (Optional) enable SPW enforcement hooks with `hooks.enforcement_mode=warn|block`.
 
+Optional: Agent Teams (disabled by default)
+- Enable via installer: `spw install --enable-teams`
+- The installer overlays team command variants from `.claude/commands/spw-teams/` into `.claude/commands/spw/`.
+- Or manually:
+  - set `[agent_teams].enabled = true` in `.spec-workflow/spw-config.toml`
+  - add `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1"` in `.claude/settings.json`
+  - set `teammateMode = "in-process"` (change to `"tmux"` manually if desired)
+  - copy team command variants from `.claude/commands/spw-teams/` into `.claude/commands/spw/`
+- When enabled and the phase is listed in `[agent_teams].use_for_phases`, SPW creates a team.
+- `spw:exec` enforces delegate mode when `[agent_teams].require_delegate_mode = true`.
+
 ## Command entry points
 
 - `spw:prd` -> zero-to-PRD requirements flow
