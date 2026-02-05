@@ -1,3 +1,21 @@
+---
+spw:
+  schema: 1
+  spec: "<spec-name>"
+  doc: "tasks"
+  status: "draft"
+  source: "spw:tasks-plan"
+  updated_at: "YYYY-MM-DD"
+  inputs:
+    - ".spec-workflow/specs/<spec-name>/requirements.md"
+    - ".spec-workflow/specs/<spec-name>/design-draft.md"
+  requirements: []
+  task_ids: []
+  test_required: true
+  risk: "low"
+  open_questions: []
+---
+
 # Tasks Document
 
 ## Execution Constraints

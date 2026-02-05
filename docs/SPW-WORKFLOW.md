@@ -56,6 +56,17 @@ Copy templates into the project using spec-workflow:
 
 Note: in spec-workflow, a custom template in `user-templates/` fully overrides the matching default template.
 
+## YAML frontmatter (spec docs)
+
+Templates include optional YAML frontmatter under the `spw` key to help
+subagents classify documents. This metadata does not replace MCP approvals or
+status.
+
+Fields used:
+- `schema`, `spec`, `doc`, `status`, `source`, `updated_at`
+- `inputs`, `requirements`, `decisions`, `task_ids`, `test_required`
+- `risk`, `open_questions`
+
 ## Config and hook (TDD via config)
 
 - Configure `.spec-workflow/spw-config.toml`:

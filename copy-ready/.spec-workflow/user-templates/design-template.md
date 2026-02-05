@@ -1,3 +1,20 @@
+---
+spw:
+  schema: 1
+  spec: "<spec-name>"
+  doc: "design"
+  status: "draft"
+  source: "spw:design-draft"
+  updated_at: "YYYY-MM-DD"
+  inputs:
+    - ".spec-workflow/specs/<spec-name>/requirements.md"
+    - ".spec-workflow/specs/<spec-name>/design-research.md"
+  requirements: []
+  decisions: []
+  risk: "low"
+  open_questions: []
+---
+
 # Design Document
 
 ## Overview

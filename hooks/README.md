@@ -6,6 +6,9 @@ Core hooks:
 - `session-start-sync-tasks-template.sh` (SessionStart)
 - `spw-statusline.js` (status line)
 
+Templates include optional YAML frontmatter under the `spw` key to help
+subagents classify spec documents. Hooks do not parse or enforce this metadata.
+
 Statusline spec detection (fast -> slow):
 1) cached spec (TTL in `[statusline].cache_ttl_seconds`)
 2) git diff vs base branch (current branch upstream first, then `[statusline].base_branches`)

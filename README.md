@@ -55,6 +55,13 @@ stored under:
 - planning/research: `.spec-workflow/specs/<spec-name>/agent-comms/<command>/<run-id>/`
 - execution/checkpoint by wave: `.spec-workflow/specs/<spec-name>/agent-comms/waves/wave-<NN>/<stage>/<run-id>/`
 
+YAML frontmatter (optional metadata) is included in spec templates under the
+`spw` key to help subagents classify documents. It does not replace MCP
+approvals or status.
+- `schema`, `spec`, `doc`, `status`, `source`, `updated_at`
+- `inputs`, `requirements`, `decisions`, `task_ids`, `test_required`
+- `risk`, `open_questions`
+
 Skills are configured to be `subagent-first` by default to reduce main-context
 growth (`skills.load_mode = "subagent-first"`).
 

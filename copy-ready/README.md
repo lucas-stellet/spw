@@ -50,6 +50,13 @@ Artifact locality rule:
 - Supporting research files must stay under `.spec-workflow/specs/<spec-name>/research/`.
 - Avoid generating research files in generic folders like `docs/`.
 
+YAML frontmatter (optional metadata) is included in spec templates under the
+`spw` key to help subagents classify documents. This does not replace MCP
+approvals or status.
+- `schema`, `spec`, `doc`, `status`, `source`, `updated_at`
+- `inputs`, `requirements`, `decisions`, `task_ids`, `test_required`
+- `risk`, `open_questions`
+
 ## Default subagent/model policy
 
 - Subagent-first workflows across product, planning, execution, and checkpoints.

@@ -1,3 +1,16 @@
+---
+spw:
+  schema: 1
+  spec: "<spec-name>"
+  doc: "requirements"
+  status: "draft"
+  source: "spw:prd"
+  updated_at: "YYYY-MM-DD"
+  inputs: []
+  open_questions: []
+  risk: "low"
+---
+
 # Requirements Document
 
 ## Product Context
