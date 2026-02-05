@@ -8,6 +8,8 @@ SPW_AUTO_UPDATE="${SPW_AUTO_UPDATE:-false}"
 
 repo_key="${SPW_REPO//\//__}"
 repo_dir="${SPW_HOME}/repos/${repo_key}"
+state_dir="${SPW_HOME}/state"
+last_updated_file="${state_dir}/${repo_key}.last_updated"
 
 show_help() {
   cat <<'USAGE'
@@ -39,6 +41,56 @@ require_cmd() {
   fi
 }
 
+record_last_updated() {
+  mkdir -p "$state_dir"
+  date -u +"%Y-%m-%dT%H:%M:%SZ" >"$last_updated_file"
+}
+
+read_last_updated() {
+  if [ -f "$last_updated_file" ]; then
+    tr -d '\n' <"$last_updated_file"
+    return 0
+  fi
+
+  printf "never (run 'spw update')"
+}
+
+repo_commit() {
+  if [ ! -d "$repo_dir/.git" ] || ! command -v git >/dev/null 2>&1; then
+    return 1
+  fi
+
+  git -C "$repo_dir" rev-parse --short=12 HEAD 2>/dev/null
+}
+
+repo_commit_date() {
+  if [ ! -d "$repo_dir/.git" ] || ! command -v git >/dev/null 2>&1; then
+    return 1
+  fi
+
+  git -C "$repo_dir" show -s --format=%cI HEAD 2>/dev/null
+}
+
+version_line() {
+  local commit
+  if commit="$(repo_commit)"; then
+    printf '%s@%s' "$SPW_REF" "$commit"
+    return 0
+  fi
+
+  printf "unavailable (run 'spw update')"
+}
+
+commit_date_line() {
+  local commit_date
+  if commit_date="$(repo_commit_date)"; then
+    printf '%s' "$commit_date"
+    return 0
+  fi
+
+  printf 'unknown'
+}
+
 ensure_repo() {
   require_cmd gh
   require_cmd git
@@ -46,6 +98,7 @@ ensure_repo() {
   if [ ! -d "$repo_dir/.git" ]; then
     echo "[spw] Cloning ${SPW_REPO} into ${repo_dir}" >&2
     gh repo clone "$SPW_REPO" "$repo_dir" -- --quiet
+    record_last_updated
   fi
 }
 
@@ -62,6 +115,10 @@ update_repo() {
   echo "[spw] Updating ${SPW_REPO} (${SPW_REF})" >&2
   git -C "$repo_dir" fetch --prune origin >/dev/null 2>&1
   checkout_ref
+  record_last_updated
+  echo "[spw] version: $(version_line)" >&2
+  echo "[spw] commit date: $(commit_date_line)" >&2
+  echo "[spw] last updated: $(read_last_updated)" >&2
 }
 
 resolve_kit_dir() {
@@ -90,6 +147,9 @@ doctor() {
   echo "spw doctor"
   echo "repo: $SPW_REPO"
   echo "ref: $SPW_REF"
+  echo "version: $(version_line)"
+  echo "commit date: $(commit_date_line)"
+  echo "last updated: $(read_last_updated)"
   echo "home: $SPW_HOME"
   echo "cache repo dir: $repo_dir"
   echo "kit dir: $kit_dir"

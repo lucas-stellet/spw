@@ -45,8 +45,8 @@ rm -rf "${tmp_dir}"
 
 The installed `spw` wrapper caches the kit from GitHub and runs `copy-ready/install.sh`.
 Useful commands:
-- `spw update` (refresh cached repo/ref)
-- `spw doctor` (show current repo/ref/cache configuration)
+- `spw update` (refresh cached repo/ref and print `ref@commit` + update timestamp)
+- `spw doctor` (show current repo/ref/cache configuration, including `ref@commit` and last update timestamp)
 
 ## Quick install in another project
 
