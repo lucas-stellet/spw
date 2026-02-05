@@ -26,7 +26,11 @@ Then:
 1. Merge `.claude/settings.json.example` into your `.claude/settings.json` (SessionStart + statusLine).
 2. Adjust `.spec-workflow/spw-config.toml` (especially `execution.tdd_default`, `skills.design.enforce_required`, and `skills.implementation.enforce_required`).
 3. Start a new session so the hook syncs `tasks-template.md`.
-4. `spw-install` also tries to install default SPW skills into `.claude/skills/` (best effort, non-blocking).
+4. `spw` also tries to install default SPW skills into `.claude/skills/` (best effort, non-blocking).
+
+Optional installer commands:
+- `spw skills` installs only the default SPW skills.
+- `spw status` prints a quick kit/skills summary.
 
 If you do not want `.bak` accumulation for `tasks-template.md`, set:
 - `safety.cleanup_backups_after_sync = true`
@@ -65,7 +69,7 @@ approvals or status.
   - complex synthesis/validation gates -> `opus`
   - implementation/drafting -> `sonnet`
 
-## Default skills (installed by `spw-install` when found locally)
+## Default skills (installed by `spw` when found locally)
 
 - Elixir defaults:
   - `using-elixir-skills`

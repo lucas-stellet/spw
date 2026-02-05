@@ -118,7 +118,9 @@ Default lists include Elixir-focused skills plus optional:
 - `test-driven-development`
 - `requesting-code-review`
 
-`spw-install` attempts to copy these defaults into `.claude/skills/` from local skill directories when available.
+`spw` attempts to copy these defaults into `.claude/skills/` from local skill directories when available.
+Installer subcommands: `spw skills` installs only the default skills, and
+`spw status` prints a quick kit/skills summary.
 
 ## Subagent strategy (default)
 
@@ -177,7 +179,7 @@ Non-subagent steps (orchestrator/gates) still exist and are expected:
 - MCP approval checks and transitions (`spec-status`, `request-approval`, `get-approval-status`)
 - Explicit user prompts (`AskUserQuestion`) for MCP source selection and wave continuation
 - Execution stop states (`WAITING_FOR_APPROVAL`, `WAITING_FOR_USER_AUTHORIZATION`, `WAITING_FOR_HUMAN_ACTION`)
-- Local hooks/install/runtime scripts (`spw-install`, statusline, template sync hook)
+- Local hooks/install/runtime scripts (`spw`, statusline, template sync hook)
 
 ## Commands and roles (lifecycle order)
 

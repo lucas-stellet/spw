@@ -127,7 +127,7 @@ load_mode = "subagent-first"
 # - enforcement="advisory" -> enforce_required=false
 enforcement = "strict"
 
-# If true, `spw-install` will try to copy default skills into
+# If true, `spw` will try to copy default skills into
 # `.claude/skills/` from local/global skill directories when available.
 # Missing skills do not fail installation.
 auto_install_defaults_on_spw_install = true

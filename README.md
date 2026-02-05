@@ -20,8 +20,18 @@ SPW is a command/template kit that combines:
 Option 1 (recommended, from target project root):
 
 ```bash
-spw-install
+spw
 ```
+
+Optional:
+
+```bash
+spw status
+spw skills
+```
+
+`spw status` prints a quick kit/skills summary.  
+`spw skills` installs default SPW skills only.
 
 Option 2 (manual copy):
 

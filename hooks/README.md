@@ -129,6 +129,11 @@ cp spw/templates/user-templates/variants/tasks-template.tdd-off.md .spec-workflo
 - use `spw/copy-ready/.claude/settings.json.example`
 - or `spw/hooks/claude-hooks.snippet.json`
 
+Optional installer CLI:
+- `spw` (default) copies the kit into the project.
+- `spw skills` installs only the default SPW skills.
+- `spw status` prints a quick kit/skills summary.
+
 ## Quick manual tests
 
 ```bash
