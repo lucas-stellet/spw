@@ -6,11 +6,12 @@ SPW é um kit de comandos/templates para `spec-workflow-mcp`, com execução sub
 
 ## Fontes canônicas (ordem de leitura)
 
-1. `README.md` (entrada rápida e comandos principais)
-2. `docs/SPW-WORKFLOW.md` (contrato completo de lifecycle)
-3. `hooks/README.md` (hooks + guardrails `warn|block`)
-4. `config/spw-config.toml` (defaults operacionais)
-5. `copy-ready/README.md` (distribuição para projetos-alvo)
+1. `README.md` (fonte principal para instalação/uso/workflow)
+2. `AGENTS.md` (regras operacionais para agentes e contribuição)
+3. `config/spw-config.toml` (defaults operacionais)
+
+Observação:
+- `docs/SPW-WORKFLOW.md`, `hooks/README.md` e `copy-ready/README.md` devem permanecer enxutos e apontar para `README.md`.
 
 ## Mapa de arquivos que devem ficar em espelho
 
@@ -48,6 +49,7 @@ Ausência desses arquivos deve resultar em `BLOCKED`.
 ## Checklist mínimo de validação
 
 - `bash -n bin/spw`
+- `bash -n scripts/bootstrap.sh`
 - `bash -n scripts/install-spw-bin.sh`
 - `bash -n hooks/session-start-sync-tasks-template.sh`
 - `bash -n copy-ready/install.sh`
@@ -61,6 +63,7 @@ Ausência desses arquivos deve resultar em `BLOCKED`.
 Se mudar comportamento, defaults ou guardrails, atualizar no mesmo patch:
 
 - `README.md`
-- `docs/SPW-WORKFLOW.md`
-- `hooks/README.md`
-- `copy-ready/README.md`
+- `AGENTS.md`
+- `docs/SPW-WORKFLOW.md` (ponteiro)
+- `hooks/README.md` (ponteiro)
+- `copy-ready/README.md` (ponteiro)

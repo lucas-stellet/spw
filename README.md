@@ -10,12 +10,23 @@ SPW is a command/template kit that combines:
 
 ## Where to start
 
-- Full workflow guide: `spw/docs/SPW-WORKFLOW.md`
-- Copy-ready package guide: `spw/copy-ready/README.md`
-- Hook setup details: `spw/hooks/README.md`
-- Manual planning order + refinement loops: see `spw/docs/SPW-WORKFLOW.md` ("Manual planning order (explicit)")
+- This file is the main source of truth for usage and operations.
+- Agent/contributor operational rules are in `AGENTS.md`.
+- Keep `docs/SPW-WORKFLOW.md`, `hooks/README.md`, and `copy-ready/README.md` as lightweight pointers to this README.
 
 ## Install `spw` CLI
+
+One-liner bootstrap via GitHub CLI (latest `main`):
+
+```bash
+gh api 'repos/lucas-stellet/spw/contents/scripts/bootstrap.sh?ref=main' -H 'Accept: application/vnd.github.raw' | bash
+```
+
+Public raw fallback (latest `main`):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/lucas-stellet/spw/main/scripts/bootstrap.sh | bash
+```
 
 From this repository:
 
@@ -115,4 +126,4 @@ growth (`skills.load_mode = "subagent-first"`).
 Hook enforcement:
 - `warn` -> diagnostics only
 - `block` -> deny violating actions
-- details: `spw/hooks/README.md`
+- details: `AGENTS.md` + `.spec-workflow/spw-config.toml` comments
