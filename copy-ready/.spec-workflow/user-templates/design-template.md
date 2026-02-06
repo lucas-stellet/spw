@@ -21,6 +21,11 @@ spw:
 - Technical objective of the solution:
 - Relationship to the product problem:
 
+## UI Approval Markdown Rules
+- Keep Markdown render-safe for Spec Workflow UI (balanced headings/tables/fences/emphasis).
+- Prefer plain Markdown over raw HTML blocks.
+- Keep architecture diagrams fenced with lowercase language marker `mermaid`.
+
 ## Requirement Mapping (Required)
 | Requirement | Technical Decision | Components/Files | Test Strategy |
 |-------------|--------------------|------------------|---------------|

@@ -79,6 +79,15 @@ Rule:
 2. If `tasks-check` is BLOCKED, revise and repeat stage 1 as needed.
 </pipeline>
 
+<ui_approval_docs_policy>
+Documents reviewed/approved in Spec Workflow UI must follow strict markdown profiles:
+- `requirements.md`: render-safe markdown (valid headings/tables/fences, no task-style checkboxes).
+- `design.md`: render-safe markdown plus at least one valid fenced lowercase Mermaid block in `## Architecture`.
+- `tasks.md`: strict dashboard parser profile (`- [ ]/-[-]/-[x]`, numeric unique IDs, parseable metadata, prompt closure).
+
+If any stage output violates its profile, stop BLOCKED and route user to rerun the specific stage command.
+</ui_approval_docs_policy>
+
 <artifact_boundary>
 Planning artifacts must stay under:
 - `.spec-workflow/specs/<spec-name>/`
@@ -93,6 +102,7 @@ Do not generate planning/research artifacts under generic folders like `docs/`.
 - Mandatory gate: requirements without MCP approval blocks `spw:plan`.
 - Do not infer requirements in this command.
 - Do not start execution before design/tasks are approved.
+- Enforce `<ui_approval_docs_policy>` for stage outputs before advancing.
 </rules>
 
 <completion_guidance>

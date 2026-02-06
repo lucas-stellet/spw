@@ -69,10 +69,21 @@ Skill gate (mandatory when `skills.enabled=true`):
 <diagram_policy>
 For `design.md` output:
 - Include at least one valid Mermaid diagram in `## Architecture` main flow.
+- Use fenced lowercase Mermaid language marker: `mermaid`.
 - Prefer diagrams that represent real boundaries and data/control flow.
 - If `mermaid-architecture` skill is available, use it for diagram type selection and syntax quality.
 - Keep diagram terms consistent with requirement IDs and section vocabulary.
 </diagram_policy>
+
+<ui_approval_markdown_profile>
+`design.md` must stay render-safe and review-friendly in Spec Workflow UI:
+- Use plain Markdown (avoid raw HTML blocks unless strictly necessary).
+- Use ATX headings (`#`, `##`, `###`) with consistent hierarchy.
+- Keep tables valid with explicit header separator rows.
+- Keep fenced code blocks balanced and language-tagged.
+- Keep emphasis/underscore delimiters balanced (no dangling `_` or `**`).
+- Keep architecture diagrams as fenced lowercase Mermaid blocks.
+</ui_approval_markdown_profile>
 
 <workflow>
 1. Run design skills preflight (availability + load mode) and write `SKILLS-DESIGN-DRAFT.md`.
@@ -83,7 +94,7 @@ For `design.md` output:
    - `.spec-workflow/user-templates/design-template.md` (preferred)
    - fallback: `.spec-workflow/templates/design-template.md`
 3. Dispatch `traceability-mapper`.
-4. Dispatch `design-writer` using mapper output and apply `<diagram_policy>`.
+4. Dispatch `design-writer` using mapper output and apply `<diagram_policy>` + `<ui_approval_markdown_profile>`.
 5. Dispatch `design-critic`.
 6. If critic returns BLOCKED:
    - revise with `design-writer`
@@ -110,6 +121,8 @@ For `design.md` output:
 - [ ] Technical decisions are justified.
 - [ ] Test strategy is explicit.
 - [ ] Architecture section contains at least one valid Mermaid diagram.
+- [ ] Mermaid diagram uses fenced lowercase language marker `mermaid`.
+- [ ] Document satisfies UI-safe markdown profile (headings/tables/fences/emphasis balanced).
 - [ ] Critic gate returned PASS before approval request.
 </acceptance_criteria>
 

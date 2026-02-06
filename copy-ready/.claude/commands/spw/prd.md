@@ -160,6 +160,17 @@ If `--source` is provided and looks like a URL (`http://` or `https://`) or mark
    - "Choose another MCP"
 </source_handling>
 
+<ui_approval_markdown_profile>
+`requirements.md` must stay render-safe and review-friendly in Spec Workflow UI:
+- Use plain Markdown (avoid raw HTML blocks unless strictly necessary).
+- Use ATX headings (`#`, `##`, `###`) with consistent hierarchy.
+- Keep tables valid with explicit header separator rows.
+- Keep fenced code blocks balanced and language-tagged when applicable.
+- Keep emphasis/underscore delimiters balanced (no dangling `_` or `**`).
+- Avoid task-style checkboxes in requirements content (`- [ ]`, `- [-]`, `- [x]`).
+- Keep requirement IDs canonical and unique (`REQ-001`, `REQ-002`, ...).
+</ui_approval_markdown_profile>
+
 <workflow>
 1. Inspect existing `prd` run dirs and apply `<resume_policy>` decision gate.
 2. Determine active run directory:
@@ -183,6 +194,7 @@ If `--source` is provided and looks like a URL (`http://` or `https://`) or mark
 8. Dispatch `prd-editor` with file handoff to fill template using:
    - `.spec-workflow/user-templates/prd-template.md` (preferred)
    - fallback: `.spec-workflow/templates/prd-template.md`
+   - enforce `<ui_approval_markdown_profile>`
    - if resuming, redispatch only when output is missing/blocked
 9. Dispatch `prd-critic` with file handoff and enforce gate:
    - if BLOCKED, revise and re-run critic
@@ -212,6 +224,7 @@ If `--source` is provided and looks like a URL (`http://` or `https://`) or mark
 - [ ] Subagent outputs exist and are traceable (`PRD-SOURCE-NOTES.md`, `PRD-STRUCTURE.md`).
 - [ ] Final document is PRD format and remains compatible with spec-workflow requirements flow.
 - [ ] Every functional requirement has REQ-ID, priority, and verifiable acceptance criteria.
+- [ ] REQ-IDs are unique and follow canonical format (`REQ-001`, `REQ-002`, ...).
 - [ ] Explicit separation exists for v1, v2, and out-of-scope.
 - [ ] If `--source` was provided, MCP usage was explicitly asked.
 - [ ] On revision cycles, subagent analysis + codebase impact scan happened before edits.

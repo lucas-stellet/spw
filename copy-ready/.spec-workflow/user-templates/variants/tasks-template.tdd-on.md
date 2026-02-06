@@ -28,15 +28,22 @@ spw:
 - Wave 1:
 - Wave 2:
 
+## Dashboard Compatibility (Mandatory)
+- Use task rows only as `- [ ]`, `- [-]`, `- [x]` with numeric IDs.
+- Keep task IDs globally unique in the file (no duplicates).
+- Keep `Files` metadata parseable on one line:
+  - `- Files: path/to/file.ext, test/path/to/file_test.ext`
+- Keep `_Prompt: ..._` closed with trailing underscore and include:
+  - `Role: ... | Task: ... | Restrictions: ... | Success: ...`
+- Never add nested checkboxes in metadata sections.
+
 ---
 
 - [ ] 1.1 [Task title]
   - Wave: 1
   - Depends On: none
   - Can Run In Parallel With: 1.2, 1.3
-  - Files:
-    - modify: path/to/file.ex
-    - test: test/path/to/file_test.exs
+  - Files: path/to/file.ex, test/path/to/file_test.exs
   - _Requirements: REQ-001_
   - TDD: required
   - Test Plan:
@@ -58,9 +65,7 @@ spw:
   - Wave: 1
   - Depends On: none
   - Can Run In Parallel With: 1.1, 1.3
-  - Files:
-    - modify:
-    - test:
+  - Files: [modify-path], [test-path]
   - _Requirements: REQ-002_
   - TDD: required
   - Test Plan:
@@ -74,9 +79,7 @@ spw:
   - Wave: 2
   - Depends On: 1.1, 1.2
   - Can Run In Parallel With: none
-  - Files:
-    - modify:
-    - test:
+  - Files: [modify-path], [test-path]
   - _Requirements: REQ-001, REQ-002_
   - TDD: required
   - Test Plan:

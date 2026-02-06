@@ -157,12 +157,16 @@ Skill gate (mandatory when `skills.enabled=true`):
   - `- [ ] <id>. <description>`
   - `- [-] <id>. <description>`
   - `- [x] <id>. <description>`
+- Use `-` as task list marker (never `*` for task rows).
+- Every task line must start with numeric ID and IDs must be globally unique in the file.
 - Never use nested checkboxes inside metadata sections (DoD, notes, test details).
-- Every task line must start with numeric ID (`1`, `1.1`, `2.3`, ...).
-- Use `_Requirements: ..._` (underscore-delimited) for requirement traceability.
-- Use `_Leverage: ..._` when reuse targets exist.
-- Use `_Prompt: ..._` with closing underscore on the final prompt line.
-- Prefer `-` as list marker for task lines (avoid `*` for task rows).
+- Keep metadata lines as regular bullets (`- ...`), never checkbox bullets.
+- Use parseable metadata lines:
+  - `- Files: path/to/file.ext, test/path/to/file_test.ext` (single-line CSV)
+  - `- _Requirements: ..._` (underscore-delimited)
+  - `- _Leverage: ..._` (when reuse targets exist)
+  - `- _Prompt: ..._` (must close with `_`)
+- `_Prompt` must include: `Role: ... | Task: ... | Restrictions: ... | Success: ...`.
 </dashboard_markdown_profile>
 
 <workflow>
@@ -220,6 +224,9 @@ Skill gate (mandatory when `skills.enabled=true`):
 
 <acceptance_criteria>
 - [ ] All tasks have `Requirements`.
+- [ ] Task IDs are numeric and globally unique (no duplicate IDs).
+- [ ] Every executable task has a parseable single-line `Files:` metadata entry.
+- [ ] Prompt fields follow `Role|Task|Restrictions|Success` and close with underscore.
 - [ ] All tasks have tests or a documented exception.
 - [ ] Waves respect the configured limit.
 - [ ] Conflict checker returns no critical same-wave file collisions.

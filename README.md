@@ -154,13 +154,18 @@ To keep `tasks.md` fully compatible with Dashboard rendering + parsing + approva
   - `- [ ] <id>. <description>`
   - `- [-] <id>. <description>`
   - `- [x] <id>. <description>`
+- Use `-` as task list marker for task rows (never `*`).
 - Never use nested checkboxes in metadata blocks (for example DoD).
-- Always start task lines with numeric IDs (`1`, `1.1`, `2.3`, ...).
+- Always start task lines with numeric IDs (`1`, `1.1`, `2.3`, ...), and keep IDs unique in the whole file.
+- Keep metadata rows as regular bullets (`- ...`), never checkbox bullets.
+- Keep `Files` parseable in a single line:
+  - `- Files: path/to/file.ext, test/path/to/file_test.ext`
 - Prefer underscore-delimited metadata fields when applicable:
   - `_Requirements: ..._`
   - `_Leverage: ..._`
   - `_Prompt: ..._` (closing underscore required)
-- Prefer `-` for task list markers (avoid `*` on task lines).
+- Keep `_Prompt` structured as:
+  - `Role: ... | Task: ... | Restrictions: ... | Success: ...`
 
 SPW task templates and `spw:tasks-plan` are aligned with this compatibility profile.
 
@@ -179,7 +184,8 @@ Common architecture examples covered by the skill:
 - workflow lifecycle (`stateDiagram-v2`)
 
 In `spw:design-draft`, `design.md` should include at least one valid Mermaid
-diagram in the `## Architecture` section.
+diagram in the `## Architecture` section, using fenced lowercase `mermaid`
+code blocks.
 
 Skills are configured to be `subagent-first` by default to reduce main-context
 growth (`skills.load_mode = "subagent-first"`).
