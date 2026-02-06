@@ -70,27 +70,66 @@ After each phase, write:
 If a required `report.md` or `status.json` is missing, stop BLOCKED.
 </file_handoff_protocol>
 
+<resume_policy>
+Before creating a new run, inspect existing PRD run folders:
+- `.spec-workflow/specs/<spec-name>/agent-comms/prd/<run-id>/`
+- during revision protocol: `.spec-workflow/specs/<spec-name>/agent-comms/prd-revision/<run-id>/`
+
+A run is `unfinished` when any of these is true:
+- `_handoff.md` is missing
+- any subagent directory is missing `brief.md`, `report.md`, or `status.json`
+- any subagent `status.json` reports `status=blocked`
+
+Resume decision gate (mandatory):
+1. Find latest unfinished run (if multiple, sort by mtime descending and use the newest).
+2. If found, ask user once (AskUserQuestion) with options:
+   - `continue-unfinished` (Recommended): continue with that run directory.
+   - `delete-and-restart`: delete that unfinished run directory and start a new run.
+3. Never choose automatically. Do not infer user intent.
+4. If explicit user decision is unavailable, stop with `WAITING_FOR_USER_DECISION`.
+5. Do not create a new run-id before this decision.
+
+If user chooses `continue-unfinished`:
+- Reuse completed subagent outputs (`report.md` + `status.json` with `status=pass`).
+- Redispatch only missing/blocked subagents.
+- Always rerun `prd-critic` before final approval request.
+
+If user chooses `delete-and-restart`:
+- Delete the selected unfinished run dir.
+- Continue workflow with a fresh run-id.
+- Record deleted path in final output.
+</resume_policy>
+
 <revision_protocol>
 Trigger this protocol when either:
 - MCP approval status for requirements is `changes-requested` or `rejected`, or
 - user asks to analyze/adjust reviewed requirements.
 
 Protocol (mandatory):
-1. Read approval feedback from MCP and existing `requirements.md`.
-2. Dispatch `feedback-analyzer` (with file handoff) to classify:
+1. Inspect existing `prd-revision` run dirs and apply `<resume_policy>` decision gate.
+2. Determine active revision run directory:
+   - `continue-unfinished` -> reuse latest unfinished run dir
+   - `delete-and-restart` or no unfinished run -> create:
+     `.spec-workflow/specs/<spec-name>/agent-comms/prd-revision/<run-id>/`
+3. Read approval feedback from MCP and existing `requirements.md`.
+4. Dispatch `feedback-analyzer` (with file handoff) to classify:
    - accepted changes
    - ambiguous/conflicting feedback
    - out-of-scope suggestions
-3. Dispatch `codebase-impact-scanner` (if enabled in config `[reviews]`) with file handoff.
-4. Dispatch `revision-planner` with file handoff to create:
+   - if resuming, redispatch only when output is missing/blocked
+5. Dispatch `codebase-impact-scanner` (if enabled in config `[reviews]`) with file handoff.
+   - if resuming, redispatch only when output is missing/blocked
+6. Dispatch `revision-planner` with file handoff to create:
    - `.spec-workflow/specs/<spec-name>/PRD-REVISION-PLAN.md`
    - `.spec-workflow/specs/<spec-name>/PRD-REVISION-QUESTIONS.md` (if needed)
-5. Ask targeted clarification questions before editing if ambiguity/conflict exists.
-6. Only after clarification, dispatch `prd-editor` with file handoff to apply approved deltas.
-7. Save revision summary:
+   - if resuming, redispatch only when output is missing/blocked
+7. Ask targeted clarification questions before editing if ambiguity/conflict exists.
+8. Only after clarification, dispatch `prd-editor` with file handoff to apply approved deltas.
+9. Save revision summary:
    - `.spec-workflow/specs/<spec-name>/PRD-REVISION-NOTES.md`
-8. Write revision handoff:
+10. Write revision handoff:
    - `.spec-workflow/specs/<spec-name>/agent-comms/prd-revision/<run-id>/_handoff.md`
+   - include resume decision taken (`continue-unfinished` or `delete-and-restart`)
 
 Never directly edit requirements immediately after reading review comments.
 </revision_protocol>
@@ -122,31 +161,38 @@ If `--source` is provided and looks like a URL (`http://` or `https://`) or mark
 </source_handling>
 
 <workflow>
-1. Create communication run directory:
-   - `.spec-workflow/specs/<spec-name>/agent-comms/prd/<run-id>/`
-2. Read existing context:
+1. Inspect existing `prd` run dirs and apply `<resume_policy>` decision gate.
+2. Determine active run directory:
+   - `continue-unfinished` -> reuse latest unfinished run dir
+   - `delete-and-restart` or no unfinished run -> create:
+     `.spec-workflow/specs/<spec-name>/agent-comms/prd/<run-id>/`
+3. Read existing context:
    - `.spec-workflow/specs/<spec-name>/requirements.md` (if present)
    - `.spec-workflow/specs/<spec-name>/design.md` (if present)
    - `.spec-workflow/steering/*.md` (if present)
-3. If `--source` is present, write briefs and dispatch source-reader subagents:
+4. If `--source` is present, write briefs and dispatch source-reader subagents:
    - web-only fetches -> `source-reader-web`
    - MCP-backed reads -> `source-reader-mcp`
    - save normalized notes to `.spec-workflow/specs/<spec-name>/PRD-SOURCE-NOTES.md`
-4. Require source-reader `report.md` + `status.json`; BLOCKED if missing.
-5. Run one-question-at-a-time discovery with user.
-6. Dispatch `requirements-structurer` with file handoff to produce a structured draft:
+   - if resuming, redispatch only when output is missing/blocked
+5. Require source-reader `report.md` + `status.json`; BLOCKED if missing.
+6. Run one-question-at-a-time discovery with user.
+7. Dispatch `requirements-structurer` with file handoff to produce a structured draft:
    - `.spec-workflow/specs/<spec-name>/PRD-STRUCTURE.md`
-7. Dispatch `prd-editor` with file handoff to fill template using:
+   - if resuming, redispatch only when output is missing/blocked
+8. Dispatch `prd-editor` with file handoff to fill template using:
    - `.spec-workflow/user-templates/prd-template.md` (preferred)
    - fallback: `.spec-workflow/templates/prd-template.md`
-8. Dispatch `prd-critic` with file handoff and enforce gate:
+   - if resuming, redispatch only when output is missing/blocked
+9. Dispatch `prd-critic` with file handoff and enforce gate:
    - if BLOCKED, revise and re-run critic
    - if PASS, continue
-9. Save artifacts:
+   - if resuming, always rerun `prd-critic` before final approval flow
+10. Save artifacts:
    - canonical: `.spec-workflow/specs/<spec-name>/requirements.md`
    - product mirror: `.spec-workflow/specs/<spec-name>/PRD.md`
-10. Write `<run-dir>/_handoff.md` referencing source/structure/editor/critic outputs.
-11. Handle approval via MCP only:
+11. Write `<run-dir>/_handoff.md` referencing source/structure/editor/critic outputs and resume decision taken (`continue-unfinished` or `delete-and-restart`).
+12. Handle approval via MCP only:
    - call `spec-status`
    - resolve status from:
      - `documents.requirements.approved`
@@ -172,6 +218,7 @@ If `--source` is provided and looks like a URL (`http://` or `https://`) or mark
 - [ ] Clarification questions were asked when feedback was ambiguous/conflicting.
 - [ ] PRD is approved before moving to design/tasks.
 - [ ] File-based handoff exists under `.spec-workflow/specs/<spec-name>/agent-comms/prd/<run-id>/` (and revision run dir when applicable).
+- [ ] If unfinished run exists (`prd` or `prd-revision`), explicit user decision (`continue-unfinished` or `delete-and-restart`) was respected.
 </acceptance_criteria>
 
 <completion_guidance>
@@ -183,5 +230,6 @@ On success:
 If blocked:
 - Show the blocking reason (approval pending/rejected, missing source context, quality gate failure).
 - If blocked by revision ambiguity, show pending clarification questions and do not edit artifacts until answered.
+- If waiting on resume decision, ask user to choose `continue-unfinished` or `delete-and-restart`, then rerun.
 - Provide exact fix action and the command to rerun: `spw:prd <spec-name>`.
 </completion_guidance>

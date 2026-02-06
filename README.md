@@ -76,7 +76,7 @@ cp -R /path/to/spw/copy-ready/. .
 
 After install:
 1. Merge `.claude/settings.json.example` into your `.claude/settings.json` (if needed).
-2. Review `.spec-workflow/spw-config.toml`.
+2. Review `.spec-workflow/spw-config.toml` (especially `[planning].tasks_generation_strategy` and `[planning].max_wave_size`).
 3. Set per-stage skill enforcement as needed:
    - `skills.design.enforce_required = true|false`
    - `skills.implementation.enforce_required = true|false`
@@ -103,18 +103,32 @@ Optional: Agent Teams (disabled by default)
 
 - `spw:prd` -> zero-to-PRD requirements flow
 - `spw:plan` -> design/tasks planning from existing requirements (with MCP approval gate)
-- `spw:tasks-plan --mode initial|next-wave` -> rolling-wave task generation
+- `spw:tasks-plan` -> config-driven task generation (`rolling-wave` or `all-at-once`)
 - `spw:exec` -> batch execution with checkpoints
 - `spw:checkpoint` -> quality gate report (PASS/BLOCKED)
 - `spw:status` -> summarize where workflow stopped + next commands
 
-`spw:design-research` unfinished-run handling:
-- Before creating a new run-id, it must inspect `.spec-workflow/specs/<spec-name>/agent-comms/design-research/*`.
-- If latest unfinished run exists, it must ask explicit user decision:
+Planning defaults are configured in `.spec-workflow/spw-config.toml`:
+
+```toml
+[planning]
+tasks_generation_strategy = "rolling-wave" # or "all-at-once"
+max_wave_size = 3
+```
+
+- `rolling-wave`: each planning cycle creates one executable wave.
+  - Typical loop: `tasks-plan` -> `exec` -> `checkpoint` -> `tasks-plan` (next wave)...
+- `all-at-once`: one planning pass creates all executable waves.
+- Explicit CLI args still override config (`--mode`, `--max-wave-size`).
+
+Unfinished-run handling for long subagent commands (`spw:prd`, `spw:design-research`, `spw:tasks-plan`, `spw:tasks-check`, `spw:checkpoint`):
+- Before creating a new run-id, inspect the phase run folder (for `checkpoint`, inspect current wave folder first).
+- If latest unfinished run exists, ask explicit user decision:
   - `continue-unfinished`
   - `delete-and-restart`
-- It must never choose automatically.
-- If explicit decision is unavailable, it must stop with `WAITING_FOR_USER_DECISION`.
+- Never choose automatically.
+- If explicit decision is unavailable, stop with `WAITING_FOR_USER_DECISION`.
+- On `continue-unfinished`, reuse completed `status=pass` outputs, redispatch missing/blocked subagents, and rerun the phase final decision/synthesis subagent before final artifact output.
 
 File-first subagent communication is enabled for planning/validation flows and
 stored under:

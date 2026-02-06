@@ -34,6 +34,35 @@ After validation, write:
 If a required `report.md` or `status.json` is missing, stop BLOCKED.
 </file_handoff_protocol>
 
+<resume_policy>
+Before creating a new run, inspect existing tasks-check run folders:
+- `.spec-workflow/specs/<spec-name>/agent-comms/tasks-check/<run-id>/`
+
+A run is `unfinished` when any of these is true:
+- `_handoff.md` is missing
+- any subagent directory is missing `brief.md`, `report.md`, or `status.json`
+- any subagent `status.json` reports `status=blocked`
+
+Resume decision gate (mandatory):
+1. Find latest unfinished run (if multiple, sort by mtime descending and use the newest).
+2. If found, ask user once (AskUserQuestion) with options:
+   - `continue-unfinished` (Recommended): continue with that run directory.
+   - `delete-and-restart`: delete that unfinished run directory and start a new run.
+3. Never choose automatically. Do not infer user intent.
+4. If explicit user decision is unavailable, stop with `WAITING_FOR_USER_DECISION`.
+5. Do not create a new run-id before this decision.
+
+If user chooses `continue-unfinished`:
+- Reuse completed auditor outputs (`report.md` + `status.json` with `status=pass`).
+- Redispatch only missing/blocked auditors.
+- Always rerun `decision-aggregator` before final PASS/BLOCKED output.
+
+If user chooses `delete-and-restart`:
+- Delete the selected unfinished run dir.
+- Continue workflow with a fresh run-id.
+- Record deleted path in final output.
+</resume_policy>
+
 <model_policy>
 Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - complex_reasoning -> default `opus`
@@ -90,21 +119,26 @@ When `enabled=true` and `tasks-check` is included in `use_for_phases`:
 
 <workflow>
 1. Run design skills preflight (availability + load mode) and write `SKILLS-TASKS-CHECK.md`.
-2. Create communication run directory:
-   - `.spec-workflow/specs/<spec-name>/agent-comms/tasks-check/<run-id>/`
-3. Read `.spec-workflow/specs/<spec-name>/tasks.md` + requirements/design docs.
-4. If Agent Teams are enabled for this phase, create a team and assign subagent roles to teammates.
-5. Write briefs (including required skills per role) and dispatch in parallel:
+2. Inspect existing tasks-check run dirs and apply `<resume_policy>` decision gate.
+3. Determine active run directory:
+   - `continue-unfinished` -> reuse latest unfinished run dir
+   - `delete-and-restart` or no unfinished run -> create:
+     `.spec-workflow/specs/<spec-name>/agent-comms/tasks-check/<run-id>/`
+4. Read `.spec-workflow/specs/<spec-name>/tasks.md` + requirements/design docs.
+5. If Agent Teams are enabled for this phase, create a team and assign subagent roles to teammates.
+6. Write briefs (including required skills per role) and dispatch in parallel:
    - `traceability-auditor`
    - `dag-validator`
    - `test-policy-auditor`
-6. Require auditor `report.md` + `status.json` (with skill fields); BLOCKED if missing.
-7. Dispatch `decision-aggregator` with file handoff to produce PASS/BLOCKED decision.
-8. Generate `.spec-workflow/specs/<spec-name>/TASKS-CHECK.md` containing:
+   - if resuming, redispatch only missing/blocked auditors
+7. Require auditor `report.md` + `status.json` (with skill fields); BLOCKED if missing.
+8. Dispatch `decision-aggregator` with file handoff to produce PASS/BLOCKED decision.
+   - if resuming, always rerun `decision-aggregator`
+9. Generate `.spec-workflow/specs/<spec-name>/TASKS-CHECK.md` containing:
    - PASS/BLOCKED
    - findings by severity
    - recommended fixes
-9. Write `<run-dir>/_handoff.md` linking all auditor/aggregator outputs.
+10. Write `<run-dir>/_handoff.md` linking all auditor/aggregator outputs and resume decision taken (`continue-unfinished` or `delete-and-restart`).
 </workflow>
 
 <acceptance_criteria>
@@ -113,6 +147,7 @@ When `enabled=true` and `tasks-check` is included in `use_for_phases`:
 - [ ] DAG has no cycles and wave order is valid.
 - [ ] Test policy gate is satisfied.
 - [ ] File-based handoff exists under `.spec-workflow/specs/<spec-name>/agent-comms/tasks-check/<run-id>/`.
+- [ ] If unfinished run exists, explicit user decision (`continue-unfinished` or `delete-and-restart`) was respected.
 </acceptance_criteria>
 
 <completion_guidance>
@@ -123,5 +158,6 @@ On PASS:
 
 On BLOCKED:
 - Show findings by severity and required fixes.
+- If waiting on resume decision, ask user to choose `continue-unfinished` or `delete-and-restart`, then rerun.
 - Recommend fix path: update `tasks.md`, then rerun `spw:tasks-check <spec-name>`.
 </completion_guidance>

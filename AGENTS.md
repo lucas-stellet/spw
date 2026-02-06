@@ -28,14 +28,18 @@ Observação:
 2. Manter localidade de artefatos: pesquisa/planejamento ficam dentro da spec ativa; apoio em `.spec-workflow/specs/<spec-name>/research/`.
 3. Aprovação é MCP-only: checar status via MCP; não substituir por aprovação manual em chat.
 4. Preservar contrato dos comandos (`spw:prd`, `spw:plan`, `spw:tasks-plan`, `spw:exec`, `spw:checkpoint`, `spw:status`) e atualizar docs se comportamento mudar.
-5. Em `spw:tasks-plan`, manter semântica de modo:
-   - `initial`: gera apenas wave executável inicial
-   - `next-wave`: adiciona apenas próxima wave executável
+5. Em `spw:tasks-plan`, manter semântica + precedência:
+   - `--mode initial`: gera apenas wave executável inicial
+   - `--mode next-wave`: adiciona apenas próxima wave executável
+   - sem `--mode`, usar `[planning].tasks_generation_strategy`:
+     - `rolling-wave`: gera uma wave executável por ciclo
+     - `all-at-once`: gera todas as waves executáveis em uma execução
+   - `--max-wave-size` sobrescreve `[planning].max_wave_size`; sem argumento, usar config
 6. Em `spw:exec`, execução é via subagentes por tarefa (inclusive waves sequenciais de 1 tarefa); orquestrador não implementa código direto.
 7. Se `execution.require_user_approval_between_waves=true`, não avançar wave sem autorização explícita do usuário.
 8. Se `execution.commit_per_task=true`, exigir commit atômico por tarefa; respeitar gate de worktree limpo quando habilitado.
 9. `spw update` deve atualizar primeiro o próprio binário (`spw`) e, em seguida, limpar cache local do kit antes de atualizar, para evitar templates/comandos stale.
-10. Em `spw:design-research`, se existir run incompleto, é obrigatório AskUserQuestion (`continue-unfinished` ou `delete-and-restart`); o agente não pode escolher reiniciar sozinho.
+10. Em comandos longos com subagentes (`spw:prd`, `spw:design-research`, `spw:tasks-plan`, `spw:tasks-check`, `spw:checkpoint`), se existir run incompleto, é obrigatório AskUserQuestion (`continue-unfinished` ou `delete-and-restart`); o agente não pode escolher reiniciar sozinho.
 
 ## File-first comms (não quebrar)
 

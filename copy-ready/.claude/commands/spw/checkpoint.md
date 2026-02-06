@@ -41,6 +41,35 @@ After checkpoint, write:
 If a required `report.md` or `status.json` is missing, stop BLOCKED.
 </file_handoff_protocol>
 
+<resume_policy>
+Before creating a new run, inspect existing checkpoint run folders for the current wave:
+- `.spec-workflow/specs/<spec-name>/agent-comms/waves/wave-<NN>/checkpoint/<run-id>/`
+
+A run is `unfinished` when any of these is true:
+- `_handoff.md` is missing
+- any subagent directory is missing `brief.md`, `report.md`, or `status.json`
+- any subagent `status.json` reports `status=blocked`
+
+Resume decision gate (mandatory):
+1. Find latest unfinished run (if multiple, sort by mtime descending and use the newest).
+2. If found, ask user once (AskUserQuestion) with options:
+   - `continue-unfinished` (Recommended): continue with that run directory.
+   - `delete-and-restart`: delete that unfinished run directory and start a new run.
+3. Never choose automatically. Do not infer user intent.
+4. If explicit user decision is unavailable, stop with `WAITING_FOR_USER_DECISION`.
+5. Do not create a new run-id before this decision.
+
+If user chooses `continue-unfinished`:
+- Reuse completed subagent outputs (`report.md` + `status.json` with `status=pass`) when still valid.
+- Redispatch only missing/blocked subagents.
+- Always rerun `release-gate-decider` before final PASS/BLOCKED decision.
+
+If user chooses `delete-and-restart`:
+- Delete the selected unfinished run dir.
+- Continue workflow with a fresh run-id.
+- Record deleted path in final output.
+</resume_policy>
+
 <model_policy>
 Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - complex_reasoning -> default `opus`
@@ -109,21 +138,27 @@ Rules:
 1. Run implementation skills preflight (availability + load mode) and write `SKILLS-CHECKPOINT.md`.
 2. Resolve current wave ID (`wave-<NN>`) and create canonical wave directory:
    - `.spec-workflow/specs/<spec-name>/agent-comms/waves/wave-<NN>/`
-3. Create checkpoint run directory:
-   - `.spec-workflow/specs/<spec-name>/agent-comms/waves/wave-<NN>/checkpoint/<run-id>/`
-4. Write brief (including required skills for role) and dispatch `evidence-collector`.
-5. Require `evidence-collector` output files (`report.md`, `status.json` with skill fields); BLOCKED if missing.
-6. Write brief (including required skills for role) and dispatch `traceability-judge` using collected evidence files.
-7. Require `traceability-judge` output files (`report.md`, `status.json` with skill fields); BLOCKED if missing.
-8. Write brief (including required skills for role) and dispatch `release-gate-decider` using prior reports.
-9. Generate `.spec-workflow/specs/<spec-name>/CHECKPOINT-REPORT.md` with:
+3. Inspect existing checkpoint run dirs for the current wave and apply `<resume_policy>` decision gate.
+4. Determine active run directory:
+   - `continue-unfinished` -> reuse latest unfinished run dir
+   - `delete-and-restart` or no unfinished run -> create:
+     `.spec-workflow/specs/<spec-name>/agent-comms/waves/wave-<NN>/checkpoint/<run-id>/`
+5. Write brief (including required skills for role) and dispatch `evidence-collector`.
+   - if resuming, redispatch only when output is missing/blocked
+6. Require `evidence-collector` output files (`report.md`, `status.json` with skill fields); BLOCKED if missing.
+7. Write brief (including required skills for role) and dispatch `traceability-judge` using collected evidence files.
+   - if resuming, redispatch only when output is missing/blocked
+8. Require `traceability-judge` output files (`report.md`, `status.json` with skill fields); BLOCKED if missing.
+9. Write brief (including required skills for role) and dispatch `release-gate-decider` using prior reports.
+   - if resuming, always rerun `release-gate-decider`
+10. Generate `.spec-workflow/specs/<spec-name>/CHECKPOINT-REPORT.md` with:
    - status: PASS | BLOCKED
    - critical issues
    - corrective actions
    - recommended next step
    - implementation log coverage by task ID
-10. Write `<run-dir>/_handoff.md` linking all subagent outputs and final decision.
-11. Update wave-level pointers/summaries in:
+11. Write `<run-dir>/_handoff.md` linking all subagent outputs, final decision, and resume decision taken (`continue-unfinished` or `delete-and-restart`).
+12. Update wave-level pointers/summaries in:
     - `<wave-dir>/_latest.json`
     - `<wave-dir>/_wave-summary.md`
 </workflow>
@@ -137,6 +172,7 @@ If status is BLOCKED, do not proceed to the next batch/wave.
 - [ ] `CHECKPOINT-REPORT.md` decision is traceable to subagent reports.
 - [ ] Wave-level summary/pointers are updated (`_wave-summary.md`, `_latest.json`).
 - [ ] Every completed task in scope has a corresponding implementation log entry.
+- [ ] If unfinished run exists, explicit user decision (`continue-unfinished` or `delete-and-restart`) was respected.
 </acceptance_criteria>
 
 <completion_guidance>
@@ -145,5 +181,6 @@ On PASS:
 
 On BLOCKED:
 - Show critical issues first, with exact corrective actions.
+- If waiting on resume decision, ask user to choose `continue-unfinished` or `delete-and-restart`, then rerun.
 - Recommend remediation command(s) and rerun: `spw:checkpoint <spec-name>`.
 </completion_guidance>

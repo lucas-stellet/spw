@@ -1,7 +1,7 @@
 ---
 name: spw:plan
 description: Technical planning from existing requirements, orchestrated by subagents
-argument-hint: "<spec-name> [--max-wave-size 3]"
+argument-hint: "<spec-name> [--max-wave-size <N>]"
 ---
 
 <objective>
@@ -19,6 +19,15 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - complex_reasoning -> default `opus`
 - implementation -> default `sonnet`
 </model_policy>
+
+<planning_defaults>
+Resolve planning defaults from `.spec-workflow/spw-config.toml` `[planning]`:
+- `tasks_generation_strategy` (`rolling-wave|all-at-once`, default `rolling-wave`)
+- `max_wave_size` (default `3`)
+
+Rule:
+- Call `spw:tasks-plan` without forcing `--mode`/`--max-wave-size`, unless user explicitly asked for overrides.
+</planning_defaults>
 
 <subagents>
 - `requirements-approval-gate` (model: complex_reasoning)
@@ -65,7 +74,7 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 1. Dispatch `planning-stage-orchestrator` for:
    - `spw:design-research <spec-name>`
    - `spw:design-draft <spec-name>`
-   - `spw:tasks-plan <spec-name> --mode initial --max-wave-size <N>`
+   - `spw:tasks-plan <spec-name>`
    - `spw:tasks-check <spec-name>`
 2. If `tasks-check` is BLOCKED, revise and repeat stage 1 as needed.
 </pipeline>

@@ -108,7 +108,7 @@ Skill gate (mandatory when `skills.enabled=true`):
 On success:
 - Confirm output path: `.spec-workflow/specs/<spec-name>/design.md`.
 - Confirm approval request status for design.
-- Recommend next command: `spw:tasks-plan <spec-name> --max-wave-size <N>`.
+- Recommend next command: `spw:tasks-plan <spec-name>` (use config defaults, or override with `--mode` / `--max-wave-size` when needed).
 
 If blocked:
 - Show precondition/critic/review failures with required fixes.

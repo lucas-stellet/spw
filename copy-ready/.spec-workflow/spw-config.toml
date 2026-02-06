@@ -86,6 +86,19 @@ require_clean_worktree_for_wave_pass = true
 # as in-progress by the orchestrator. SPW stops and hands off to the user instead.
 manual_tasks_require_human_handoff = true
 
+[planning]
+# Controls how `spw:tasks-plan` creates executable waves when `--mode` is omitted.
+#
+# Supported values:
+# - "rolling-wave" (default): create a single executable wave per planning cycle.
+#   Typical loop: plan tasks -> execute -> checkpoint -> plan next wave.
+# - "all-at-once": generate all executable waves in one planning pass.
+tasks_generation_strategy = "rolling-wave"
+
+# Default wave size limit used by planning commands when `--max-wave-size` is omitted.
+# CLI argument `--max-wave-size` always overrides this value.
+max_wave_size = 3
+
 [subagents]
 # Max number of parallel subagents for web scouting tasks.
 # Keep this moderate to avoid noisy/duplicated findings.

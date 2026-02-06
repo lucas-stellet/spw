@@ -106,6 +106,14 @@ When enabled, if the next task is manual/human-gated (for example external sandb
 - provide checklist + exact command to resume after user confirms completion
 </manual_task_policy>
 
+<tasks_planning_strategy>
+Resolve from `.spec-workflow/spw-config.toml` `[planning].tasks_generation_strategy` (default `rolling-wave`).
+
+Post-execution behavior:
+- `rolling-wave`: after current waves finish, recommend planning the next executable wave.
+- `all-at-once`: do not force another planning cycle unless requirements/design changed.
+</tasks_planning_strategy>
+
 <git_hygiene>
 Resolve from `.spec-workflow/spw-config.toml` `[execution]`:
 - `commit_per_task` (default `true`)
@@ -200,9 +208,10 @@ If waiting on manual task:
 - keep manual task unchecked unless user explicitly confirms it started/completed.
 
 After full execution success:
-- If no further executable waves are planned, recommend:
-  - `spw:tasks-plan <spec-name> --mode next-wave --max-wave-size <N>`
+- If no further executable waves are planned and `tasks_generation_strategy=rolling-wave`, recommend:
+  - `spw:tasks-plan <spec-name>`
   - then `spw:tasks-check <spec-name>`
+- If no further executable waves are planned and `tasks_generation_strategy=all-at-once`, skip forced re-planning and recommend final validation only.
 - Recommend final validation review and optionally `/clear` before any new planning cycle.
 
 If blocked by spec resolution:
