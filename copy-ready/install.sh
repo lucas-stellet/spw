@@ -15,7 +15,17 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TARGET_ROOT="$(pwd)"
 CONFIG_PATH="${TARGET_ROOT}/.spec-workflow/spw-config.toml"
-SPW_REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+# Resolve repository root robustly.
+# Typical cached layout used by `spw` wrapper:
+#   <cache>/repos/<repo>/copy-ready/install.sh
+# where repo root is one level above SCRIPT_DIR.
+SPW_REPO_ROOT_CANDIDATE_1="$(cd "${SCRIPT_DIR}/.." && pwd)"
+SPW_REPO_ROOT_CANDIDATE_2="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+if [ -d "${SPW_REPO_ROOT_CANDIDATE_1}/skills" ] || [ -d "${SPW_REPO_ROOT_CANDIDATE_1}/.git" ]; then
+  SPW_REPO_ROOT="${SPW_REPO_ROOT_CANDIDATE_1}"
+else
+  SPW_REPO_ROOT="${SPW_REPO_ROOT_CANDIDATE_2}"
+fi
 SUPERPOWERS_SKILLS_DIR="${SPW_SUPERPOWERS_SKILLS_DIR:-${SPW_REPO_ROOT}/superpowers/skills}"
 
 DEFAULT_SKILLS=(
