@@ -6,7 +6,8 @@ set -euo pipefail
 #   ./install.sh [install|skills|status]
 #
 # Behavior:
-# - install (default): copies kit files into current project
+# - help (default): prints usage
+# - install: copies kit files into current project
 # - install --enable-teams: enables Agent Teams in config/settings and overlays team command pack
 # - skills: installs default SPW skills into .claude/skills (best effort)
 # - status: prints a quick summary of kit presence + default skills
@@ -54,7 +55,8 @@ Usage:
   spw status
 
 Behavior:
-- install (default): copies commands, hooks, templates, and config into cwd.
+- help (default): prints this help output.
+- install: copies commands, hooks, templates, and config into cwd.
 - install --enable-teams: enables Agent Teams in config/settings and overlays team command pack.
 - skills: installs default SPW skills into .claude/skills (best effort).
 - status: prints a quick summary of kit presence + default skills.
@@ -359,7 +361,7 @@ cmd_status() {
   status_default_skills
 }
 
-cmd="${1:-install}"
+cmd="${1:-help}"
 if [ "$#" -gt 0 ]; then
   shift
 fi

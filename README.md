@@ -44,6 +44,10 @@ rm -rf "${tmp_dir}"
 ```
 
 The installed `spw` wrapper caches the kit from GitHub and runs `copy-ready/install.sh`.
+Default CLI behavior:
+- `spw` prints help output
+- `spw install` performs installation in the current project
+
 Useful commands:
 - `spw update` (self-update the `spw` wrapper first, then clear cache, fetch fresh repo/ref, and print `ref@commit` + update timestamp)
 - `spw doctor` (show current repo/ref/cache configuration, including `ref@commit` and last update timestamp)
@@ -53,7 +57,7 @@ Useful commands:
 Option 1 (recommended, from target project root):
 
 ```bash
-spw
+spw install
 ```
 
 Optional:

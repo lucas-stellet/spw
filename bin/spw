@@ -30,6 +30,10 @@ Environment:
   SPW_HOME         Cache root (default: ~/.local/share/spw)
   SPW_KIT_DIR      Explicit kit directory override
   SPW_AUTO_UPDATE  true|false (default: false)
+
+Default behavior:
+  - `spw` shows this help output
+  - use `spw install` to install the kit in the current project
 USAGE
 }
 
@@ -256,7 +260,7 @@ doctor() {
   echo "git: $(command -v git || echo missing)"
 }
 
-cmd="${1:-install}"
+cmd="${1:-help}"
 
 case "$cmd" in
   -h|--help|help)

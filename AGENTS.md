@@ -45,6 +45,7 @@ Observação:
    - nunca usar checkbox aninhado em DoD/metadados
    - usar metadados com underscore: `_Requirements: ..._`, `_Leverage: ..._` (quando houver), `_Prompt: ..._` (fechando com `_`)
 12. Em `design.md`, incluir ao menos um diagrama Mermaid válido em `## Architecture` (fluxo principal), preferindo a skill `mermaid-architecture` para padronização.
+13. UX do CLI: `spw` deve mostrar help por padrão; instalação explícita via `spw install`.
 
 ## File-first comms (não quebrar)
 
