@@ -24,6 +24,22 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - implementation -> default `sonnet`
 </model_policy>
 
+<post_mortem_memory>
+Resolve from `.spec-workflow/spw-config.toml` `[post_mortem_memory]`:
+- `enabled` (default `true`)
+- `max_entries_for_design` (default `5`)
+- `prefer_same_spec` (default `true`)
+
+If enabled and index exists:
+1. Read `.spec-workflow/post-mortems/INDEX.md`.
+2. Select up to `max_entries_for_design` relevant entries:
+   - same `<spec-name>` first when `prefer_same_spec=true`
+   - then by tag/topic similarity and recency
+3. Load selected reports and extract reusable guardrails for PRD quality.
+
+If index/report files are missing, continue with warning (non-blocking).
+</post_mortem_memory>
+
 <subagents>
 - `source-reader-web` (model: web_research)
   - Reads URLs and extracts only requirement-relevant signals.
@@ -181,6 +197,7 @@ If `--source` is provided and looks like a URL (`http://` or `https://`) or mark
    - `.spec-workflow/specs/<spec-name>/requirements.md` (if present)
    - `.spec-workflow/specs/<spec-name>/design.md` (if present)
    - `.spec-workflow/steering/*.md` (if present)
+   - post-mortem memory inputs via `<post_mortem_memory>`
 4. If `--source` is present, write briefs and dispatch source-reader subagents:
    - web-only fetches -> `source-reader-web`
    - MCP-backed reads -> `source-reader-mcp`

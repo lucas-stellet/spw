@@ -111,6 +111,7 @@ Optional: Agent Teams (disabled by default)
 - `spw:exec` -> batch execution with checkpoints
 - `spw:checkpoint` -> quality gate report (PASS/BLOCKED)
 - `spw:status` -> summarize where workflow stopped + next commands
+- `spw:post-mortem` -> analyze post-spec commits and write reusable lessons
 
 Planning defaults are configured in `.spec-workflow/spw-config.toml`:
 
@@ -125,7 +126,20 @@ max_wave_size = 3
 - `all-at-once`: one planning pass creates all executable waves.
 - Explicit CLI args still override config (`--mode`, `--max-wave-size`).
 
-Unfinished-run handling for long subagent commands (`spw:prd`, `spw:design-research`, `spw:tasks-plan`, `spw:tasks-check`, `spw:checkpoint`):
+Post-mortem memory defaults are configured in `.spec-workflow/spw-config.toml`:
+
+```toml
+[post_mortem_memory]
+enabled = true
+max_entries_for_design = 5
+prefer_same_spec = true
+```
+
+- `spw:post-mortem` writes reports to `.spec-workflow/post-mortems/<spec-name>/`.
+- Shared index: `.spec-workflow/post-mortems/INDEX.md` (used by design/planning commands when enabled).
+- Design/planning phases (`spw:prd`, `spw:design-research`, `spw:design-draft`, `spw:tasks-plan`, `spw:tasks-check`) load indexed lessons with recency/tag prioritization.
+
+Unfinished-run handling for long subagent commands (`spw:prd`, `spw:design-research`, `spw:tasks-plan`, `spw:tasks-check`, `spw:checkpoint`, `spw:post-mortem`):
 - Before creating a new run-id, inspect the phase run folder (for `checkpoint`, inspect current wave folder first).
 - If latest unfinished run exists, ask explicit user decision:
   - `continue-unfinished`
@@ -138,6 +152,7 @@ File-first subagent communication is enabled for planning/validation flows and
 stored under:
 - planning/research: `.spec-workflow/specs/<spec-name>/agent-comms/<command>/<run-id>/`
 - execution/checkpoint by wave: `.spec-workflow/specs/<spec-name>/agent-comms/waves/wave-<NN>/<stage>/<run-id>/`
+- post-mortem: `.spec-workflow/specs/<spec-name>/agent-comms/post-mortem/<run-id>/`
 
 YAML frontmatter (optional metadata) is included in spec templates under the
 `spw` key to help subagents classify documents. It does not replace MCP

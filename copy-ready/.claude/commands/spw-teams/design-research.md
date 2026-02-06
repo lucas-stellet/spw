@@ -84,6 +84,25 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - implementation -> default `sonnet`
 </model_policy>
 
+<post_mortem_memory>
+Resolve from `.spec-workflow/spw-config.toml` `[post_mortem_memory]`:
+- `enabled` (default `true`)
+- `max_entries_for_design` (default `5`)
+- `prefer_same_spec` (default `true`)
+
+If enabled and index exists:
+1. Read `.spec-workflow/post-mortems/INDEX.md`.
+2. Select up to `max_entries_for_design` relevant entries:
+   - same `<spec-name>` first when `prefer_same_spec=true`
+   - then by tag/topic similarity and recency
+3. Load selected post-mortems and derive design constraints:
+   - failure patterns to avoid
+   - missing decisions to enforce
+   - review/test checks to include in recommendations
+
+If index/report files are missing, continue with warning (non-blocking).
+</post_mortem_memory>
+
 <skills_policy>
 Resolve skill policy from `.spec-workflow/spw-config.toml`:
 - `[skills].enabled`
@@ -154,6 +173,7 @@ When `enabled=true` and `design-research` is included in `use_for_phases`:
 5. Read:
    - `.spec-workflow/specs/<spec-name>/requirements.md`
    - `.spec-workflow/steering/*.md` (if present)
+   - post-mortem memory inputs via `<post_mortem_memory>`
 6. If Agent Teams are enabled for this phase, create a team and assign subagent roles to teammates.
 7. Write subagent briefs (including required skills for each role) and dispatch:
    - `codebase-pattern-scanner`

@@ -27,7 +27,7 @@ Observação:
 1. Respeitar paths canônicos SPW: usar `.spec-workflow/specs/<spec-name>/` (nunca `.specs/`).
 2. Manter localidade de artefatos: pesquisa/planejamento ficam dentro da spec ativa; apoio em `.spec-workflow/specs/<spec-name>/research/`.
 3. Aprovação é MCP-only: checar status via MCP; não substituir por aprovação manual em chat.
-4. Preservar contrato dos comandos (`spw:prd`, `spw:plan`, `spw:tasks-plan`, `spw:exec`, `spw:checkpoint`, `spw:status`) e atualizar docs se comportamento mudar.
+4. Preservar contrato dos comandos (`spw:prd`, `spw:plan`, `spw:tasks-plan`, `spw:exec`, `spw:checkpoint`, `spw:status`, `spw:post-mortem`) e atualizar docs se comportamento mudar.
 5. Em `spw:tasks-plan`, manter semântica + precedência:
    - `--mode initial`: gera apenas wave executável inicial
    - `--mode next-wave`: adiciona apenas próxima wave executável
@@ -39,7 +39,7 @@ Observação:
 7. Se `execution.require_user_approval_between_waves=true`, não avançar wave sem autorização explícita do usuário.
 8. Se `execution.commit_per_task=true`, exigir commit atômico por tarefa; respeitar gate de worktree limpo quando habilitado.
 9. `spw update` deve atualizar primeiro o próprio binário (`spw`) e, em seguida, limpar cache local do kit antes de atualizar, para evitar templates/comandos stale.
-10. Em comandos longos com subagentes (`spw:prd`, `spw:design-research`, `spw:tasks-plan`, `spw:tasks-check`, `spw:checkpoint`), se existir run incompleto, é obrigatório AskUserQuestion (`continue-unfinished` ou `delete-and-restart`); o agente não pode escolher reiniciar sozinho.
+10. Em comandos longos com subagentes (`spw:prd`, `spw:design-research`, `spw:tasks-plan`, `spw:tasks-check`, `spw:checkpoint`, `spw:post-mortem`), se existir run incompleto, é obrigatório AskUserQuestion (`continue-unfinished` ou `delete-and-restart`); o agente não pode escolher reiniciar sozinho.
 11. Compatibilidade com dashboard (`spec-workflow-mcp`) em `tasks.md` é obrigatória:
    - checkbox apenas em linhas de tarefa (`- [ ]`, `- [-]`, `- [x]` com ID numérico)
    - IDs de tarefa devem ser únicos no arquivo (sem duplicatas)
@@ -52,6 +52,8 @@ Observação:
 12. Em `design.md`, incluir ao menos um diagrama Mermaid válido em `## Architecture` (fluxo principal), preferindo a skill `mermaid-architecture` para padronização.
    - usar bloco fenced com marcador de linguagem `mermaid` em minúsculo
 13. UX do CLI: `spw` deve mostrar help por padrão; instalação explícita via `spw install`.
+14. Em `spw:post-mortem`, salvar relatórios em `.spec-workflow/post-mortems/<spec-name>/` com front matter YAML (`spec`, `topic`, `tags`, `range_from`, `range_to`) e atualizar `.spec-workflow/post-mortems/INDEX.md`.
+15. Com `[post_mortem_memory].enabled=true`, comandos de design/planning (`spw:prd`, `spw:design-research`, `spw:design-draft`, `spw:tasks-plan`, `spw:tasks-check`) devem consultar o índice de post-mortems e aplicar no máximo `[post_mortem_memory].max_entries_for_design` entradas relevantes.
 
 ## File-first comms (não quebrar)
 

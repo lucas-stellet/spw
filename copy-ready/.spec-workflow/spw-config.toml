@@ -99,6 +99,21 @@ tasks_generation_strategy = "rolling-wave"
 # CLI argument `--max-wave-size` always overrides this value.
 max_wave_size = 3
 
+[post_mortem_memory]
+# Controls how planning/design commands consume previous post-mortems.
+#
+# enabled:
+# - true (default): load indexed post-mortems when available.
+# - false: skip post-mortem memory enrichment in design/planning stages.
+enabled = true
+
+# Maximum number of indexed post-mortems loaded per design/planning command.
+# Typical recommendation: 3-8.
+max_entries_for_design = 5
+
+# If true, prioritize reports from the same spec before broader tag/topic matches.
+prefer_same_spec = true
+
 [subagents]
 # Max number of parallel subagents for web scouting tasks.
 # Keep this moderate to avoid noisy/duplicated findings.
