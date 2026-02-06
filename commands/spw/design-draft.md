@@ -66,6 +66,14 @@ Skill gate (mandatory when `skills.enabled=true`):
   - Runs consistency and completeness gate.
 </subagents>
 
+<diagram_policy>
+For `design.md` output:
+- Include at least one valid Mermaid diagram in `## Architecture` main flow.
+- Prefer diagrams that represent real boundaries and data/control flow.
+- If `mermaid-architecture` skill is available, use it for diagram type selection and syntax quality.
+- Keep diagram terms consistent with requirement IDs and section vocabulary.
+</diagram_policy>
+
 <workflow>
 1. Run design skills preflight (availability + load mode) and write `SKILLS-DESIGN-DRAFT.md`.
 2. Read:
@@ -75,7 +83,7 @@ Skill gate (mandatory when `skills.enabled=true`):
    - `.spec-workflow/user-templates/design-template.md` (preferred)
    - fallback: `.spec-workflow/templates/design-template.md`
 3. Dispatch `traceability-mapper`.
-4. Dispatch `design-writer` using mapper output.
+4. Dispatch `design-writer` using mapper output and apply `<diagram_policy>`.
 5. Dispatch `design-critic`.
 6. If critic returns BLOCKED:
    - revise with `design-writer`
@@ -101,6 +109,7 @@ Skill gate (mandatory when `skills.enabled=true`):
 - [ ] Requirements traceability matrix exists.
 - [ ] Technical decisions are justified.
 - [ ] Test strategy is explicit.
+- [ ] Architecture section contains at least one valid Mermaid diagram.
 - [ ] Critic gate returned PASS before approval request.
 </acceptance_criteria>
 

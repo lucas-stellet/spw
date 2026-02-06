@@ -199,8 +199,10 @@ required = [
 ]
 
 # Optional skills: if present, SPW can use them to increase rigor.
+# - mermaid-architecture: architecture diagrams/patterns for design docs
 optional = [
-  "requesting-code-review"
+  "requesting-code-review",
+  "mermaid-architecture"
 ]
 
 [skills.implementation]

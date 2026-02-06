@@ -37,7 +37,7 @@ spw:
   - Files:
     - modify: path/to/file.ex
     - test: test/path/to/file_test.exs
-  - Requirements: REQ-001
+  - _Requirements: REQ-001_
   - TDD: required
   - Test Plan:
     - Unit:
@@ -48,10 +48,10 @@ spw:
     - Reason:
     - Alternative validation:
   - Definition of Done:
-    - [ ] behavior implemented
-    - [ ] RED->GREEN evidence recorded
-    - [ ] tests green
-    - [ ] no known regression
+    - behavior implemented
+    - RED->GREEN evidence recorded
+    - tests green
+    - no known regression
   - _Prompt: Role: [specialist] | Task: Implement 1.1 according to approved design and requirements | Restrictions: strict TDD (RED->GREEN->REFACTOR), no scope expansion | Success: full DoD and green verification_
 
 - [ ] 1.2 [Task title]
@@ -61,14 +61,14 @@ spw:
   - Files:
     - modify:
     - test:
-  - Requirements: REQ-002
+  - _Requirements: REQ-002_
   - TDD: required
   - Test Plan:
     - Unit:
   - Verification Command:
     -
   - Definition of Done:
-    - [ ]
+    - define measurable outcome
 
 - [ ] 2.1 [Task title]
   - Wave: 2
@@ -77,11 +77,11 @@ spw:
   - Files:
     - modify:
     - test:
-  - Requirements: REQ-001, REQ-002
+  - _Requirements: REQ-001, REQ-002_
   - TDD: required
   - Test Plan:
     - Integration:
   - Verification Command:
     -
   - Definition of Done:
-    - [ ]
+    - define measurable outcome

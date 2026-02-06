@@ -151,6 +151,20 @@ Skill gate (mandatory when `skills.enabled=true`):
 - Always enforce effective `max_wave_size` (CLI override or `[planning].max_wave_size`).
 </rules>
 
+<dashboard_markdown_profile>
+`tasks.md` must remain compatible with `spec-workflow-mcp` dashboard parser/validator:
+- Use checkbox markers only on real task lines:
+  - `- [ ] <id>. <description>`
+  - `- [-] <id>. <description>`
+  - `- [x] <id>. <description>`
+- Never use nested checkboxes inside metadata sections (DoD, notes, test details).
+- Every task line must start with numeric ID (`1`, `1.1`, `2.3`, ...).
+- Use `_Requirements: ..._` (underscore-delimited) for requirement traceability.
+- Use `_Leverage: ..._` when reuse targets exist.
+- Use `_Prompt: ..._` with closing underscore on the final prompt line.
+- Prefer `-` as list marker for task lines (avoid `*` for task rows).
+</dashboard_markdown_profile>
+
 <workflow>
 1. Run design skills preflight (availability + load mode) and write `SKILLS-TASKS-PLAN.md`.
 2. Inspect existing tasks-plan run dirs and apply `<resume_policy>` decision gate.

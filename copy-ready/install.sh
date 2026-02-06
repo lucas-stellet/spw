@@ -26,6 +26,7 @@ DEFAULT_SKILLS=(
   "ecto-thinking"
   "otp-thinking"
   "oban-thinking"
+  "mermaid-architecture"
   "conventional-commits"
   "test-driven-development"
   "requesting-code-review"
@@ -160,6 +161,7 @@ apply_teams_command_pack() {
 find_skill_source_dir() {
   local skill="$1"
   local candidates=(
+    "${SPW_REPO_ROOT}/skills/${skill}"
     "${HOME}/.claude/skills/${skill}"
     "${HOME}/.codex/skills/${skill}"
     "${HOME}/.codex/superpowers/skills/${skill}"

@@ -142,6 +142,41 @@ approvals or status.
 - `inputs`, `requirements`, `decisions`, `task_ids`, `test_required`
 - `risk`, `open_questions`
 
+## Dashboard Markdown Compatibility (`spec-workflow-mcp`)
+
+To keep `tasks.md` fully compatible with Dashboard rendering + parsing + approval validation:
+
+- Use checkbox markers only on real task lines:
+  - `- [ ] <id>. <description>`
+  - `- [-] <id>. <description>`
+  - `- [x] <id>. <description>`
+- Never use nested checkboxes in metadata blocks (for example DoD).
+- Always start task lines with numeric IDs (`1`, `1.1`, `2.3`, ...).
+- Prefer underscore-delimited metadata fields when applicable:
+  - `_Requirements: ..._`
+  - `_Leverage: ..._`
+  - `_Prompt: ..._` (closing underscore required)
+- Prefer `-` for task list markers (avoid `*` on task lines).
+
+SPW task templates and `spw:tasks-plan` are aligned with this compatibility profile.
+
+## Mermaid for Architecture Design
+
+SPW now includes the `mermaid-architecture` skill for design phases, with common
+diagram patterns and syntax guidance:
+- skill file: `skills/mermaid-architecture/SKILL.md`
+- default config: listed in `[skills.design].optional`
+
+Common architecture examples covered by the skill:
+- layered/module boundaries (`flowchart`)
+- container/system view (`flowchart`)
+- request flow with success/error path (`sequenceDiagram`)
+- event-driven pipeline (`flowchart`)
+- workflow lifecycle (`stateDiagram-v2`)
+
+In `spw:design-draft`, `design.md` should include at least one valid Mermaid
+diagram in the `## Architecture` section.
+
 Skills are configured to be `subagent-first` by default to reduce main-context
 growth (`skills.load_mode = "subagent-first"`).
 

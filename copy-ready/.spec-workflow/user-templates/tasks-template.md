@@ -44,12 +44,12 @@ spw:
     - Integration (if applicable):
   - Verification Command:
     - mix test test/path/to/file_test.exs
-  - Requirements: REQ-001
+  - _Requirements: REQ-001_
   - TDD: inherit
   - Definition of Done:
-    - [ ] behavior implemented
-    - [ ] tests passing
-    - [ ] no known regression
+    - behavior implemented
+    - tests passing
+    - no known regression
   - _Prompt: Role: [task specialist] | Task: Implement task 1.1 for spec [spec-name] according to approved requirements and design | Restrictions: preserve architectural boundaries, no scope expansion, follow TDD | Success: DoD criteria met and verification command passes_
 
 - [ ] 1.2 [Task title]
@@ -65,13 +65,13 @@ spw:
     - Unit:
   - Verification Command:
     -
-  - Requirements: REQ-002
+  - _Requirements: REQ-002_
   - TDD: inherit
   - No-Test Justification (only for exception):
     - Reason:
     - Alternative validation:
   - Definition of Done:
-    - [ ]
+    - define measurable outcome
 
 - [ ] 2.1 [Task title]
   - Wave: 2
@@ -86,7 +86,7 @@ spw:
     - Integration:
   - Verification Command:
     -
-  - Requirements: REQ-001, REQ-002
+  - _Requirements: REQ-001, REQ-002_
   - TDD: inherit
   - Definition of Done:
-    - [ ]
+    - define measurable outcome
