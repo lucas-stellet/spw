@@ -101,6 +101,25 @@ For `design.md` output:
 - Keep architecture diagrams as fenced lowercase Mermaid blocks.
 </ui_approval_markdown_profile>
 
+<approval_reconciliation>
+Resolve design approval with MCP-first reconciliation:
+- Primary source:
+  - `documents.design.approved`
+  - `documents.design.status`
+  - `approvals.design.status`
+  - optional IDs:
+    - `documents.design.approvalId`
+    - `approvals.design.approvalId`
+    - `approvals.design.id`
+- If status is missing/unknown or inconsistent, fallback:
+  1. Resolve approval ID from `spec-status` fields above.
+  2. If still missing, read latest `.spec-workflow/approvals/<spec-name>/approval_*.json`
+     where `filePath` is `.spec-workflow/specs/<spec-name>/design.md`.
+  3. If approval ID exists, call MCP `approvals status` and use it as source of truth.
+  4. If approval ID does not exist, treat as not requested.
+- Never infer approval from `overallStatus`/phase labels alone.
+</approval_reconciliation>
+
 <workflow>
 1. Run design skills preflight (availability + load mode) and write `SKILLS-DESIGN-DRAFT.md`.
 2. Read:
@@ -119,10 +138,7 @@ For `design.md` output:
 7. Save to `.spec-workflow/specs/<spec-name>/design.md`.
 8. Handle approval via MCP only:
    - call `spec-status`
-   - resolve design status from:
-     - `documents.design.approved`
-     - `documents.design.status`
-     - `approvals.design.status`
+   - resolve design status via `<approval_reconciliation>`
    - if approved, continue without re-requesting
    - if `needs-revision`/`changes-requested`/`rejected`, stop BLOCKED
    - if pending, stop with `WAITING_FOR_APPROVAL` and instruct UI approval + rerun

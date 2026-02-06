@@ -148,6 +148,11 @@ Unfinished-run handling for long subagent commands (`spw:prd`, `spw:design-resea
 - If explicit decision is unavailable, stop with `WAITING_FOR_USER_DECISION`.
 - On `continue-unfinished`, reuse completed `status=pass` outputs, redispatch missing/blocked subagents, and rerun the phase final decision/synthesis subagent before final artifact output.
 
+Approval reconciliation for MCP-gated commands (`spw:prd`, `spw:status`, `spw:plan`, `spw:design-draft`, `spw:tasks-plan`):
+- First read approval state from `spec-status` document fields.
+- If status is missing/unknown/inconsistent, resolve approval ID (from `spec-status` or approval records under `.spec-workflow/approvals/<spec-name>/`) and confirm via MCP `approvals status`.
+- `STATUS-SUMMARY.md` is output-only and must not be used as approval source of truth.
+
 File-first subagent communication is enabled for planning/validation flows and
 stored under:
 - planning/research: `.spec-workflow/specs/<spec-name>/agent-comms/<command>/<run-id>/`

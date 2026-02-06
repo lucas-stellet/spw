@@ -52,8 +52,9 @@ Observação:
 12. Em `design.md`, incluir ao menos um diagrama Mermaid válido em `## Architecture` (fluxo principal), preferindo a skill `mermaid-architecture` para padronização.
    - usar bloco fenced com marcador de linguagem `mermaid` em minúsculo
 13. UX do CLI: `spw` deve mostrar help por padrão; instalação explícita via `spw install`.
-14. Em `spw:post-mortem`, salvar relatórios em `.spec-workflow/post-mortems/<spec-name>/` com front matter YAML (`spec`, `topic`, `tags`, `range_from`, `range_to`) e atualizar `.spec-workflow/post-mortems/INDEX.md`.
-15. Com `[post_mortem_memory].enabled=true`, comandos de design/planning (`spw:prd`, `spw:design-research`, `spw:design-draft`, `spw:tasks-plan`, `spw:tasks-check`) devem consultar o índice de post-mortems e aplicar no máximo `[post_mortem_memory].max_entries_for_design` entradas relevantes.
+14. Em gates de aprovação (`spw:prd`, `spw:status`, `spw:plan`, `spw:design-draft`, `spw:tasks-plan`), quando `spec-status` vier incompleto/ambíguo, reconciliar via MCP `approvals status` (resolvendo `approvalId` por `spec-status` e, se necessário, por `.spec-workflow/approvals/<spec-name>/`); nunca decidir por `overallStatus`/fases apenas e nunca usar `STATUS-SUMMARY.md` como fonte de verdade.
+15. Em `spw:post-mortem`, salvar relatórios em `.spec-workflow/post-mortems/<spec-name>/` com front matter YAML (`spec`, `topic`, `tags`, `range_from`, `range_to`) e atualizar `.spec-workflow/post-mortems/INDEX.md`.
+16. Com `[post_mortem_memory].enabled=true`, comandos de design/planning (`spw:prd`, `spw:design-research`, `spw:design-draft`, `spw:tasks-plan`, `spw:tasks-check`) devem consultar o índice de post-mortems e aplicar no máximo `[post_mortem_memory].max_entries_for_design` entradas relevantes.
 
 ## File-first comms (não quebrar)
 

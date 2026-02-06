@@ -31,6 +31,29 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
    - if multiple specs exist and `--all=false`, ask user to choose one via AskUserQuestion.
 </scope_resolution>
 
+<approval_reconciliation>
+Approval state must be resolved with MCP-first reconciliation (never from stale summaries):
+
+For each document (`requirements`, `design`, `tasks`):
+1. Call `spec-status` and read (case-insensitive):
+   - `documents.<doc>.approved`
+   - `documents.<doc>.status`
+   - `approvals.<doc>.status`
+   - optional IDs:
+     - `documents.<doc>.approvalId`
+     - `approvals.<doc>.approvalId`
+     - `approvals.<doc>.id`
+2. If status is missing/unknown OR conflicts with artifact reality, run fallback:
+   - resolve approval ID in this order:
+     - ID returned by `spec-status`
+     - latest `.spec-workflow/approvals/<spec-name>/approval_*.json` with matching `filePath`
+   - if ID exists: call MCP `approvals status` and use that result as source of truth
+   - if no ID exists: treat as not requested
+3. Never infer approval state from:
+   - `overallStatus` or phase labels alone
+   - `.spec-workflow/specs/<spec-name>/STATUS-SUMMARY.md`
+</approval_reconciliation>
+
 <workflow>
 1. Resolve target spec(s) from `.spec-workflow/specs/`.
 2. For each spec, dispatch `state-inspector` to collect:
@@ -44,7 +67,7 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
      - `.spec-workflow/specs/<spec-name>/agent-comms/checkpoint/*`
 3. Dispatch `approval-auditor`:
    - call `spec-status`
-   - read document approval state (requirements/design/tasks) from boolean + status fields
+   - resolve document approval state via `<approval_reconciliation>`
 4. Dispatch `next-step-planner` to classify stage:
    - product discovery
    - design research
@@ -54,7 +77,7 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
    - done
 5. Produce:
    - console summary (current stage, blockers, next command)
-   - `.spec-workflow/specs/<spec-name>/STATUS-SUMMARY.md` for each inspected spec
+   - `.spec-workflow/specs/<spec-name>/STATUS-SUMMARY.md` for each inspected spec (output-only snapshot; never reuse as approval input)
 </workflow>
 
 <output_contract>

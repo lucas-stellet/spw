@@ -49,6 +49,16 @@ Rule:
   - `documents.requirements.approved`
   - `documents.requirements.status`
   - `approvals.requirements.status`
+- When `spec-status` returns missing/unknown/inconsistent requirements status, reconcile before deciding:
+  1) resolve approval ID from `spec-status` fields (if present):
+     - `documents.requirements.approvalId`
+     - `approvals.requirements.approvalId`
+     - `approvals.requirements.id`
+  2) if still missing, read latest `.spec-workflow/approvals/<spec-name>/approval_*.json`
+     where `filePath` is `.spec-workflow/specs/<spec-name>/requirements.md`
+  3) if approval ID exists, call MCP `approvals status` and use that result as source of truth
+  4) if no approval ID exists, treat as not requested
+- Never infer approval from `overallStatus` or phase labels alone.
 - Treat status values case-insensitively:
   - approved: `approved`
   - pending: `pending`

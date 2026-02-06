@@ -187,6 +187,25 @@ If `--source` is provided and looks like a URL (`http://` or `https://`) or mark
 - Keep requirement IDs canonical and unique (`REQ-001`, `REQ-002`, ...).
 </ui_approval_markdown_profile>
 
+<approval_reconciliation>
+Resolve requirements approval with MCP-first reconciliation:
+- Primary source:
+  - `documents.requirements.approved`
+  - `documents.requirements.status`
+  - `approvals.requirements.status`
+  - optional IDs:
+    - `documents.requirements.approvalId`
+    - `approvals.requirements.approvalId`
+    - `approvals.requirements.id`
+- If status is missing/unknown or inconsistent, fallback:
+  1. Resolve approval ID from `spec-status` fields above.
+  2. If still missing, read latest `.spec-workflow/approvals/<spec-name>/approval_*.json`
+     where `filePath` is `.spec-workflow/specs/<spec-name>/requirements.md`.
+  3. If approval ID exists, call MCP `approvals status` and use it as source of truth.
+  4. If approval ID does not exist, treat as not requested.
+- Never infer approval from `overallStatus`/phase labels alone.
+</approval_reconciliation>
+
 <workflow>
 1. Inspect existing `prd` run dirs and apply `<resume_policy>` decision gate.
 2. Determine active run directory:
@@ -223,10 +242,7 @@ If `--source` is provided and looks like a URL (`http://` or `https://`) or mark
 11. Write `<run-dir>/_handoff.md` referencing source/structure/editor/critic outputs and resume decision taken (`continue-unfinished` or `delete-and-restart`).
 12. Handle approval via MCP only:
    - call `spec-status`
-   - resolve status from:
-     - `documents.requirements.approved`
-     - `documents.requirements.status`
-     - `approvals.requirements.status`
+   - resolve requirements status via `<approval_reconciliation>`
    - if approved, continue without re-requesting
    - if `needs-revision`/`changes-requested`/`rejected`, run revision_protocol first (subagent-driven), then continue through critic + approval flow
    - if pending, stop with `WAITING_FOR_APPROVAL` and instruct UI approval + rerun

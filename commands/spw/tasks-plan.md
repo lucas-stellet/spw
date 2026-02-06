@@ -185,6 +185,25 @@ Skill gate (mandatory when `skills.enabled=true`):
 - `_Prompt` must include: `Role: ... | Task: ... | Restrictions: ... | Success: ...`.
 </dashboard_markdown_profile>
 
+<approval_reconciliation>
+Resolve tasks approval with MCP-first reconciliation:
+- Primary source:
+  - `documents.tasks.approved`
+  - `documents.tasks.status`
+  - `approvals.tasks.status`
+  - optional IDs:
+    - `documents.tasks.approvalId`
+    - `approvals.tasks.approvalId`
+    - `approvals.tasks.id`
+- If status is missing/unknown or inconsistent, fallback:
+  1. Resolve approval ID from `spec-status` fields above.
+  2. If still missing, read latest `.spec-workflow/approvals/<spec-name>/approval_*.json`
+     where `filePath` is `.spec-workflow/specs/<spec-name>/tasks.md`.
+  3. If approval ID exists, call MCP `approvals status` and use it as source of truth.
+  4. If approval ID does not exist, treat as not requested.
+- Never infer approval from `overallStatus`/phase labels alone.
+</approval_reconciliation>
+
 <workflow>
 1. Run design skills preflight (availability + load mode) and write `SKILLS-TASKS-PLAN.md`.
 2. Inspect existing tasks-plan run dirs and apply `<resume_policy>` decision gate.
@@ -225,10 +244,7 @@ Skill gate (mandatory when `skills.enabled=true`):
 12. Write `<run-dir>/_handoff.md` with mode decisions, DAG rationale, conflict/test policy outcomes, and resume decision taken (`continue-unfinished` or `delete-and-restart`).
 13. Handle approval via MCP only:
    - call `spec-status`
-   - resolve tasks status from:
-     - `documents.tasks.approved`
-     - `documents.tasks.status`
-     - `approvals.tasks.status`
+   - resolve tasks status via `<approval_reconciliation>`
    - if approved, continue without re-requesting
    - if `needs-revision`/`changes-requested`/`rejected`, stop BLOCKED
    - if pending, stop with `WAITING_FOR_APPROVAL` and instruct UI approval + rerun
