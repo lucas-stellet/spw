@@ -40,7 +40,6 @@ DEFAULT_SKILLS=(
   "mermaid-architecture"
   "conventional-commits"
   "test-driven-development"
-  "requesting-code-review"
 )
 
 show_help() {

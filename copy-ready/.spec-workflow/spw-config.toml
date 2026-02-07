@@ -216,7 +216,6 @@ required = [
 # Optional skills: if present, SPW can use them to increase rigor.
 # - mermaid-architecture: architecture diagrams/patterns for design docs
 optional = [
-  "requesting-code-review",
   "mermaid-architecture"
 ]
 
@@ -238,10 +237,8 @@ required = [
 
 # Optional implementation skills:
 # - test-driven-development: strict RED/GREEN/REFACTOR flow
-# - requesting-code-review: structured review/checklist before completion
 optional = [
-  "test-driven-development",
-  "requesting-code-review"
+  "test-driven-development"
 ]
 
 [reviews]

@@ -70,7 +70,7 @@ spw doctor
 ```
 
 `spw status` prints a quick kit/skills summary.  
-`spw skills` installs default SPW skills only.
+`spw skills` installs default SPW skills only (the default catalog no longer includes `requesting-code-review`).
 
 Option 2 (manual copy):
 

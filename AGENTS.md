@@ -55,6 +55,7 @@ Observação:
 14. Em gates de aprovação (`spw:prd`, `spw:status`, `spw:plan`, `spw:design-draft`, `spw:tasks-plan`), quando `spec-status` vier incompleto/ambíguo, reconciliar via MCP `approvals status` (resolvendo `approvalId` por `spec-status` e, se necessário, por `.spec-workflow/approvals/<spec-name>/`); nunca decidir por `overallStatus`/fases apenas e nunca usar `STATUS-SUMMARY.md` como fonte de verdade.
 15. Em `spw:post-mortem`, salvar relatórios em `.spec-workflow/post-mortems/<spec-name>/` com front matter YAML (`spec`, `topic`, `tags`, `range_from`, `range_to`) e atualizar `.spec-workflow/post-mortems/INDEX.md`.
 16. Com `[post_mortem_memory].enabled=true`, comandos de design/planning (`spw:prd`, `spw:design-research`, `spw:design-draft`, `spw:tasks-plan`, `spw:tasks-check`) devem consultar o índice de post-mortems e aplicar no máximo `[post_mortem_memory].max_entries_for_design` entradas relevantes.
+17. Catálogo padrão de skills: não incluir `requesting-code-review`; manter alinhamento entre `copy-ready/install.sh`, `config/spw-config.toml` e `copy-ready/.spec-workflow/spw-config.toml`.
 
 ## File-first comms (não quebrar)
 
