@@ -145,7 +145,7 @@ require_delegate_mode = true
 max_teammates = 4
 
 # Phases allowed to use teams when enabled.
-use_for_phases = ["design-research", "tasks-check", "checkpoint", "exec"]
+use_for_phases = ["design-research", "tasks-check", "checkpoint", "exec", "qa"]
 
 [skills]
 # Enables skill-aware behavior in SPW commands.
@@ -215,8 +215,10 @@ required = [
 
 # Optional skills: if present, SPW can use them to increase rigor.
 # - mermaid-architecture: architecture diagrams/patterns for design docs
+# - qa-validation-planning: risk-based QA planning + Playwright MCP/Bruno CLI strategy
 optional = [
-  "mermaid-architecture"
+  "mermaid-architecture",
+  "qa-validation-planning"
 ]
 
 [skills.implementation]

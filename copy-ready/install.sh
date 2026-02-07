@@ -38,6 +38,7 @@ DEFAULT_SKILLS=(
   "otp-thinking"
   "oban-thinking"
   "mermaid-architecture"
+  "qa-validation-planning"
   "conventional-commits"
   "test-driven-development"
 )

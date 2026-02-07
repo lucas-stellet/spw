@@ -88,6 +88,7 @@ After install:
 5. (Optional) Enable SPW statusline from `.claude/settings.json.example`.
 6. Default SPW skills are copied into `.claude/skills/` when local sources are found (best effort).
    - `test-driven-development` belongs to the common/default catalog.
+   - `qa-validation-planning` is available for QA planning (`spw:qa`) with Playwright MCP/Bruno CLI guidance.
    - In implementation phases (`spw:exec`, `spw:checkpoint`), this skill is treated as required only when `[execution].tdd_default=true`.
 7. (Optional) auto-clean template backups with `safety.cleanup_backups_after_sync=true` in `.spec-workflow/spw-config.toml`.
 8. (Optional) enable SPW enforcement hooks with `hooks.enforcement_mode=warn|block`.
@@ -103,6 +104,7 @@ Optional: Agent Teams (disabled by default)
   - copy team command variants from `.claude/commands/spw-teams/` into `.claude/commands/spw/`
 - When enabled and the phase is listed in `[agent_teams].use_for_phases`, SPW creates a team.
 - `spw:exec` enforces delegate mode when `[agent_teams].require_delegate_mode = true`.
+- Default team-enabled phases include: `design-research`, `tasks-check`, `checkpoint`, `exec`, `qa`.
 - Running `spw install` after enabling teams does not remove `.claude/commands/spw-teams/` or existing teams keys in `.claude/settings.json`.
 
 ## Command entry points
@@ -114,6 +116,7 @@ Optional: Agent Teams (disabled by default)
 - `spw:checkpoint` -> quality gate report (PASS/BLOCKED)
 - `spw:status` -> summarize where workflow stopped + next commands
 - `spw:post-mortem` -> analyze post-spec commits and write reusable lessons
+- `spw:qa` -> asks validation target and builds a QA test plan with Playwright MCP/Bruno CLI/hybrid strategy
 
 Execution context guardrail (`spw:exec`):
 - Before broad reads, dispatch `execution-state-scout` (implementation model, default `sonnet`).
@@ -146,7 +149,7 @@ prefer_same_spec = true
 - Shared index: `.spec-workflow/post-mortems/INDEX.md` (used by design/planning commands when enabled).
 - Design/planning phases (`spw:prd`, `spw:design-research`, `spw:design-draft`, `spw:tasks-plan`, `spw:tasks-check`) load indexed lessons with recency/tag prioritization.
 
-Unfinished-run handling for long subagent commands (`spw:prd`, `spw:design-research`, `spw:tasks-plan`, `spw:tasks-check`, `spw:checkpoint`, `spw:post-mortem`):
+Unfinished-run handling for long subagent commands (`spw:prd`, `spw:design-research`, `spw:tasks-plan`, `spw:tasks-check`, `spw:checkpoint`, `spw:post-mortem`, `spw:qa`):
 - Before creating a new run-id, inspect the phase run folder (for `checkpoint`, inspect current wave folder first).
 - If latest unfinished run exists, ask explicit user decision:
   - `continue-unfinished`
@@ -216,6 +219,19 @@ code blocks.
 
 Skills are configured to be `subagent-first` by default to reduce main-context
 growth (`skills.load_mode = "subagent-first"`).
+
+## QA Validation Planning
+
+`spw:qa <spec-name>` creates QA artifacts under `.spec-workflow/specs/<spec-name>/qa/`:
+- `QA-TEST-PLAN.md`
+- `QA-EXECUTION-REPORT.md`
+- `QA-DEFECT-REPORT.md`
+
+Behavior:
+- asks user what should be validated when focus is not explicitly provided
+- selects `Playwright MCP`, `Bruno CLI`, or `hybrid` by risk/scope
+- enforces Playwright MCP in headless mode (`--headless`) for `spw:qa`
+- stores file-first communications under `.spec-workflow/specs/<spec-name>/agent-comms/qa/<run-id>/`
 
 Hook enforcement:
 - `warn` -> diagnostics only

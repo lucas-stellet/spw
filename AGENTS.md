@@ -27,7 +27,7 @@ Observação:
 1. Respeitar paths canônicos SPW: usar `.spec-workflow/specs/<spec-name>/` (nunca `.specs/`).
 2. Manter localidade de artefatos: pesquisa/planejamento ficam dentro da spec ativa; apoio em `.spec-workflow/specs/<spec-name>/research/`.
 3. Aprovação é MCP-only: checar status via MCP; não substituir por aprovação manual em chat.
-4. Preservar contrato dos comandos (`spw:prd`, `spw:plan`, `spw:tasks-plan`, `spw:exec`, `spw:checkpoint`, `spw:status`, `spw:post-mortem`) e atualizar docs se comportamento mudar.
+4. Preservar contrato dos comandos (`spw:prd`, `spw:plan`, `spw:tasks-plan`, `spw:exec`, `spw:checkpoint`, `spw:status`, `spw:post-mortem`, `spw:qa`) e atualizar docs se comportamento mudar.
 5. Em `spw:tasks-plan`, manter semântica + precedência:
    - `--mode initial`: gera apenas wave executável inicial
    - `--mode next-wave`: adiciona apenas próxima wave executável
@@ -39,7 +39,7 @@ Observação:
 7. Se `execution.require_user_approval_between_waves=true`, não avançar wave sem autorização explícita do usuário.
 8. Se `execution.commit_per_task=true`, exigir commit atômico por tarefa; respeitar gate de worktree limpo quando habilitado.
 9. `spw update` deve atualizar primeiro o próprio binário (`spw`) e, em seguida, limpar cache local do kit antes de atualizar, para evitar templates/comandos stale.
-10. Em comandos longos com subagentes (`spw:prd`, `spw:design-research`, `spw:tasks-plan`, `spw:tasks-check`, `spw:checkpoint`, `spw:post-mortem`), se existir run incompleto, é obrigatório AskUserQuestion (`continue-unfinished` ou `delete-and-restart`); o agente não pode escolher reiniciar sozinho.
+10. Em comandos longos com subagentes (`spw:prd`, `spw:design-research`, `spw:tasks-plan`, `spw:tasks-check`, `spw:checkpoint`, `spw:post-mortem`, `spw:qa`), se existir run incompleto, é obrigatório AskUserQuestion (`continue-unfinished` ou `delete-and-restart`); o agente não pode escolher reiniciar sozinho.
 11. Compatibilidade com dashboard (`spec-workflow-mcp`) em `tasks.md` é obrigatória:
    - checkbox apenas em linhas de tarefa (`- [ ]`, `- [-]`, `- [x]` com ID numérico)
    - IDs de tarefa devem ser únicos no arquivo (sem duplicatas)
@@ -57,7 +57,9 @@ Observação:
 16. Com `[post_mortem_memory].enabled=true`, comandos de design/planning (`spw:prd`, `spw:design-research`, `spw:design-draft`, `spw:tasks-plan`, `spw:tasks-check`) devem consultar o índice de post-mortems e aplicar no máximo `[post_mortem_memory].max_entries_for_design` entradas relevantes.
 17. Catálogo padrão de skills: não incluir `requesting-code-review`; manter alinhamento entre `copy-ready/install.sh`, `config/spw-config.toml` e `copy-ready/.spec-workflow/spw-config.toml`.
 18. `test-driven-development` pertence ao catálogo comum; em `spw:exec`/`spw:checkpoint`, só vira obrigatório quando `[execution].tdd_default=true`.
-18. Em `spw:exec` (normal e teams), antes de leitura ampla o orquestrador deve despachar `execution-state-scout` (modelo implementation/sonnet por padrão) para consolidar checkpoint, tarefa `[-]` em progresso, próxima(s) executável(eis) e ação de retomada; o principal deve consumir apenas o resumo compacto e então ler contexto por tarefa.
+19. Em `spw:exec` (normal e teams), antes de leitura ampla o orquestrador deve despachar `execution-state-scout` (modelo implementation/sonnet por padrão) para consolidar checkpoint, tarefa `[-]` em progresso, próxima(s) executável(eis) e ação de retomada; o principal deve consumir apenas o resumo compacto e então ler contexto por tarefa.
+20. Em `spw:qa`, quando o foco não for informado, perguntar explicitamente ao usuário o alvo de validação e escolher `playwright|bruno|hybrid` com justificativa de risco/escopo.
+21. Em validações com Playwright no `spw:qa`, executar sempre em modo headless (`--headless`).
 
 ## File-first comms (não quebrar)
 
