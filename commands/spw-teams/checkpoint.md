@@ -83,6 +83,7 @@ Resolve skill policy from `.spec-workflow/spw-config.toml`:
 - `[skills.implementation].required`
 - `[skills.implementation].optional`
 - `[skills.implementation].enforce_required` (boolean)
+- `[execution].tdd_default` (boolean)
 
 Backward compatibility:
 - if `[skills.implementation].enforce_required` is absent, map `[skills].enforcement`:
@@ -98,8 +99,9 @@ Skill gate (mandatory when `skills.enabled=true`):
 1. Run availability preflight and write:
    - `.spec-workflow/specs/<spec-name>/SKILLS-CHECKPOINT.md`
 2. If `load_mode=subagent-first`, avoid loading full skill content in main context.
-3. Require each subagent `status.json` to include `skills_used`/`skills_missing`.
-4. If any required skill is missing/not used where required:
+3. If `[execution].tdd_default=true`, treat `test-driven-development` as required for this phase (effective required set).
+4. Require each subagent `status.json` to include `skills_used`/`skills_missing`.
+5. If any required skill is missing/not used where required:
    - `enforce_required=true` -> BLOCKED
    - `enforce_required=false` -> warn and continue
 </skills_policy>

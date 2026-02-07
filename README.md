@@ -87,6 +87,8 @@ After install:
 4. Start a new session so SessionStart hook can sync the active tasks template.
 5. (Optional) Enable SPW statusline from `.claude/settings.json.example`.
 6. Default SPW skills are copied into `.claude/skills/` when local sources are found (best effort).
+   - `test-driven-development` belongs to the common/default catalog.
+   - In implementation phases (`spw:exec`, `spw:checkpoint`), this skill is treated as required only when `[execution].tdd_default=true`.
 7. (Optional) auto-clean template backups with `safety.cleanup_backups_after_sync=true` in `.spec-workflow/spw-config.toml`.
 8. (Optional) enable SPW enforcement hooks with `hooks.enforcement_mode=warn|block`.
 
@@ -112,6 +114,11 @@ Optional: Agent Teams (disabled by default)
 - `spw:checkpoint` -> quality gate report (PASS/BLOCKED)
 - `spw:status` -> summarize where workflow stopped + next commands
 - `spw:post-mortem` -> analyze post-spec commits and write reusable lessons
+
+Execution context guardrail (`spw:exec`):
+- Before broad reads, dispatch `execution-state-scout` (implementation model, default `sonnet`).
+- Scout returns only compact resume state: checkpoint status, task `[-]` in progress, next executable tasks, and required action (`resume|wait-user-authorization|manual-handoff|done|blocked`).
+- Orchestrator then reads only task-scoped files for the selected IDs (avoid full `requirements.md`/`design.md` unless needed for blockers).
 
 Planning defaults are configured in `.spec-workflow/spw-config.toml`:
 

@@ -31,6 +31,7 @@ Resolve skill policy from `.spec-workflow/spw-config.toml`:
 - `[skills.implementation].required`
 - `[skills.implementation].optional`
 - `[skills.implementation].enforce_required` (boolean)
+- `[execution].tdd_default` (boolean)
 
 Backward compatibility:
 - if `[skills.implementation].enforce_required` is absent, map `[skills].enforcement`:
@@ -46,13 +47,16 @@ Skill gate (mandatory when `skills.enabled=true`):
 1. Run availability preflight and write:
    - `.spec-workflow/specs/<spec-name>/SKILLS-EXEC.md`
 2. If `load_mode=subagent-first`, avoid loading full skill content in main context.
-3. Require task subagent outputs/logs to explicitly mention skills used/missing.
-4. If any required skill is missing/not used where required:
+3. If `[execution].tdd_default=true`, treat `test-driven-development` as required for this phase (effective required set).
+4. Require task subagent outputs/logs to explicitly mention skills used/missing.
+5. If any required skill is missing/not used where required:
    - `enforce_required=true` -> BLOCKED
    - `enforce_required=false` -> warn and continue
 </skills_policy>
 
 <subagents>
+- `execution-state-scout` (model: implementation)
+  - Reads workflow state and returns a compact resume decision for the orchestrator.
 - `task-implementer` (model: implementation)
   - Implements each task and runs task-level verification.
 - `spec-compliance-reviewer` (model: complex_reasoning for complex/critical tasks; otherwise implementation)
@@ -66,6 +70,33 @@ Skill gate (mandatory when `skills.enabled=true`):
 - The main agent is an orchestrator only (selection, dispatch, aggregation, status updates).
 - Do not implement task code directly in the main orchestration context.
 </execution_mode>
+
+<state_recon_policy>
+Before broad reads in the main context, dispatch `execution-state-scout` (implementation model; default Sonnet) to inspect execution state.
+
+Scout reads:
+- `.spec-workflow/specs/<spec-name>/tasks.md`
+- `.spec-workflow/specs/<spec-name>/agent-comms/waves/**/_latest.json`
+- `.spec-workflow/specs/<spec-name>/agent-comms/waves/**/_wave-summary.md`
+- latest checkpoint status artifacts available in wave comms
+- `git status --porcelain` only when clean-worktree gate is enabled
+
+Scout handoff contract (compact):
+- `checkpoint_status`: `PASS|BLOCKED|MISSING`
+- `current_wave`: `wave-<NN>|none`
+- `in_progress_tasks`: task IDs currently `[-]`
+- `next_executable_tasks`: ordered task IDs ready to run now
+- `resume_action`: `resume-in-progress|start-next-task|wait-user-authorization|manual-handoff|done|blocked`
+- `reason` and `evidence_paths` (max 5)
+
+Output budget:
+- max 12 bullets plus one machine-readable JSON block.
+- no large excerpts from `tasks.md`, `requirements.md`, or `design.md`.
+
+Main-context rule:
+- use scout summary as the source for "where to resume".
+- only read task-scoped files needed for selected task IDs after scout handoff.
+</state_recon_policy>
 
 <wave_comms_layout>
 Execution/checkpoint communications must be grouped by wave:
@@ -154,16 +185,23 @@ For complex/critical tasks, run spec-compliance review on `complex_reasoning` mo
    - `SPEC_DIR=.spec-workflow/specs/<spec-name>`
    - if `SPEC_DIR` does not exist, list available specs from `.spec-workflow/specs/*` and stop BLOCKED.
 1. Run implementation skills preflight (availability + load mode) and write `SKILLS-EXEC.md`.
-2. Read files from canonical paths:
-   - `.spec-workflow/specs/<spec-name>/tasks.md`
-   - `.spec-workflow/specs/<spec-name>/requirements.md`
-   - `.spec-workflow/specs/<spec-name>/design.md`
+2. Dispatch `execution-state-scout` and require compact handoff contract.
    - if `tasks.md` is missing, stop BLOCKED and instruct to run `spw:tasks-plan <spec-name>`.
-3. Select pending tasks by wave and resolve current wave ID:
+3. Resolve resume state from scout handoff:
+   - checkpoint outcome for the latest completed wave
+   - whether there is a task in progress (`[-]`) to resume
+   - next executable task IDs when no task is in progress
+   - required immediate action (`resume`, `wait-user-authorization`, `manual-handoff`, `done`, `blocked`)
+4. Resolve current wave ID:
    - `wave-<NN>` (zero-padded, for example `wave-02`)
    - ensure canonical wave comms folder exists under `agent-comms/waves/`
-4. Execute up to `batch-size` tasks per batch (prefer safe parallelism).
-5. For each task:
+5. Read only task-scoped context required for selected task IDs:
+   - `.spec-workflow/specs/<spec-name>/tasks.md`
+   - task `Files` metadata targets
+   - requirement/design sections directly referenced by selected task requirements
+   - avoid full-document reads unless scout reports ambiguity/blocker
+6. Execute up to `batch-size` tasks per batch (prefer safe parallelism).
+7. For each task:
    - mark `[-]`
    - dispatch `task-implementer` (mandatory, even when single-task batch)
    - dispatch `spec-compliance-reviewer`
@@ -172,11 +210,11 @@ For complex/critical tasks, run spec-compliance review on `complex_reasoning` mo
      - log implementation details and mark `[x]`
      - enforce git_hygiene commit policy for this task
    - if any gate fails: mark BLOCKED and stop current batch
-6. Persist execution communication/evidence under:
+8. Persist execution communication/evidence under:
    - `.spec-workflow/specs/<spec-name>/agent-comms/waves/<wave-id>/execution/<run-id>/`
-7. At end of batch, run `spw:checkpoint <spec-name>`.
-8. If checkpoint BLOCKED, stop.
-9. If checkpoint PASS:
+9. At end of batch, run `spw:checkpoint <spec-name>`.
+10. If checkpoint BLOCKED, stop.
+11. If checkpoint PASS:
    - if `require_clean_worktree_for_wave_pass=true` and worktree is dirty: stop BLOCKED
    - if no remaining waves: finish
    - if remaining waves and `require_user_approval_between_waves=true`: request explicit authorization, then continue only if approved
@@ -189,6 +227,7 @@ With `--strict true` (default):
 - block continuation when required implementation skills were not invoked under enforce mode.
 - block continuation when a task has no requirement traceability.
 - block continuation when implementation was done without required subagent dispatch.
+- block continuation when `execution-state-scout` handoff is missing or incomplete.
 - block continuation on out-of-scope edits (changes unrelated to active task IDs).
 - block progression to next wave without required user authorization.
 - block progression without required per-task commit.
@@ -197,6 +236,7 @@ With `--strict true` (default):
 
 <completion_guidance>
 After each batch:
+- Show state-recon decision (`resume_action`, selected task IDs, checkpoint status).
 - Show executed task IDs, commit/log evidence, and checkpoint status.
 - If checkpoint PASS and there are remaining waves:
   - if authorization is required, stop in `WAITING_FOR_USER_AUTHORIZATION` and ask whether to continue.

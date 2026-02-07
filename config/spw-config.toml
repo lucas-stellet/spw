@@ -237,6 +237,8 @@ required = [
 
 # Optional implementation skills:
 # - test-driven-development: strict RED/GREEN/REFACTOR flow
+#   - when `[execution].tdd_default=true`, treat this skill as effectively
+#     required during implementation phases (`spw:exec` and `spw:checkpoint`).
 optional = [
   "test-driven-development"
 ]
