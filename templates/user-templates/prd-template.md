@@ -13,12 +13,6 @@ spw:
 
 # PRD (Product Requirements Document)
 
-## Markdown Quality Rules (UI Approval)
-- Keep Markdown render-safe for Spec Workflow UI (balanced headings/tables/fences/emphasis).
-- Prefer plain Markdown over raw HTML blocks.
-- Avoid task-style checkboxes (`- [ ]`, `- [-]`, `- [x]`) in requirements content.
-- Keep REQ-IDs canonical and unique (`REQ-001`, `REQ-002`, ...).
-
 ## 1. Executive Summary
 - Initiative name:
 - Primary problem:

@@ -28,15 +28,6 @@ spw:
 - Wave 1:
 - Wave 2:
 
-## Dashboard Compatibility (Mandatory)
-- Use task rows only as `- [ ]`, `- [-]`, `- [x]` with numeric IDs.
-- Keep task IDs globally unique in the file (no duplicates).
-- Keep `Files` metadata parseable on one line:
-  - `- Files: path/to/file.ext, test/path/to/file_test.ext`
-- Keep `_Prompt: ..._` closed with trailing underscore and include:
-  - `Role: ... | Task: ... | Restrictions: ... | Success: ...`
-- Never add nested checkboxes in metadata sections.
-
 ---
 
 - [ ] 1.1 [Task title]
