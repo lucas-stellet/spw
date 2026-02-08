@@ -79,8 +79,16 @@ function toInt(value, fallback) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function resolveRuntimeConfigPath(workspaceRoot) {
+  const preferred = path.join(workspaceRoot, ".spw", "spw-config.toml");
+  const legacy = path.join(workspaceRoot, ".spec-workflow", "spw-config.toml");
+  if (fs.existsSync(preferred)) return preferred;
+  if (fs.existsSync(legacy)) return legacy;
+  return preferred;
+}
+
 function getHookConfig(workspaceRoot) {
-  const configPath = path.join(workspaceRoot, ".spec-workflow", "spw-config.toml");
+  const configPath = resolveRuntimeConfigPath(workspaceRoot);
   const defaults = {
     enabled: true,
     enforcementMode: "warn",

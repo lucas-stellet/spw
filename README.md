@@ -80,7 +80,7 @@ cp -R /path/to/spw/copy-ready/. .
 
 After install:
 1. Merge `.claude/settings.json.example` into your `.claude/settings.json` (if needed).
-2. Review `.spec-workflow/spw-config.toml` (especially `[planning].tasks_generation_strategy` and `[planning].max_wave_size`).
+2. Review `.spw/spw-config.toml` (fallback transitório: `.spec-workflow/spw-config.toml`) especially `[planning].tasks_generation_strategy` and `[planning].max_wave_size`.
 3. Set per-stage skill enforcement as needed:
    - `skills.design.enforce_required = true|false`
    - `skills.implementation.enforce_required = true|false`
@@ -90,7 +90,7 @@ After install:
    - `test-driven-development` belongs to the common/default catalog.
    - `qa-validation-planning` is available for QA planning (`spw:qa`) with Playwright MCP/Bruno CLI guidance.
    - In implementation phases (`spw:exec`, `spw:checkpoint`), this skill is treated as required only when `[execution].tdd_default=true`.
-7. (Optional) auto-clean template backups with `safety.cleanup_backups_after_sync=true` in `.spec-workflow/spw-config.toml`.
+7. (Optional) auto-clean template backups with `safety.cleanup_backups_after_sync=true` in `.spw/spw-config.toml` (fallback transitório: `.spec-workflow/spw-config.toml`).
 8. (Optional) enable SPW enforcement hooks with `hooks.enforcement_mode=warn|block`.
 
 Optional: Agent Teams (disabled by default)
@@ -98,7 +98,7 @@ Optional: Agent Teams (disabled by default)
 - The installer overlays team command variants from `.claude/commands/spw-teams/` into `.claude/commands/spw/`.
 - To return active commands to default mode, run `spw install` without `--enable-teams`.
 - Or manually:
-  - set `[agent_teams].enabled = true` in `.spec-workflow/spw-config.toml`
+  - set `[agent_teams].enabled = true` in `.spw/spw-config.toml` (fallback transitório: `.spec-workflow/spw-config.toml`)
   - add `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1"` in `.claude/settings.json`
   - set `teammateMode = "in-process"` (change to `"tmux"` manually if desired)
   - copy team command variants from `.claude/commands/spw-teams/` into `.claude/commands/spw/`
@@ -118,12 +118,25 @@ Optional: Agent Teams (disabled by default)
 - `spw:post-mortem` -> analyze post-spec commits and write reusable lessons
 - `spw:qa` -> asks validation target and builds a QA test plan with Playwright MCP/Bruno CLI/hybrid strategy
 
+## Thin-Orchestrator Architecture
+
+SPW now uses thin orchestrators by default:
+- command wrappers live in `.claude/commands/spw/*.md`
+- detailed orchestration workflows live in `.claude/workflows/spw/*.md`
+- shared policy references live in `.claude/workflows/spw/shared/*.md`
+
+Agent Teams uses base + overlay:
+- base workflow: `.claude/workflows/spw/<command>.md`
+- teams overlay: `.claude/workflows/spw/overlays/teams/<command>.md`
+
+Wrappers stay intentionally thin and delegate 100% of detailed logic to workflows.
+
 Execution context guardrail (`spw:exec`):
 - Before broad reads, dispatch `execution-state-scout` (implementation model, default `sonnet`).
 - Scout returns only compact resume state: checkpoint status, task `[-]` in progress, next executable tasks, and required action (`resume|wait-user-authorization|manual-handoff|done|blocked`).
 - Orchestrator then reads only task-scoped files for the selected IDs (avoid full `requirements.md`/`design.md` unless needed for blockers).
 
-Planning defaults are configured in `.spec-workflow/spw-config.toml`:
+Planning defaults are configured in `.spw/spw-config.toml` (fallback transitório: `.spec-workflow/spw-config.toml`):
 
 ```toml
 [planning]
@@ -136,7 +149,7 @@ max_wave_size = 3
 - `all-at-once`: one planning pass creates all executable waves.
 - Explicit CLI args still override config (`--mode`, `--max-wave-size`).
 
-Post-mortem memory defaults are configured in `.spec-workflow/spw-config.toml`:
+Post-mortem memory defaults are configured in `.spw/spw-config.toml` (fallback transitório: `.spec-workflow/spw-config.toml`):
 
 ```toml
 [post_mortem_memory]
@@ -236,4 +249,4 @@ Behavior:
 Hook enforcement:
 - `warn` -> diagnostics only
 - `block` -> deny violating actions
-- details: `AGENTS.md` + `.spec-workflow/spw-config.toml` comments
+- details: `AGENTS.md` + `.spw/spw-config.toml` comments (fallback transitório: `.spec-workflow/spw-config.toml`)
