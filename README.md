@@ -104,7 +104,13 @@ Optional: Agent Teams (disabled by default)
   - copy team command variants from `.claude/commands/spw-teams/` into `.claude/commands/spw/`
 - When enabled and the phase is listed in `[agent_teams].use_for_phases`, SPW creates a team.
 - `spw:exec` enforces delegate mode when `[agent_teams].require_delegate_mode = true`.
-- Default team-enabled phases include: `design-research`, `tasks-check`, `checkpoint`, `exec`, `qa`.
+- Team command overlays are available for all subagent-first entrypoints:
+  `spw:prd`, `spw:plan`, `spw:design-research`, `spw:design-draft`,
+  `spw:tasks-plan`, `spw:tasks-check`, `spw:exec`, `spw:checkpoint`,
+  `spw:post-mortem`, `spw:qa`, `spw:status`.
+- Default team-enabled phases include:
+  `prd`, `plan`, `design-research`, `design-draft`, `tasks-plan`,
+  `tasks-check`, `exec`, `checkpoint`, `post-mortem`, `qa`, `status`.
 - Running `spw install` after enabling teams does not remove `.claude/commands/spw-teams/` or existing teams keys in `.claude/settings.json`.
 
 ## Command entry points

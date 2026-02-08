@@ -145,7 +145,19 @@ require_delegate_mode = true
 max_teammates = 4
 
 # Phases allowed to use teams when enabled.
-use_for_phases = ["design-research", "tasks-check", "checkpoint", "exec", "qa"]
+use_for_phases = [
+  "prd",
+  "plan",
+  "design-research",
+  "design-draft",
+  "tasks-plan",
+  "tasks-check",
+  "exec",
+  "checkpoint",
+  "post-mortem",
+  "qa",
+  "status"
+]
 
 [skills]
 # Enables skill-aware behavior in SPW commands.

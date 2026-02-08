@@ -64,6 +64,7 @@ Observação:
 21. Em `spw:exec` (normal e teams), antes de leitura ampla o orquestrador deve despachar `execution-state-scout` (modelo implementation/sonnet por padrão) para consolidar checkpoint, tarefa `[-]` em progresso, próxima(s) executável(eis) e ação de retomada; o principal deve consumir apenas o resumo compacto e então ler contexto por tarefa.
 22. Em `spw:qa`, quando o foco não for informado, perguntar explicitamente ao usuário o alvo de validação e escolher `playwright|bruno|hybrid` com justificativa de risco/escopo.
 23. Em validações com Playwright no `spw:qa`, executar sempre em modo headless (`--headless`).
+24. Cobertura de Agent Teams para comandos subagent-first deve permanecer alinhada entre `commands/spw-teams/` e `workflows/spw/overlays/teams/`; defaults de `[agent_teams].use_for_phases` incluem `prd`, `plan`, `design-research`, `design-draft`, `tasks-plan`, `tasks-check`, `exec`, `checkpoint`, `post-mortem`, `qa`, `status`.
 
 ## File-first comms (não quebrar)
 
