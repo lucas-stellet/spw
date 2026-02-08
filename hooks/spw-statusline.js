@@ -108,6 +108,14 @@ function readCache(cacheFile, ttlSeconds, ignoreTtl) {
   return '';
 }
 
+function clearCache(cacheFile) {
+  try {
+    if (fs.existsSync(cacheFile)) fs.unlinkSync(cacheFile);
+  } catch (_) {
+    // fail-open
+  }
+}
+
 function writeCache(cacheDir, cacheFile, spec, meta = {}) {
   try {
     fs.mkdirSync(cacheDir, { recursive: true });
@@ -125,6 +133,15 @@ function writeCache(cacheDir, cacheFile, spec, meta = {}) {
     );
   } catch (_) {
     // fail-open
+  }
+}
+
+function specExists(specsRoot, specName) {
+  if (!specName) return false;
+  try {
+    return fs.existsSync(path.join(specsRoot, String(specName)));
+  } catch (_) {
+    return false;
   }
 }
 
@@ -230,10 +247,12 @@ function detectActiveSpec(dir) {
   const { cacheDir, cacheFile } = getCachePaths(repoRoot);
   if (config.stickySpec) {
     const cachedSticky = readCache(cacheFile, config.cacheTtlSeconds, true);
-    if (cachedSticky) return cachedSticky;
+    if (cachedSticky && specExists(specsRoot, cachedSticky)) return cachedSticky;
+    if (cachedSticky) clearCache(cacheFile);
   } else {
     const cached = readCache(cacheFile, config.cacheTtlSeconds, false);
-    if (cached) return cached;
+    if (cached && specExists(specsRoot, cached)) return cached;
+    if (cached) clearCache(cacheFile);
   }
 
   const specFromGit = detectSpecFromGit(repoRoot, config.baseBranches);

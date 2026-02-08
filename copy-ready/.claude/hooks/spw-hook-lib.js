@@ -224,27 +224,20 @@ function tokenizeArgs(argsLine) {
 }
 
 function extractSpecArg(argsLine) {
-  const tokens = tokenizeArgs(argsLine).map((token) =>
-    token.replace(/^["']|["']$/g, "")
-  );
-  for (const token of tokens) {
-    if (!token) continue;
-    if (token.startsWith("--")) continue;
-    return token;
-  }
-  return "";
+  const tokens = tokenizeArgs(argsLine)
+    .map((token) => token.replace(/^["']|["']$/g, ""))
+    .filter(Boolean);
+  if (tokens.length === 0) return "";
+
+  // Spec must be the first positional argument. If command starts with a flag,
+  // treat as missing spec instead of accidentally using option values.
+  const first = tokens[0];
+  if (first.startsWith("--")) return "";
+  return first;
 }
 
 function hasSpecArg(argsLine) {
-  const tokens = tokenizeArgs(argsLine).map((token) =>
-    token.replace(/^["']|["']$/g, "")
-  );
-  for (const token of tokens) {
-    if (!token) continue;
-    if (token.startsWith("--")) continue;
-    return true;
-  }
-  return false;
+  return extractSpecArg(argsLine) !== "";
 }
 
 function writeStatuslineCache(workspaceRoot, spec, meta = {}) {
