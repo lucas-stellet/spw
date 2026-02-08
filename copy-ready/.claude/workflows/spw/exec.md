@@ -27,13 +27,13 @@ Execute tasks in batches, with mandatory pauses for checkpoint quality gates.
 </path_conventions>
 
 <model_policy>
-Resolve models from `.spw/spw-config.toml` `[models]`:
+Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - complex_reasoning -> default `opus`
 - implementation -> default `sonnet`
 </model_policy>
 
 <skills_policy>
-Resolve skill policy from `.spw/spw-config.toml`:
+Resolve skill policy from `.spec-workflow/spw-config.toml`:
 - `[skills].enabled`
 - `[skills].load_mode` (`subagent-first|principal-first`)
 - `[skills.implementation].required`
@@ -123,7 +123,7 @@ Rules:
 </wave_comms_layout>
 
 <wave_authorization>
-Resolve from `.spw/spw-config.toml` `[execution].require_user_approval_between_waves` (default `true`).
+Resolve from `.spec-workflow/spw-config.toml` `[execution].require_user_approval_between_waves` (default `true`).
 
 If `true`:
 - After each checkpoint PASS, if there is at least one remaining wave, ask explicit user authorization.
@@ -136,7 +136,7 @@ If `true`:
 </wave_authorization>
 
 <manual_task_policy>
-Resolve from `.spw/spw-config.toml` `[execution].manual_tasks_require_human_handoff` (default `true`).
+Resolve from `.spec-workflow/spw-config.toml` `[execution].manual_tasks_require_human_handoff` (default `true`).
 
 When enabled, if the next task is manual/human-gated (for example external sandbox verification, production UI checks, stakeholder validation):
 - do not auto-mark `[ ] -> [-]`
@@ -146,7 +146,7 @@ When enabled, if the next task is manual/human-gated (for example external sandb
 </manual_task_policy>
 
 <tasks_planning_strategy>
-Resolve from `.spw/spw-config.toml` `[planning].tasks_generation_strategy` (default `rolling-wave`).
+Resolve from `.spec-workflow/spw-config.toml` `[planning].tasks_generation_strategy` (default `rolling-wave`).
 
 Post-execution behavior:
 - `rolling-wave`: after current waves finish, recommend planning the next executable wave.
@@ -154,7 +154,7 @@ Post-execution behavior:
 </tasks_planning_strategy>
 
 <git_hygiene>
-Resolve from `.spw/spw-config.toml` `[execution]`:
+Resolve from `.spec-workflow/spw-config.toml` `[execution]`:
 - `commit_per_task` (default `true`)
 - `auto_commit_on_task_completion` (default `true`)
 - `require_clean_worktree_for_wave_pass` (default `true`)

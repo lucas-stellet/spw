@@ -22,14 +22,14 @@ Run the full technical planning flow for a spec with existing `requirements.md`,
 </when_to_use>
 
 <model_policy>
-Resolve models from `.spw/spw-config.toml` `[models]`:
+Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - web_research -> default `haiku`
 - complex_reasoning -> default `opus`
 - implementation -> default `sonnet`
 </model_policy>
 
 <planning_defaults>
-Resolve planning defaults from `.spw/spw-config.toml` `[planning]`:
+Resolve planning defaults from `.spec-workflow/spw-config.toml` `[planning]`:
 - `tasks_generation_strategy` (`rolling-wave|all-at-once`, default `rolling-wave`)
 - `max_wave_size` (default `3`)
 

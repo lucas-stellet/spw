@@ -15,9 +15,9 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TARGET_ROOT="$(pwd)"
-CONFIG_PATH_PREFERRED="${TARGET_ROOT}/.spw/spw-config.toml"
-CONFIG_PATH_LEGACY="${TARGET_ROOT}/.spec-workflow/spw-config.toml"
-CONFIG_PATH="${CONFIG_PATH_PREFERRED}"
+CONFIG_PATH_CANONICAL="${TARGET_ROOT}/.spec-workflow/spw-config.toml"
+CONFIG_PATH_LEGACY="${TARGET_ROOT}/.spw/spw-config.toml"
+CONFIG_PATH="${CONFIG_PATH_CANONICAL}"
 # Resolve repository root robustly.
 # Typical cached layout used by `spw` wrapper:
 #   <cache>/repos/<repo>/copy-ready/install.sh
@@ -32,12 +32,12 @@ fi
 SUPERPOWERS_SKILLS_DIR="${SPW_SUPERPOWERS_SKILLS_DIR:-${SPW_REPO_ROOT}/superpowers/skills}"
 
 resolve_config_path() {
-  if [ -f "$CONFIG_PATH_PREFERRED" ]; then
-    CONFIG_PATH="$CONFIG_PATH_PREFERRED"
+  if [ -f "$CONFIG_PATH_CANONICAL" ]; then
+    CONFIG_PATH="$CONFIG_PATH_CANONICAL"
   elif [ -f "$CONFIG_PATH_LEGACY" ]; then
     CONFIG_PATH="$CONFIG_PATH_LEGACY"
   else
-    CONFIG_PATH="$CONFIG_PATH_PREFERRED"
+    CONFIG_PATH="$CONFIG_PATH_CANONICAL"
   fi
 }
 
@@ -275,7 +275,6 @@ cmd_install() {
   # Copy only SPW runtime assets (avoid touching project root files like README.md)
   rsync -a "${SCRIPT_DIR}/.claude/" "${TARGET_ROOT}/.claude/"
   rsync -a "${SCRIPT_DIR}/.spec-workflow/" "${TARGET_ROOT}/.spec-workflow/"
-  rsync -a "${SCRIPT_DIR}/.spw/" "${TARGET_ROOT}/.spw/"
 
   local created_settings="false"
   if [ ! -f "${TARGET_ROOT}/.claude/settings.json" ]; then
@@ -313,7 +312,7 @@ cmd_install() {
   fi
 
   echo "[spw-kit] Installation complete."
-  echo "[spw-kit] Next step: adjust .spw/spw-config.toml (fallback: .spec-workflow/spw-config.toml)"
+  echo "[spw-kit] Next step: adjust .spec-workflow/spw-config.toml"
 }
 
 cmd_skills() {
@@ -348,21 +347,15 @@ cmd_status() {
     echo "[spw-kit] .spec-workflow: missing"
   fi
 
-  if [ -d "${TARGET_ROOT}/.spw" ]; then
-    echo "[spw-kit] .spw: present"
-  else
-    echo "[spw-kit] .spw: missing"
-  fi
-
   if [ -f "${CONFIG_PATH}" ]; then
-    if [ "${CONFIG_PATH}" = "${CONFIG_PATH_PREFERRED}" ]; then
-      echo "[spw-kit] .spw/spw-config.toml: present"
+    if [ "${CONFIG_PATH}" = "${CONFIG_PATH_CANONICAL}" ]; then
+      echo "[spw-kit] .spec-workflow/spw-config.toml: present"
     else
-      echo "[spw-kit] .spw/spw-config.toml: missing (using legacy .spec-workflow/spw-config.toml)"
+      echo "[spw-kit] .spec-workflow/spw-config.toml: missing (using legacy .spw/spw-config.toml)"
     fi
     echo "[spw-kit] auto_install_defaults_on_spw_install=$(toml_bool_value skills auto_install_defaults_on_spw_install true)"
   else
-    echo "[spw-kit] .spw/spw-config.toml: missing"
+    echo "[spw-kit] .spec-workflow/spw-config.toml: missing"
   fi
 
   if [ -f "${TARGET_ROOT}/.claude/settings.json" ]; then

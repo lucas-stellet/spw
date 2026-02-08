@@ -34,11 +34,11 @@ function getRepoRoot(dir) {
 }
 
 function resolveRuntimeConfigPath(repoRoot) {
-  const preferred = path.join(repoRoot, '.spw', 'spw-config.toml');
-  const legacy = path.join(repoRoot, '.spec-workflow', 'spw-config.toml');
-  if (fs.existsSync(preferred)) return preferred;
-  if (fs.existsSync(legacy)) return legacy;
-  return preferred;
+  const canonical = path.join(repoRoot, '.spec-workflow', 'spw-config.toml');
+  const fallback = path.join(repoRoot, '.spw', 'spw-config.toml');
+  if (fs.existsSync(canonical)) return canonical;
+  if (fs.existsSync(fallback)) return fallback;
+  return canonical;
 }
 
 function readStatuslineConfig(repoRoot) {

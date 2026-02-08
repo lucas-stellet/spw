@@ -17,7 +17,7 @@ Generate `.spec-workflow/specs/<spec-name>/tasks.md` for predictable parallel ex
 </shared_policies>
 
 <planning_defaults>
-Resolve planning defaults from `.spw/spw-config.toml` `[planning]`:
+Resolve planning defaults from `.spec-workflow/spw-config.toml` `[planning]`:
 - `tasks_generation_strategy` (`rolling-wave|all-at-once`, default `rolling-wave`)
 - `max_wave_size` (default `3`)
 
@@ -102,13 +102,13 @@ If user chooses `delete-and-restart`:
 </resume_policy>
 
 <model_policy>
-Resolve models from `.spw/spw-config.toml` `[models]`:
+Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - complex_reasoning -> default `opus`
 - implementation -> default `sonnet`
 </model_policy>
 
 <post_mortem_memory>
-Resolve from `.spw/spw-config.toml` `[post_mortem_memory]`:
+Resolve from `.spec-workflow/spw-config.toml` `[post_mortem_memory]`:
 - `enabled` (default `true`)
 - `max_entries_for_design` (default `5`)
 - `prefer_same_spec` (default `true`)
@@ -124,7 +124,7 @@ If index/report files are missing, continue with warning (non-blocking).
 </post_mortem_memory>
 
 <skills_policy>
-Resolve skill policy from `.spw/spw-config.toml`:
+Resolve skill policy from `.spec-workflow/spw-config.toml`:
 - `[skills].enabled`
 - `[skills].load_mode` (`subagent-first|principal-first`)
 - `[skills.design].required`

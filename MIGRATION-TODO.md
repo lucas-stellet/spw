@@ -13,12 +13,12 @@ Status: completed
 
 ## Nova etapa solicitada (config TOML)
 
-- [x] Fase 7: Mover configuracao runtime de `.spec-workflow/spw-config.toml` para `.spw/spw-config.toml`
-- [x] Atualizar `copy-ready/install.sh` para instalar o TOML em `.spw/spw-config.toml`
-- [x] Atualizar comandos/workflows para ler `.spw/spw-config.toml`
-- [x] Definir compatibilidade temporaria: fallback de leitura para `.spec-workflow/spw-config.toml` durante a transicao
+- [x] Fase 7: Consolidar configuracao runtime em `.spec-workflow/spw-config.toml`
+- [x] Atualizar `copy-ready/install.sh` para instalar o TOML apenas em `.spec-workflow/spw-config.toml`
+- [x] Atualizar comandos/workflows/hooks para ler `.spec-workflow/spw-config.toml` como caminho canônico
+- [x] Manter compatibilidade legado com fallback de leitura para `.spw/spw-config.toml`
 - [x] Atualizar docs canonicos (`README.md`, `AGENTS.md`, `docs/SPW-WORKFLOW.md`, `hooks/README.md`, `copy-ready/README.md`)
-- [x] Adicionar validacao automatica para garantir que o path novo seja o canonico
+- [x] Remover duplicacao de config no kit (`copy-ready/.spw/spw-config.toml`)
 
 ## Validacao final
 

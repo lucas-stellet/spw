@@ -17,7 +17,7 @@ Show where the workflow stopped and what to run next, with explicit approval/exe
 </shared_policies>
 
 <model_policy>
-Resolve models from `.spw/spw-config.toml` `[models]`:
+Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - complex_reasoning -> default `opus`
 - implementation -> default `sonnet`
 </model_policy>

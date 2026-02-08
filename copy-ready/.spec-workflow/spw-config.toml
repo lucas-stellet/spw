@@ -6,7 +6,7 @@
 #
 # How to use:
 # 1) Copy this file into your real project at:
-#    .spw/spw-config.toml
+#    .spec-workflow/spw-config.toml
 # 2) Register the SessionStart hook to run the sync script.
 # 3) On every Claude session start, the active tasks template
 #    will be automatically aligned with this configuration.

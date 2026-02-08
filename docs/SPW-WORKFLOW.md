@@ -15,4 +15,4 @@ Use this file only as an entry point when someone opens `docs/` first.
 - Main guide: `README.md`
 - Agent/contributor rules: `AGENTS.md`
 - Runtime defaults: `config/spw-config.toml`
-- Runtime installed path: `.spw/spw-config.toml` (fallback transitório: `.spec-workflow/spw-config.toml`)
+- Runtime installed path: `.spec-workflow/spw-config.toml` (fallback legado: `.spw/spw-config.toml`)

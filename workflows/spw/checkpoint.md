@@ -79,13 +79,13 @@ If user chooses `delete-and-restart`:
 </resume_policy>
 
 <model_policy>
-Resolve models from `.spw/spw-config.toml` `[models]`:
+Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - complex_reasoning -> default `opus`
 - implementation -> default `sonnet`
 </model_policy>
 
 <skills_policy>
-Resolve skill policy from `.spw/spw-config.toml`:
+Resolve skill policy from `.spec-workflow/spw-config.toml`:
 - `[skills].enabled`
 - `[skills].load_mode` (`subagent-first|principal-first`)
 - `[skills.implementation].required`
@@ -124,7 +124,7 @@ Skill gate (mandatory when `skills.enabled=true`):
 </subagents>
 
 <git_gate>
-Resolve from `.spw/spw-config.toml` `[execution].require_clean_worktree_for_wave_pass` (default `true`).
+Resolve from `.spec-workflow/spw-config.toml` `[execution].require_clean_worktree_for_wave_pass` (default `true`).
 
 If enabled:
 - include `git status --porcelain` evidence in the report

@@ -94,11 +94,11 @@ function readToml(filePath) {
 }
 
 function resolveConfigPath(cwd) {
-  const preferred = path.join(cwd, '.spw', 'spw-config.toml');
-  const legacy = path.join(cwd, '.spec-workflow', 'spw-config.toml');
-  if (fs.existsSync(preferred)) return { path: preferred, source: 'preferred' };
-  if (fs.existsSync(legacy)) return { path: legacy, source: 'legacy' };
-  return { path: preferred, source: 'missing' };
+  const canonical = path.join(cwd, '.spec-workflow', 'spw-config.toml');
+  const fallback = path.join(cwd, '.spw', 'spw-config.toml');
+  if (fs.existsSync(canonical)) return { path: canonical, source: 'canonical' };
+  if (fs.existsSync(fallback)) return { path: fallback, source: 'fallback' };
+  return { path: canonical, source: 'missing' };
 }
 
 function getConfigValue(config, sectionDotKey) {

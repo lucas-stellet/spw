@@ -22,7 +22,7 @@ Generate a structured post-mortem for a finished spec by analyzing commits made 
 </when_to_use>
 
 <model_policy>
-Resolve models from `.spw/spw-config.toml` `[models]`:
+Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - complex_reasoning -> default `opus`
 - implementation -> default `sonnet`
 </model_policy>

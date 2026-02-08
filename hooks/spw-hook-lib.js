@@ -80,11 +80,11 @@ function toInt(value, fallback) {
 }
 
 function resolveRuntimeConfigPath(workspaceRoot) {
-  const preferred = path.join(workspaceRoot, ".spw", "spw-config.toml");
-  const legacy = path.join(workspaceRoot, ".spec-workflow", "spw-config.toml");
-  if (fs.existsSync(preferred)) return preferred;
-  if (fs.existsSync(legacy)) return legacy;
-  return preferred;
+  const canonical = path.join(workspaceRoot, ".spec-workflow", "spw-config.toml");
+  const fallback = path.join(workspaceRoot, ".spw", "spw-config.toml");
+  if (fs.existsSync(canonical)) return canonical;
+  if (fs.existsSync(fallback)) return fallback;
+  return canonical;
 }
 
 function getHookConfig(workspaceRoot) {

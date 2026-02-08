@@ -78,7 +78,7 @@ Skill gate:
 </skills_policy>
 
 <agent_teams_policy>
-Resolve Agent Teams config from `.spw/spw-config.toml` `[agent_teams]`:
+Resolve Agent Teams config from `.spec-workflow/spw-config.toml` `[agent_teams]`:
 - `enabled` (default `false`)
 - `teammate_mode` (default `"in-process"`)
 - `max_teammates`

@@ -6,7 +6,7 @@
 set -uo pipefail
 
 # Sync tasks-template based on runtime config
-# (prefer .spw/spw-config.toml, fallback .spec-workflow/spw-config.toml)
+# (canonical .spec-workflow/spw-config.toml, fallback legacy .spw/spw-config.toml)
 # Intended usage: Claude/Codex SessionStart hook.
 
 log() {
@@ -35,15 +35,15 @@ resolve_workspace_root() {
 }
 
 WORKSPACE_ROOT="$(resolve_workspace_root)"
-CONFIG_PATH_PREFERRED="${WORKSPACE_ROOT}/.spw/spw-config.toml"
-CONFIG_PATH_LEGACY="${WORKSPACE_ROOT}/.spec-workflow/spw-config.toml"
+CONFIG_PATH_CANONICAL="${WORKSPACE_ROOT}/.spec-workflow/spw-config.toml"
+CONFIG_PATH_LEGACY="${WORKSPACE_ROOT}/.spw/spw-config.toml"
 
-if [ -f "$CONFIG_PATH_PREFERRED" ]; then
-  CONFIG_PATH="$CONFIG_PATH_PREFERRED"
+if [ -f "$CONFIG_PATH_CANONICAL" ]; then
+  CONFIG_PATH="$CONFIG_PATH_CANONICAL"
 elif [ -f "$CONFIG_PATH_LEGACY" ]; then
   CONFIG_PATH="$CONFIG_PATH_LEGACY"
 else
-  log "Config not found at ${CONFIG_PATH_PREFERRED} (fallback: ${CONFIG_PATH_LEGACY}). Nothing to sync."
+  log "Config not found at ${CONFIG_PATH_CANONICAL} (fallback: ${CONFIG_PATH_LEGACY}). Nothing to sync."
   safe_exit
 fi
 

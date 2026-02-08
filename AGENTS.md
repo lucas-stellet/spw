@@ -20,14 +20,14 @@ Observação:
 - `workflows/spw/*.md` <-> `copy-ready/.claude/workflows/spw/*.md`
 - `workflows/spw/overlays/teams/*.md` <-> `copy-ready/.claude/workflows/spw/overlays/teams/*.md`
 - `templates/user-templates/**` <-> `copy-ready/.spec-workflow/user-templates/**`
-- `config/spw-config.toml` <-> `copy-ready/.spw/spw-config.toml`
+- `config/spw-config.toml` <-> `copy-ready/.spec-workflow/spw-config.toml`
 - `hooks/*.js|*.sh` <-> `copy-ready/.claude/hooks/*`
 - `hooks/claude-hooks.snippet.json` alinhado com `copy-ready/.claude/settings.json.example`
 
 ## Regras operacionais obrigatórias
 
 1. Respeitar paths canônicos SPW: usar `.spec-workflow/specs/<spec-name>/` (nunca `.specs/`).
-2. Runtime config canônico: `.spw/spw-config.toml` (com fallback transitório para `.spec-workflow/spw-config.toml`).
+2. Runtime config canônico: `.spec-workflow/spw-config.toml` (com fallback legado para `.spw/spw-config.toml`).
 3. Manter localidade de artefatos: pesquisa/planejamento ficam dentro da spec ativa; apoio em `.spec-workflow/specs/<spec-name>/research/`.
 4. Aprovação é MCP-only: checar status via MCP; não substituir por aprovação manual em chat.
 5. Preservar contrato dos comandos (`spw:prd`, `spw:plan`, `spw:tasks-plan`, `spw:exec`, `spw:checkpoint`, `spw:status`, `spw:post-mortem`, `spw:qa`) e atualizar docs se comportamento mudar.
@@ -59,7 +59,7 @@ Observação:
 16. Em gates de aprovação (`spw:prd`, `spw:status`, `spw:plan`, `spw:design-draft`, `spw:tasks-plan`), quando `spec-status` vier incompleto/ambíguo, reconciliar via MCP `approvals status` (resolvendo `approvalId` por `spec-status` e, se necessário, por `.spec-workflow/approvals/<spec-name>/`); nunca decidir por `overallStatus`/fases apenas e nunca usar `STATUS-SUMMARY.md` como fonte de verdade.
 17. Em `spw:post-mortem`, salvar relatórios em `.spec-workflow/post-mortems/<spec-name>/` com front matter YAML (`spec`, `topic`, `tags`, `range_from`, `range_to`) e atualizar `.spec-workflow/post-mortems/INDEX.md`.
 18. Com `[post_mortem_memory].enabled=true`, comandos de design/planning (`spw:prd`, `spw:design-research`, `spw:design-draft`, `spw:tasks-plan`, `spw:tasks-check`) devem consultar o índice de post-mortems e aplicar no máximo `[post_mortem_memory].max_entries_for_design` entradas relevantes.
-19. Catálogo padrão de skills: não incluir `requesting-code-review`; manter alinhamento entre `copy-ready/install.sh`, `config/spw-config.toml` e `copy-ready/.spw/spw-config.toml`.
+19. Catálogo padrão de skills: não incluir `requesting-code-review`; manter alinhamento entre `copy-ready/install.sh`, `config/spw-config.toml` e `copy-ready/.spec-workflow/spw-config.toml`.
 20. `test-driven-development` pertence ao catálogo comum; em `spw:exec`/`spw:checkpoint`, só vira obrigatório quando `[execution].tdd_default=true`.
 21. Em `spw:exec` (normal e teams), antes de leitura ampla o orquestrador deve despachar `execution-state-scout` (modelo implementation/sonnet por padrão) para consolidar checkpoint, tarefa `[-]` em progresso, próxima(s) executável(eis) e ação de retomada; o principal deve consumir apenas o resumo compacto e então ler contexto por tarefa.
 22. Em `spw:qa`, quando o foco não for informado, perguntar explicitamente ao usuário o alvo de validação e escolher `playwright|bruno|hybrid` com justificativa de risco/escopo.

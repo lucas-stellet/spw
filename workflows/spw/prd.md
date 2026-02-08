@@ -26,14 +26,14 @@ This command combines:
 </when_to_use>
 
 <model_policy>
-Resolve models from `.spw/spw-config.toml` `[models]`:
+Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - web_research -> default `haiku`
 - complex_reasoning -> default `opus`
 - implementation -> default `sonnet`
 </model_policy>
 
 <post_mortem_memory>
-Resolve from `.spw/spw-config.toml` `[post_mortem_memory]`:
+Resolve from `.spec-workflow/spw-config.toml` `[post_mortem_memory]`:
 - `enabled` (default `true`)
 - `max_entries_for_design` (default `5`)
 - `prefer_same_spec` (default `true`)
