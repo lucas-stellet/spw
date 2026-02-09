@@ -93,6 +93,11 @@ After install:
 7. (Optional) auto-clean template backups with `safety.cleanup_backups_after_sync=true` in `.spec-workflow/spw-config.toml` (fallback legado: `.spw/spw-config.toml`).
 8. (Optional) enable SPW enforcement hooks with `hooks.enforcement_mode=warn|block`.
 
+9. (Optional) For QA browser validation (`spw:qa`, `spw:qa-exec`), configure Playwright MCP:
+   ```
+   claude mcp add playwright -- npx @playwright/mcp@latest --headless --isolated
+   ```
+
 Optional: Agent Teams (disabled by default)
 - Enable via installer: `spw install --enable-teams`
 - The installer switches symlinks in `.claude/workflows/spw/overlays/active/` from `../noop.md` to `../teams/<cmd>.md`.
@@ -257,7 +262,7 @@ spw:qa (plan) → spw:qa-check (validate) → spw:qa-exec (execute)
 - Asks user what should be validated when focus is not explicitly provided
 - Selects `Playwright MCP`, `Bruno CLI`, or `hybrid` by risk/scope
 - Produces `QA-TEST-PLAN.md` with concrete selectors/endpoints per scenario
-- Enforces Playwright MCP in headless mode (`--headless`)
+- Uses browser automation tools from pre-configured Playwright MCP server
 - Stores file-first communications under `.spec-workflow/specs/<spec-name>/agent-comms/qa/<run-id>/`
 
 ### `spw:qa-check` (validation)

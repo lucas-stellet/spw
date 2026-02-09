@@ -229,7 +229,7 @@ required = [
 
 # Optional skills: if present, SPW can use them to increase rigor.
 # - mermaid-architecture: architecture diagrams/patterns for design docs
-# - qa-validation-planning: risk-based QA planning + Playwright MCP/Bruno CLI strategy
+# - qa-validation-planning: risk-based QA planning + Playwright MCP server / Bruno CLI strategy
 optional = [
   "mermaid-architecture",
   "qa-validation-planning"

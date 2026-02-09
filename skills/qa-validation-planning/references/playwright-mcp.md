@@ -3,33 +3,39 @@
 Source of truth:
 - https://github.com/microsoft/playwright-mcp
 
-## Install/Configure
+## Setup
 
-Basic server command:
-- `npx @playwright/mcp@latest`
+Playwright MCP is a pre-configured MCP server. Register it once before starting a session:
 
-Common args (official README):
-- `--browser <chrome|firefox|webkit|msedge>`
-- `--headless`
-- `--isolated`
-- `--output-dir <path>`
-- `--save-trace`
-- `--save-session`
-- `--caps <vision,pdf,devtools>`
+```bash
+claude mcp add playwright -- npx @playwright/mcp@latest --headless --isolated
+```
 
-## SPW QA Runtime Policy
+After registration, the `playwright` server exposes browser automation tools that the agent uses directly — no `npx` or shell commands needed during execution.
 
-For `spw:qa` browser validations:
-- always run with `--headless`
-- do not switch to headed mode
+## How to Use
+
+The server provides tools for browser automation (navigation, clicking, typing, screenshots, etc.). The exact set of available tools may change across versions.
+
+Rules:
+- Discover available tools from the `playwright` server at runtime — do not hardcode or assume specific tool names
+- Use the server's tools for all browser interactions
+- Never invoke `npx`, `node`, or shell scripts for browser automation
 
 ## What It Is Good For
 
 - browser-native flow validation
 - realistic user actions and navigation
 - multi-tab/session checks
-- UI-state evidence via snapshots/traces
+- UI-state evidence via screenshots and console messages
 - network-aware debugging in browser context
+
+## Evidence Collection
+
+Collect evidence during test execution using the server's tools:
+- Take screenshots after key assertions and at failure points
+- Capture console messages for runtime error logs
+- Generate reproducible test scripts if the server provides a script generation tool
 
 ## QA Planning Guidance
 
@@ -41,5 +47,5 @@ Prefer Playwright MCP when confidence depends on:
 Define in plan:
 - scenario sequence
 - test data per scenario
-- expected evidence (snapshot, trace, console/network signals)
+- expected evidence (screenshots, console messages)
 - failure triage notes

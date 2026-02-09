@@ -42,14 +42,14 @@ spw:
 | T-002 | REQ-002 | Regression | API | Bruno CLI | `GET /api/v1/users` | P1 | | junit/json/html report | |
 
 ## Browser Validation Plan (Playwright MCP)
-- Runtime mode: headless (mandatory)
+- Runtime: Playwright MCP server (pre-configured headless)
 - Target journeys:
 - Data/accounts:
 - Main assertions:
 - Evidence required:
-  - snapshots/screenshots
-  - trace/session artifacts
-  - network or console notes (if relevant)
+  - screenshots
+  - console messages
+  - generated test scripts (if available)
 - Execution notes:
 
 ## API Validation Plan (Bruno CLI)
@@ -77,8 +77,11 @@ spw:
 
 ## Commands
 ```bash
-# Playwright MCP (required headless mode)
-npx @playwright/mcp@latest --headless --isolated --save-trace --output-dir .spec-workflow/specs/<spec-name>/qa/artifacts/playwright
+# Playwright MCP setup (run once before session)
+claude mcp add playwright -- npx @playwright/mcp@latest --headless --isolated
+
+# During execution, the agent uses browser automation tools from the playwright MCP server.
+# Discover available tools at runtime. Collect screenshots and console messages as evidence.
 
 # Bruno CLI (example execution)
 bru run --env <env-name> --reporter-junit --reporter-json --reporter-html

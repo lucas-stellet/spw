@@ -117,12 +117,17 @@ Always write the rationale in the plan.
 </tool_selection_policy>
 
 <playwright_runtime_policy>
-For any browser validation in this command, Playwright MCP must run in headless mode.
+Playwright MCP is a pre-configured MCP server that exposes browser automation tools.
+
+Prerequisites:
+- Server must be registered before the session: `claude mcp add playwright -- npx @playwright/mcp@latest --headless --isolated`
+- If Playwright MCP tools are not available in the current session, stop BLOCKED with setup instructions above.
 
 Rules:
-- always include `--headless` in Playwright MCP runtime args
-- never switch to headed mode in `spw:qa`
-- if a user requests headed browser, keep `--headless` and document the restriction in the plan notes
+- Use the browser automation tools provided by the `playwright` MCP server for all browser interactions
+- Never invoke npx, node scripts, or shell commands for browser automation
+- Discover available tools from the `playwright` server at runtime — do not assume specific tool names
+- Collect evidence: take screenshots after assertions, capture console messages for logs
 </playwright_runtime_policy>
 
 <concrete_selector_policy>
@@ -190,7 +195,7 @@ Plan synthesizer verification:
 - [ ] Coverage Matrix includes `Selector/Endpoint` column.
 - [ ] File-first handoff exists under `.spec-workflow/specs/<spec-name>/agent-comms/qa/<run-id>/`.
 - [ ] If Agent Teams are enabled for `qa`, teammate assignment was applied for active roles.
-- [ ] All Playwright MCP runtime commands include `--headless`.
+- [ ] All browser interactions used tools from the Playwright MCP server (no direct npx/node invocations).
 </acceptance_criteria>
 
 <completion_guidance>

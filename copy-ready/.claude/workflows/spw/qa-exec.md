@@ -115,12 +115,18 @@ Rerun filtering:
 </execution_scope_policy>
 
 <playwright_runtime_policy>
-For any browser validation in this command, Playwright MCP must run in headless mode.
+Playwright MCP is a pre-configured MCP server that exposes browser automation tools.
+
+Prerequisites:
+- Server must be registered before the session: `claude mcp add playwright -- npx @playwright/mcp@latest --headless --isolated`
+- If Playwright MCP tools are not available in the current session, stop BLOCKED with setup instructions above.
 
 Rules:
-- always include `--headless` in Playwright MCP runtime args
-- never switch to headed mode in `spw:qa-exec`
-- if a user requests headed browser, keep `--headless` and document the restriction in the defect report notes
+- Use the browser automation tools provided by the `playwright` MCP server — never invoke npx or node scripts
+- Discover available tools from the `playwright` server at runtime — do not assume specific tool names
+- Selectors come from QA-CHECK.md verified map; use them in MCP tool calls
+- Collect evidence: take screenshots after assertions, capture console messages for logs
+- If a selector fails via MCP tool, log as "selector drift" defect — do NOT search source files
 </playwright_runtime_policy>
 
 <state_recon_policy>
@@ -217,7 +223,7 @@ Skill gate:
 - [ ] QA-CHECK.md was verified as PASS before execution started.
 - [ ] No implementation source files were read during execution.
 - [ ] All scenarios in scope were executed or marked BLOCKED with reason.
-- [ ] Playwright MCP scenarios ran in headless mode.
+- [ ] All browser interactions used tools from the Playwright MCP server with selectors from QA-CHECK.md.
 - [ ] Evidence artifacts (traces, screenshots, reports) are mapped to test IDs.
 - [ ] GO/NO-GO decision is justified by pass/fail counts and risk assessment.
 - [ ] QA-EXECUTION-REPORT.md and QA-DEFECT-REPORT.md were generated.

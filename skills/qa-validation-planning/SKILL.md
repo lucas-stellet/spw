@@ -56,7 +56,7 @@ Apply the ISTQB-aligned principles during planning and reporting:
 - Define test data and cleanup strategy.
 - Separate must-pass smoke checks from deeper regression checks.
 - Define evidence expected per scenario (logs, screenshots, traces, responses).
-- For Playwright MCP scenarios, enforce headless mode only (`--headless`).
+- Playwright MCP must be a pre-configured MCP server; agent uses the server's browser automation tools — never invokes npx or node scripts directly.
 
 ## Reporting Rules
 

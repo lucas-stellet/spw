@@ -47,11 +47,11 @@ spw:
 | T-002 | P1 | Bruno CLI | FAIL | | BUG-001 |
 
 ## Playwright MCP Evidence
-- Run profile:
-- Paths to artifacts:
-  - traces:
-  - screenshots/snapshots:
-  - extra notes:
+- MCP server: playwright
+- Screenshots captured:
+- Console messages collected:
+- Generated test scripts (if available):
+- Extra notes:
 
 ## Bruno CLI Evidence
 - Run command:
