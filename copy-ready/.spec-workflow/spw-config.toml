@@ -156,6 +156,8 @@ use_for_phases = [
   "checkpoint",
   "post-mortem",
   "qa",
+  "qa-check",
+  "qa-exec",
   "status"
 ]
 

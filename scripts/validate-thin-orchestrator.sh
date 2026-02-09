@@ -42,7 +42,7 @@ for base in "$base_cmd_dir"/*.md; do
   [ -f "$base_wf_dir/$name" ] || fail "Missing base workflow: $base_wf_dir/$name"
 done
 
-for team in design-research.md tasks-check.md exec.md checkpoint.md; do
+for team in design-research.md tasks-check.md exec.md checkpoint.md qa-check.md qa-exec.md; do
   [ -f "$team_overlay_dir/$team" ] || fail "Missing team overlay: $team_overlay_dir/$team"
 done
 

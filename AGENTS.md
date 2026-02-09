@@ -31,7 +31,7 @@ Observação:
 2. Runtime config canônico: `.spec-workflow/spw-config.toml` (com fallback legado para `.spw/spw-config.toml`).
 3. Manter localidade de artefatos: pesquisa/planejamento ficam dentro da spec ativa; apoio em `.spec-workflow/specs/<spec-name>/research/`.
 4. Aprovação é MCP-only: checar status via MCP; não substituir por aprovação manual em chat.
-5. Preservar contrato dos comandos (`spw:prd`, `spw:plan`, `spw:tasks-plan`, `spw:exec`, `spw:checkpoint`, `spw:status`, `spw:post-mortem`, `spw:qa`) e atualizar docs se comportamento mudar.
+5. Preservar contrato dos comandos (`spw:prd`, `spw:plan`, `spw:tasks-plan`, `spw:exec`, `spw:checkpoint`, `spw:status`, `spw:post-mortem`, `spw:qa`, `spw:qa-check`, `spw:qa-exec`) e atualizar docs se comportamento mudar.
 6. Padrão thin-orchestrator obrigatório: `commands/` são wrappers finos (máx. 60 linhas) e a lógica detalhada fica em `workflows/`.
 7. Em `spw:tasks-plan`, manter semântica + precedência:
    - `--mode initial`: gera apenas wave executável inicial
@@ -44,7 +44,7 @@ Observação:
 9. Se `execution.require_user_approval_between_waves=true`, não avançar wave sem autorização explícita do usuário.
 10. Se `execution.commit_per_task=true`, exigir commit atômico por tarefa; respeitar gate de worktree limpo quando habilitado.
 11. `spw update` deve atualizar primeiro o próprio binário (`spw`) e, em seguida, limpar cache local do kit antes de atualizar, para evitar templates/comandos stale.
-12. Em comandos longos com subagentes (`spw:prd`, `spw:design-research`, `spw:tasks-plan`, `spw:tasks-check`, `spw:checkpoint`, `spw:post-mortem`, `spw:qa`), se existir run incompleto, é obrigatório AskUserQuestion (`continue-unfinished` ou `delete-and-restart`); o agente não pode escolher reiniciar sozinho.
+12. Em comandos longos com subagentes (`spw:prd`, `spw:design-research`, `spw:tasks-plan`, `spw:tasks-check`, `spw:checkpoint`, `spw:post-mortem`, `spw:qa`, `spw:qa-check`, `spw:qa-exec`), se existir run incompleto, é obrigatório AskUserQuestion (`continue-unfinished` ou `delete-and-restart`); o agente não pode escolher reiniciar sozinho.
 13. Compatibilidade com dashboard (`spec-workflow-mcp`) em `tasks.md` é obrigatória:
    - checkbox apenas em linhas de tarefa (`- [ ]`, `- [-]`, `- [x]` com ID numérico)
    - IDs de tarefa devem ser únicos no arquivo (sem duplicatas)
@@ -63,9 +63,11 @@ Observação:
 19. Catálogo padrão de skills: não incluir `requesting-code-review`; manter alinhamento entre `copy-ready/install.sh`, `config/spw-config.toml` e `copy-ready/.spec-workflow/spw-config.toml`.
 20. `test-driven-development` pertence ao catálogo comum; em `spw:exec`/`spw:checkpoint`, só vira obrigatório quando `[execution].tdd_default=true`.
 21. Em `spw:exec` (normal e teams), antes de leitura ampla o orquestrador deve despachar `execution-state-scout` (modelo implementation/sonnet por padrão) para consolidar checkpoint, tarefa `[-]` em progresso, próxima(s) executável(eis) e ação de retomada; o principal deve consumir apenas o resumo compacto e então ler contexto por tarefa.
-22. Em `spw:qa`, quando o foco não for informado, perguntar explicitamente ao usuário o alvo de validação e escolher `playwright|bruno|hybrid` com justificativa de risco/escopo.
-23. Em validações com Playwright no `spw:qa`, executar sempre em modo headless (`--headless`).
-24. Cobertura de Agent Teams para comandos subagent-first usa symlinks em `workflows/spw/overlays/active/` (apontando para `../noop.md` quando desabilitado ou `../teams/<cmd>.md` quando habilitado); defaults de `[agent_teams].use_for_phases` incluem `prd`, `plan`, `design-research`, `design-draft`, `tasks-plan`, `tasks-check`, `exec`, `checkpoint`, `post-mortem`, `qa`, `status`.
+22. Em `spw:qa`, quando o foco não for informado, perguntar explicitamente ao usuário o alvo de validação e escolher `playwright|bruno|hybrid` com justificativa de risco/escopo. O plano deve incluir seletores/endpoints concretos por cenário (CSS, `data-testid`, rotas, métodos HTTP).
+23. Em validações com Playwright no `spw:qa`/`spw:qa-exec`, executar sempre em modo headless (`--headless`).
+24. Cobertura de Agent Teams para comandos subagent-first usa symlinks em `workflows/spw/overlays/active/` (apontando para `../noop.md` quando desabilitado ou `../teams/<cmd>.md` quando habilitado); defaults de `[agent_teams].use_for_phases` incluem `prd`, `plan`, `design-research`, `design-draft`, `tasks-plan`, `tasks-check`, `exec`, `checkpoint`, `post-mortem`, `qa`, `qa-check`, `qa-exec`, `status`.
+25. Em `spw:qa-check`, validar seletores/endpoints do plano contra código fonte real (único comando QA que lê arquivos de implementação); produzir mapa verificado em `QA-CHECK.md`.
+26. Em `spw:qa-exec`, nunca ler arquivos fonte de implementação; usar apenas seletores verificados de `QA-CHECK.md`. Se seletor falhar em runtime, registrar como defeito "selector drift" e recomendar `spw:qa-check`.
 
 ## File-first comms (não quebrar)
 

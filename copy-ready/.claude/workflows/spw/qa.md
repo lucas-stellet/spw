@@ -28,8 +28,6 @@ Create a risk-based QA validation plan for the target spec and select the best v
 <artifact_boundary>
 Write outputs under:
 - `.spec-workflow/specs/<spec-name>/qa/QA-TEST-PLAN.md`
-- `.spec-workflow/specs/<spec-name>/qa/QA-EXECUTION-REPORT.md`
-- `.spec-workflow/specs/<spec-name>/qa/QA-DEFECT-REPORT.md`
 
 Communication/handoff:
 - `.spec-workflow/specs/<spec-name>/agent-comms/qa/<run-id>/`
@@ -127,6 +125,25 @@ Rules:
 - if a user requests headed browser, keep `--headless` and document the restriction in the plan notes
 </playwright_runtime_policy>
 
+<concrete_selector_policy>
+Every test scenario in the plan must contain concrete identifiers, not abstract descriptions.
+
+Browser test designer must produce:
+- CSS or `data-testid` selectors for each UI element under test
+- URL routes for each page/navigation step
+- Expected DOM state (visible text, attribute values, element counts) per assertion
+
+API test designer must produce:
+- Endpoint paths (e.g. `/api/v1/users`) and HTTP methods
+- Request body schemas or example payloads
+- Expected response status codes and key response fields
+
+Plan synthesizer verification:
+- After receiving designer outputs, verify all scenarios have concrete identifiers
+- Mark any scenario missing selectors/endpoints as `INCOMPLETE`
+- `INCOMPLETE` scenarios must be listed in the plan with a warning; they do not block plan generation but signal that `spw:qa-check` will likely flag them
+</concrete_selector_policy>
+
 <subagents>
 - `qa-scope-analyst` (model: complex_reasoning)
   - Maps user intent + spec risks to a test strategy.
@@ -142,11 +159,14 @@ Rules:
 1. Resolve `SPEC_DIR=.spec-workflow/specs/<spec-name>` and stop BLOCKED if missing.
 2. Apply `<resume_policy>` and determine active run dir.
 3. Apply `<user_intent_gate>` and capture explicit validation target.
-4. Read only required context:
+4. Read required context and extract concrete selectors:
    - `.spec-workflow/specs/<spec-name>/requirements.md`
    - `.spec-workflow/specs/<spec-name>/design.md`
    - `.spec-workflow/specs/<spec-name>/tasks.md` (if present)
    - `.spec-workflow/specs/<spec-name>/CHECKPOINT-REPORT.md` (if present)
+   - Router/route configuration files (e.g. `router.ex`, `routes.ts`, `urls.py`) for URL paths
+   - Referenced template/component files for `data-testid` attributes and CSS selectors
+   This is the ONE planning phase where implementation files should be read — to extract concrete identifiers for the test plan.
 5. If Agent Teams are enabled for this phase, create a team before dispatching subagents.
 6. Dispatch `qa-scope-analyst`.
 7. Apply `<tool_selection_policy>`.
@@ -157,10 +177,8 @@ Rules:
    - `hybrid` -> both in parallel
 10. Enforce `<playwright_runtime_policy>` for all Playwright MCP scenarios.
 11. Dispatch `qa-plan-synthesizer` with previous outputs.
-12. Generate artifacts under `.spec-workflow/specs/<spec-name>/qa/`:
-   - `QA-TEST-PLAN.md`
-   - `QA-EXECUTION-REPORT.md` (template prefilled for this run)
-   - `QA-DEFECT-REPORT.md` (template prefilled for this run)
+12. Generate artifact under `.spec-workflow/specs/<spec-name>/qa/`:
+   - `QA-TEST-PLAN.md` — must include a `Selector/Endpoint` column in the Coverage Matrix
 13. Write `<run-dir>/_handoff.md` linking evidence, selected tool rationale, and unresolved risks.
 </workflow>
 
@@ -168,7 +186,8 @@ Rules:
 - [ ] User validation target was explicitly captured.
 - [ ] Tool selection (`playwright|bruno|hybrid`) is justified by risk/scope.
 - [ ] Plan includes test levels, priority, data/env strategy, and pass/fail gates.
-- [ ] Execution and defect report templates were generated for the same spec.
+- [ ] Every test scenario contains concrete selectors/endpoints (per `<concrete_selector_policy>`).
+- [ ] Coverage Matrix includes `Selector/Endpoint` column.
 - [ ] File-first handoff exists under `.spec-workflow/specs/<spec-name>/agent-comms/qa/<run-id>/`.
 - [ ] If Agent Teams are enabled for `qa`, teammate assignment was applied for active roles.
 - [ ] All Playwright MCP runtime commands include `--headless`.
@@ -176,10 +195,9 @@ Rules:
 
 <completion_guidance>
 On success:
-- Confirm output paths in `.spec-workflow/specs/<spec-name>/qa/`.
-- Recommend immediate next step:
-  - if plan only: execute planned tests and fill `QA-EXECUTION-REPORT.md`.
-  - if defects found: log in `QA-DEFECT-REPORT.md` and rerun `spw:qa <spec-name>` for regression scope.
+- Confirm output path: `.spec-workflow/specs/<spec-name>/qa/QA-TEST-PLAN.md`.
+- Recommend next command: `spw:qa-check <spec-name>` to validate selectors and traceability before execution.
+- Recommend running `/clear` before validation.
 
 On BLOCKED:
 - Show missing input/decision.

@@ -107,10 +107,11 @@ Optional: Agent Teams (disabled by default)
 - Team overlays are available for all subagent-first entrypoints:
   `spw:prd`, `spw:plan`, `spw:design-research`, `spw:design-draft`,
   `spw:tasks-plan`, `spw:tasks-check`, `spw:exec`, `spw:checkpoint`,
-  `spw:post-mortem`, `spw:qa`, `spw:status`.
+  `spw:post-mortem`, `spw:qa`, `spw:qa-check`, `spw:qa-exec`, `spw:status`.
 - Default team-enabled phases include:
   `prd`, `plan`, `design-research`, `design-draft`, `tasks-plan`,
-  `tasks-check`, `exec`, `checkpoint`, `post-mortem`, `qa`, `status`.
+  `tasks-check`, `exec`, `checkpoint`, `post-mortem`, `qa`, `qa-check`,
+  `qa-exec`, `status`.
 
 ## Command entry points
 
@@ -121,7 +122,9 @@ Optional: Agent Teams (disabled by default)
 - `spw:checkpoint` -> quality gate report (PASS/BLOCKED)
 - `spw:status` -> summarize where workflow stopped + next commands
 - `spw:post-mortem` -> analyze post-spec commits and write reusable lessons
-- `spw:qa` -> asks validation target and builds a QA test plan with Playwright MCP/Bruno CLI/hybrid strategy
+- `spw:qa` -> asks validation target and builds a QA test plan with concrete selectors (Playwright MCP/Bruno CLI/hybrid strategy)
+- `spw:qa-check` -> validates test plan selectors, traceability, and data feasibility against actual code
+- `spw:qa-exec` -> executes validated test plan using verified selectors (never reads source files)
 
 ## Thin-Orchestrator Architecture
 
@@ -169,7 +172,7 @@ prefer_same_spec = true
 - Shared index: `.spec-workflow/post-mortems/INDEX.md` (used by design/planning commands when enabled).
 - Design/planning phases (`spw:prd`, `spw:design-research`, `spw:design-draft`, `spw:tasks-plan`, `spw:tasks-check`) load indexed lessons with recency/tag prioritization.
 
-Unfinished-run handling for long subagent commands (`spw:prd`, `spw:design-research`, `spw:tasks-plan`, `spw:tasks-check`, `spw:checkpoint`, `spw:post-mortem`, `spw:qa`):
+Unfinished-run handling for long subagent commands (`spw:prd`, `spw:design-research`, `spw:tasks-plan`, `spw:tasks-check`, `spw:checkpoint`, `spw:post-mortem`, `spw:qa`, `spw:qa-check`, `spw:qa-exec`):
 - Before creating a new run-id, inspect the phase run folder (for `checkpoint`, inspect current wave folder first).
 - If latest unfinished run exists, ask explicit user decision:
   - `continue-unfinished`
@@ -242,18 +245,35 @@ code blocks.
 Skills are configured to be `subagent-first` by default to reduce main-context
 growth (`skills.load_mode = "subagent-first"`).
 
-## QA Validation Planning
+## QA Validation (3-Phase)
 
-`spw:qa <spec-name>` creates QA artifacts under `.spec-workflow/specs/<spec-name>/qa/`:
-- `QA-TEST-PLAN.md`
-- `QA-EXECUTION-REPORT.md`
-- `QA-DEFECT-REPORT.md`
+QA follows a plan → check → execute chain:
 
-Behavior:
-- asks user what should be validated when focus is not explicitly provided
-- selects `Playwright MCP`, `Bruno CLI`, or `hybrid` by risk/scope
-- enforces Playwright MCP in headless mode (`--headless`) for `spw:qa`
-- stores file-first communications under `.spec-workflow/specs/<spec-name>/agent-comms/qa/<run-id>/`
+```
+spw:qa (plan) → spw:qa-check (validate) → spw:qa-exec (execute)
+```
+
+### `spw:qa` (planning)
+- Asks user what should be validated when focus is not explicitly provided
+- Selects `Playwright MCP`, `Bruno CLI`, or `hybrid` by risk/scope
+- Produces `QA-TEST-PLAN.md` with concrete selectors/endpoints per scenario
+- Enforces Playwright MCP in headless mode (`--headless`)
+- Stores file-first communications under `.spec-workflow/specs/<spec-name>/agent-comms/qa/<run-id>/`
+
+### `spw:qa-check` (validation)
+- Validates test plan against actual code (the ONE phase that reads implementation files)
+- Verifies selectors/endpoints exist via `qa-selector-verifier`
+- Checks requirement traceability and data feasibility
+- Produces `QA-CHECK.md` with verified selector map (test-id → selector → file:line)
+- PASS/BLOCKED decision gates `spw:qa-exec`
+- Stores file-first communications under `.spec-workflow/specs/<spec-name>/agent-comms/qa-check/<run-id>/`
+
+### `spw:qa-exec` (execution)
+- Executes validated test plan using only verified selectors from `QA-CHECK.md`
+- **Never reads implementation source files** — selector drift is logged as defect
+- Supports `--scope smoke|regression|full` and `--rerun-failed true|false`
+- Produces `QA-EXECUTION-REPORT.md` and `QA-DEFECT-REPORT.md` with GO/NO-GO decision
+- Stores file-first communications under `.spec-workflow/specs/<spec-name>/agent-comms/qa-exec/<run-id>/`
 
 Hook enforcement:
 - `warn` -> diagnostics only

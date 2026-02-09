@@ -38,7 +38,10 @@ const requiresSpec = new Set([
   "tasks-plan",
   "tasks-check",
   "exec",
-  "checkpoint"
+  "checkpoint",
+  "qa",
+  "qa-check",
+  "qa-exec"
 ]);
 
 if (!requiresSpec.has(parsed.command)) {

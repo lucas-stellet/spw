@@ -4,7 +4,7 @@ spw:
   spec: "<spec-name>"
   doc: "qa-defect-report"
   status: "draft"
-  source: "spw:qa"
+  source: "spw:qa-exec"
   updated_at: "YYYY-MM-DD"
   inputs:
     - ".spec-workflow/specs/<spec-name>/qa/QA-EXECUTION-REPORT.md"

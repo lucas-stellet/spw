@@ -84,7 +84,7 @@ Canonical path: `.spec-workflow/spw-config.toml` (legacy fallback: `.spw/spw-con
 
 ### SPW Command Entry Points
 
-`spw:prd` (requirements) → `spw:plan` (design+tasks) → `spw:design-research` → `spw:design-draft` → `spw:tasks-plan` → `spw:tasks-check` → `spw:exec` (implementation) → `spw:checkpoint` (quality gate) → `spw:post-mortem` → `spw:qa` (validation planning) → `spw:status` (resume guidance)
+`spw:prd` (requirements) → `spw:plan` (design+tasks) → `spw:design-research` → `spw:design-draft` → `spw:tasks-plan` → `spw:tasks-check` → `spw:exec` (implementation) → `spw:checkpoint` (quality gate) → `spw:post-mortem` → `spw:qa` (validation planning) → `spw:qa-check` (plan validation) → `spw:qa-exec` (test execution) → `spw:status` (resume guidance)
 
 ### File-First Subagent Communication
 

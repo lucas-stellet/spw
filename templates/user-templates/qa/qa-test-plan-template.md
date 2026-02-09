@@ -36,10 +36,10 @@ spw:
 | R-002 | | | | P1 | |
 
 ## Coverage Matrix
-| Test ID | Requirement | Level (Smoke/Regression) | Type (UI/API) | Tool | Priority | Preconditions | Expected Evidence | Owner |
-|---------|-------------|--------------------------|---------------|------|----------|---------------|-------------------|-------|
-| T-001 | REQ-001 | Smoke | UI | Playwright MCP | P0 | | trace + screenshot | |
-| T-002 | REQ-002 | Regression | API | Bruno CLI | P1 | | junit/json/html report | |
+| Test ID | Requirement | Level (Smoke/Regression) | Type (UI/API) | Tool | Selector/Endpoint | Priority | Preconditions | Expected Evidence | Owner |
+|---------|-------------|--------------------------|---------------|------|--------------------|----------|---------------|-------------------|-------|
+| T-001 | REQ-001 | Smoke | UI | Playwright MCP | `[data-testid="login-btn"]` | P0 | | trace + screenshot | |
+| T-002 | REQ-002 | Regression | API | Bruno CLI | `GET /api/v1/users` | P1 | | junit/json/html report | |
 
 ## Browser Validation Plan (Playwright MCP)
 - Runtime mode: headless (mandatory)
