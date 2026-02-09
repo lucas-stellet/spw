@@ -189,6 +189,8 @@ stored under:
 - execution/checkpoint by wave: `.spec-workflow/specs/<spec-name>/agent-comms/waves/wave-<NN>/<stage>/<run-id>/`
 - post-mortem: `.spec-workflow/specs/<spec-name>/agent-comms/post-mortem/<run-id>/`
 
+`<run-id>` format: `run-NNN` (zero-padded sequential, e.g. `run-001`).
+
 YAML frontmatter (optional metadata) is included in spec templates under the
 `spw` key to help subagents classify documents. It does not replace MCP
 approvals or status.
