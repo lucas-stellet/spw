@@ -10,9 +10,11 @@ Zero-to-PRD discovery flow with subagents to generate requirements.md.
 
 <execution_context>
 @.claude/workflows/spw/prd.md
+@.claude/workflows/spw/overlays/active/prd.md
 </execution_context>
 
 <process>
 Follow the workflow from `@.claude/workflows/spw/prd.md` end-to-end.
+Apply any overlay policy from `@.claude/workflows/spw/overlays/active/prd.md`.
 Preserve existing guardrails, gates, and output contracts.
 </process>

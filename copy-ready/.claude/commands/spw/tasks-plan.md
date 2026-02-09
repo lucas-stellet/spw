@@ -10,9 +10,11 @@ Subagent-driven tasks.md generation for waves, parallelism, and per-task TDD.
 
 <execution_context>
 @.claude/workflows/spw/tasks-plan.md
+@.claude/workflows/spw/overlays/active/tasks-plan.md
 </execution_context>
 
 <process>
 Follow the workflow from `@.claude/workflows/spw/tasks-plan.md` end-to-end.
+Apply any overlay policy from `@.claude/workflows/spw/overlays/active/tasks-plan.md`.
 Preserve existing guardrails, gates, and output contracts.
 </process>

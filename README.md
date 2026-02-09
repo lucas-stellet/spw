@@ -95,23 +95,22 @@ After install:
 
 Optional: Agent Teams (disabled by default)
 - Enable via installer: `spw install --enable-teams`
-- The installer overlays team command variants from `.claude/commands/spw-teams/` into `.claude/commands/spw/`.
-- To return active commands to default mode, run `spw install` without `--enable-teams`.
+- The installer switches symlinks in `.claude/workflows/spw/overlays/active/` from `../noop.md` to `../teams/<cmd>.md`.
+- To disable teams, run `spw install` without `--enable-teams` (symlinks reset to `../noop.md`).
 - Or manually:
   - set `[agent_teams].enabled = true` in `.spec-workflow/spw-config.toml` (fallback legado: `.spw/spw-config.toml`)
   - add `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1"` in `.claude/settings.json`
   - set `teammateMode = "in-process"` (change to `"tmux"` manually if desired)
-  - copy team command variants from `.claude/commands/spw-teams/` into `.claude/commands/spw/`
+  - switch symlinks: `cd .claude/workflows/spw/overlays/active && ln -sf ../teams/<cmd>.md <cmd>.md`
 - When enabled and the phase is listed in `[agent_teams].use_for_phases`, SPW creates a team.
 - `spw:exec` enforces delegate mode when `[agent_teams].require_delegate_mode = true`.
-- Team command overlays are available for all subagent-first entrypoints:
+- Team overlays are available for all subagent-first entrypoints:
   `spw:prd`, `spw:plan`, `spw:design-research`, `spw:design-draft`,
   `spw:tasks-plan`, `spw:tasks-check`, `spw:exec`, `spw:checkpoint`,
   `spw:post-mortem`, `spw:qa`, `spw:status`.
 - Default team-enabled phases include:
   `prd`, `plan`, `design-research`, `design-draft`, `tasks-plan`,
   `tasks-check`, `exec`, `checkpoint`, `post-mortem`, `qa`, `status`.
-- Running `spw install` after enabling teams does not remove `.claude/commands/spw-teams/` or existing teams keys in `.claude/settings.json`.
 
 ## Command entry points
 
@@ -131,9 +130,11 @@ SPW now uses thin orchestrators by default:
 - detailed orchestration workflows live in `.claude/workflows/spw/*.md`
 - shared policy references live in `.claude/workflows/spw/shared/*.md`
 
-Agent Teams uses base + overlay:
+Agent Teams uses base + overlay via symlinks:
 - base workflow: `.claude/workflows/spw/<command>.md`
-- teams overlay: `.claude/workflows/spw/overlays/teams/<command>.md`
+- active overlay: `.claude/workflows/spw/overlays/active/<command>.md` (symlink)
+- teams off: symlink -> `../noop.md` (empty placeholder)
+- teams on: symlink -> `../teams/<command>.md`
 
 Wrappers stay intentionally thin and delegate 100% of detailed logic to workflows.
 

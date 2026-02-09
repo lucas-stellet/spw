@@ -8,7 +8,7 @@ set -euo pipefail
 # Behavior:
 # - help (default): prints usage
 # - install: copies kit files into current project
-# - install --enable-teams: enables Agent Teams in config/settings and overlays team command pack
+# - install --enable-teams: enables Agent Teams in config/settings and activates team overlay symlinks
 # - skills: installs default SPW skills into .claude/skills (best effort)
 # - status: prints a quick summary of kit presence + default skills
 # - Does not overwrite .claude/settings.json (prints merge instruction instead)
@@ -69,7 +69,7 @@ Usage:
 Behavior:
 - help (default): prints this help output.
 - install: copies commands, hooks, templates, and config into cwd.
-- install --enable-teams: enables Agent Teams in config/settings and overlays team command pack.
+- install --enable-teams: enables Agent Teams in config/settings and activates team overlay symlinks.
 - skills: installs default SPW skills into .claude/skills (best effort).
 - status: prints a quick summary of kit presence + default skills.
 
@@ -168,18 +168,18 @@ apply_teams_settings() {
   echo "[spw-kit] Enabled Agent Teams in ${settings_path} (teammateMode=in-process)."
 }
 
-apply_teams_command_pack() {
-  local source_dir="${SCRIPT_DIR}/.claude/commands/spw-teams"
-  local target_dir="${TARGET_ROOT}/.claude/commands/spw"
-
-  if [ ! -d "$source_dir" ]; then
-    echo "[spw-kit] Team command pack not found at ${source_dir}; skipping overlay."
-    return 0
-  fi
-
-  mkdir -p "$target_dir"
-  rsync -a "${source_dir}/" "${target_dir}/"
-  echo "[spw-kit] Applied team command pack from .claude/commands/spw-teams to .claude/commands/spw."
+activate_teams_overlay_symlinks() {
+  local active_dir="${TARGET_ROOT}/.claude/workflows/spw/overlays/active"
+  local teams_dir="${TARGET_ROOT}/.claude/workflows/spw/overlays/teams"
+  [ -d "$teams_dir" ] || { echo "[spw-kit] Team overlays not found; skipping." >&2; return 0; }
+  mkdir -p "$active_dir"
+  for overlay in "$teams_dir"/*.md; do
+    [ -f "$overlay" ] || continue
+    local name; name="$(basename "$overlay")"
+    rm -f "${active_dir}/${name}"
+    ln -s "../teams/${name}" "${active_dir}/${name}"
+  done
+  echo "[spw-kit] Activated team overlays via symlinks in overlays/active/."
 }
 
 find_skill_source_dir() {
@@ -300,7 +300,7 @@ cmd_install() {
 
   if [ "$enable_teams" = "true" ]; then
     enable_agent_teams
-    apply_teams_command_pack
+    activate_teams_overlay_symlinks
     if [ "$created_settings" = "true" ]; then
       apply_teams_settings
     else

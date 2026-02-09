@@ -10,9 +10,11 @@ Subagent-driven technical research to prepare design.md.
 
 <execution_context>
 @.claude/workflows/spw/design-research.md
+@.claude/workflows/spw/overlays/active/design-research.md
 </execution_context>
 
 <process>
 Follow the workflow from `@.claude/workflows/spw/design-research.md` end-to-end.
+Apply any overlay policy from `@.claude/workflows/spw/overlays/active/design-research.md`.
 Preserve existing guardrails, gates, and output contracts.
 </process>
