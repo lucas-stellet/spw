@@ -40,20 +40,20 @@ Tornar o README acessivel para quem nunca viu o projeto.
 
 ### Estrutura
 
-- [ ] Adicionar Table of Contents no topo do README
-- [ ] Adicionar secao "What is SPW?" com explicacao em 3-4 frases para leigos
-- [ ] Adicionar secao "Quick Start" com exemplo de fluxo real (prd → plan → exec)
-- [ ] Revisar secao de instalacao — garantir que funciona para usuario externo
-- [ ] Adicionar badges (version, license) no topo
+- [x] Adicionar Table of Contents no topo do README
+- [x] Adicionar secao "What is SPW?" com explicacao em 3-4 frases para leigos
+- [x] Adicionar secao "Quick Start" com exemplo de fluxo real (prd → plan → exec)
+- [x] Revisar secao de instalacao — garantir que funciona para usuario externo
+- [x] Adicionar badges (version, license) no topo
 
 ### Glossario
 
-- [ ] Adicionar secao "Glossary" no README ou doc separado com termos-chave:
+- [x] Adicionar secao "Glossary" no README ou doc separado com termos-chave:
   - wave, thin-dispatch, synthesizer, scout, checkpoint, file-first, dispatch-pattern, rolling-wave, agent teams, overlay
 
 ### Sincronizacao
 
-- [ ] Sincronizar `copy-ready/README.md` com README atualizado
+- [x] Sincronizar `copy-ready/README.md` com README atualizado
 
 ---
 

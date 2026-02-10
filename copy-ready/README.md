@@ -1,12 +1,36 @@
 # SPW
 
-SPW is a command/template kit that combines:
-- `spec-workflow-mcp` as the source of truth for artifacts and approvals
-- stricter agent execution patterns (planning gates, waves, checkpoints)
-- subagent-first orchestration with model routing:
-  - web scouting -> `haiku`
-  - complex reasoning -> `opus`
-  - implementation/drafting -> `sonnet`
+![Version](https://img.shields.io/badge/version-2.0-blue)
+
+## Table of Contents
+
+- [What is SPW?](#what-is-spw)
+- [Quick Start](#quick-start)
+- [Where to start](#where-to-start)
+- [Installation](#installation)
+- [Command entry points](#command-entry-points)
+- [Thin-Orchestrator Architecture](#thin-orchestrator-architecture)
+- [Dashboard Markdown Compatibility](#dashboard-markdown-compatibility-spec-workflow-mcp)
+- [Mermaid for Architecture Design](#mermaid-for-architecture-design)
+- [QA Validation (3-Phase)](#qa-validation-3-phase)
+- [Glossary](#glossary)
+
+## What is SPW?
+
+SPW is a toolkit that adds structured workflow orchestration to Claude Code projects. Instead of letting an agent tackle an entire feature in one shot, SPW breaks work into phases -- requirements, design, planning, implementation, and QA -- each with its own quality gates and approval checkpoints.
+
+Every phase dispatches specialized subagents with model routing: haiku handles lightweight web scouting, opus drives complex reasoning, and sonnet does the implementation drafting. Agents communicate through filesystem artifacts (not chat), so handoffs are reproducible and auditable. You drive the whole process through slash commands in Claude Code (e.g., `/spw:prd`, `/spw:exec`) while `spec-workflow-mcp` serves as the source of truth for artifacts and approvals.
+
+## Quick Start
+
+After [installing](#installation), run these commands inside a Claude Code session:
+
+1. `/spw:prd my-feature` -- Generate a requirements document from your feature description
+2. `/spw:plan my-feature` -- Create a design document and break it into executable tasks
+3. `/spw:exec my-feature` -- Implement tasks in waves with automatic checkpoints
+4. `/spw:qa my-feature` -- Build and run a QA validation plan
+
+Each command handles subagent dispatch, file handoff, and quality gates automatically. Between steps, artifacts are stored under `.spec-workflow/specs/my-feature/` and approvals flow through `spec-workflow-mcp`.
 
 ## Where to start
 
@@ -14,105 +38,89 @@ SPW is a command/template kit that combines:
 - Agent/contributor operational rules are in `AGENTS.md`.
 - Keep `docs/SPW-WORKFLOW.md`, `hooks/README.md`, and `copy-ready/README.md` as lightweight pointers to this README.
 
-## Install `spw` CLI
+## Installation
 
-One-liner bootstrap via GitHub CLI (latest `main`):
+### 1. Install the CLI
+
+Pick one method to install the `spw` command on your machine:
+
+**Via GitHub CLI (recommended):**
 
 ```bash
 gh api 'repos/lucas-stellet/spw/contents/scripts/bootstrap.sh?ref=main' -H 'Accept: application/vnd.github.raw' | bash
 ```
 
-Public raw fallback (latest `main`):
+**Via curl:**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/lucas-stellet/spw/main/scripts/bootstrap.sh | bash
 ```
 
-From this repository:
+**From a local clone:**
 
 ```bash
 bash ./scripts/install-spw-bin.sh
 ```
 
-From anywhere with GitHub CLI:
+The `spw` CLI caches the kit from GitHub and delegates to `copy-ready/install.sh`. Run `spw` with no arguments to see available commands.
 
-```bash
-tmp_dir="$(mktemp -d)"
-gh repo clone lucas-stellet/spw "${tmp_dir}/spw"
-bash "${tmp_dir}/spw/scripts/install-spw-bin.sh"
-rm -rf "${tmp_dir}"
-```
+### 2. Install in your project
 
-The installed `spw` wrapper caches the kit from GitHub and runs `copy-ready/install.sh`.
-Default CLI behavior:
-- `spw` prints help output
-- `spw install` performs installation in the current project
-
-Useful commands:
-- `spw update` (self-update the `spw` wrapper first, then clear cache, fetch fresh repo/ref, and print `ref@commit` + update timestamp)
-- `spw doctor` (show current repo/ref/cache configuration, including `ref@commit` and last update timestamp)
-
-## Quick install in another project
-
-Option 1 (recommended, from target project root):
+From your project root:
 
 ```bash
 spw install
 ```
 
-Optional:
+This copies commands, workflows, hooks, config, and skills into your project. For a manual install, you can also run `cp -R /path/to/spw/copy-ready/. .` instead.
 
-```bash
-spw status
-spw skills
-spw update
-spw doctor
-```
+### 3. Post-install checklist
 
-`spw status` prints a quick kit/skills summary.  
-`spw skills` installs default SPW skills only (the default catalog no longer includes `requesting-code-review`).
-
-Option 2 (manual copy):
-
-```bash
-cp -R /path/to/spw/copy-ready/. .
-```
-
-After install:
+Required:
 1. Merge `.claude/settings.json.example` into your `.claude/settings.json` (if needed).
-2. Review `.spec-workflow/spw-config.toml` (fallback legado: `.spw/spw-config.toml`) especially `[planning].tasks_generation_strategy` and `[planning].max_wave_size`.
-3. Set per-stage skill enforcement as needed:
-   - `skills.design.enforce_required = true|false`
-   - `skills.implementation.enforce_required = true|false`
-4. Start a new session so SessionStart hook can sync the active tasks template.
-5. (Optional) Enable SPW statusline from `.claude/settings.json.example`.
-6. Default SPW skills are copied into `.claude/skills/` when local sources are found (best effort).
-   - `test-driven-development` belongs to the common/default catalog.
-   - `qa-validation-planning` is available for QA planning (`spw:qa`) with Playwright MCP/Bruno CLI guidance.
-   - In implementation phases (`spw:exec`, `spw:checkpoint`), this skill is treated as required only when `[execution].tdd_default=true`.
-7. (Optional) enable SPW enforcement hooks with `hooks.enforcement_mode=warn|block`.
+2. Review `.spec-workflow/spw-config.toml`, especially `[planning].tasks_generation_strategy` and `[planning].max_wave_size`.
+3. Start a new Claude Code session so the SessionStart hook can sync the active tasks template.
 
-8. (Optional) For QA browser validation (`spw:qa`, `spw:qa-exec`) and prototype/SPA URL exploration in planning stages (`spw:prd`, `spw:design-research`), configure Playwright MCP:
-   ```
-   claude mcp add playwright -- npx @playwright/mcp@latest --headless --isolated
-   ```
+Optional:
+- Set per-stage skill enforcement: `skills.design.enforce_required` and `skills.implementation.enforce_required` in `spw-config.toml`.
+- Enable SPW statusline (see `.claude/settings.json.example`).
+- Enable enforcement hooks with `hooks.enforcement_mode = "warn"` or `"block"` in `spw-config.toml`.
+- For QA browser validation and URL exploration in planning stages, add Playwright MCP:
+  ```
+  claude mcp add playwright -- npx @playwright/mcp@latest --headless --isolated
+  ```
 
-Optional: Agent Teams (disabled by default)
-- Enable via installer: `spw install --enable-teams`
-- The installer switches symlinks in `.claude/workflows/spw/overlays/active/` from `../noop.md` to `../teams/<cmd>.md`.
-- To disable teams, run `spw install` without `--enable-teams` (symlinks reset to `../noop.md`).
-- Or manually:
-  - set `[agent_teams].enabled = true` in `.spec-workflow/spw-config.toml` (fallback legado: `.spw/spw-config.toml`)
-  - add `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1"` in `.claude/settings.json`
-  - set `teammateMode = "in-process"` (change to `"tmux"` manually if desired)
-  - switch symlinks: `cd .claude/workflows/spw/overlays/active && ln -sf ../teams/<cmd>.md <cmd>.md`
-- When enabled and the phase is NOT listed in `[agent_teams].exclude_phases`, SPW creates a team.
-- `spw:exec` enforces delegate mode when `[agent_teams].require_delegate_mode = true`.
-- Team overlays are available for all subagent-first entrypoints:
-  `spw:prd`, `spw:plan`, `spw:design-research`, `spw:design-draft`,
-  `spw:tasks-plan`, `spw:tasks-check`, `spw:exec`, `spw:checkpoint`,
-  `spw:post-mortem`, `spw:qa`, `spw:qa-check`, `spw:qa-exec`, `spw:status`.
-- All phases are eligible by default (`exclude_phases = []`).
+Default SPW skills are copied into `.claude/skills/` during install (best effort). The `test-driven-development` skill is in the default catalog; `qa-validation-planning` is available for QA phases. In implementation phases (`spw:exec`, `spw:checkpoint`), TDD is treated as required only when `[execution].tdd_default = true`.
+
+> **Legacy path:** SPW also checks `.spw/spw-config.toml` as a fallback if `.spec-workflow/spw-config.toml` is not found.
+
+### CLI commands
+
+| Command | Description |
+|---------|-------------|
+| `spw install` | Install SPW in the current project |
+| `spw update` | Self-update the CLI, clear cache, fetch latest kit |
+| `spw doctor` | Show current repo/ref/cache configuration |
+| `spw status` | Print a quick kit and skills summary |
+| `spw skills` | Install default SPW skills only |
+
+### Agent Teams (optional)
+
+Agent Teams is disabled by default. To enable it:
+
+```bash
+spw install --enable-teams
+```
+
+This switches symlinks in `.claude/workflows/spw/overlays/active/` from `../noop.md` to `../teams/<cmd>.md`. To disable, run `spw install` without `--enable-teams` (symlinks reset to `../noop.md`).
+
+Manual setup (without the installer):
+- Set `[agent_teams].enabled = true` in `spw-config.toml`
+- Add `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1"` in `.claude/settings.json`
+- Set `teammateMode = "in-process"` (change to `"tmux"` manually if desired)
+- Switch symlinks: `cd .claude/workflows/spw/overlays/active && ln -sf ../teams/<cmd>.md <cmd>.md`
+
+When enabled, SPW creates a team for any phase not listed in `[agent_teams].exclude_phases` (all phases are eligible by default). `spw:exec` enforces delegate mode when `[agent_teams].require_delegate_mode = true`. Team overlays are available for all subagent-first entrypoints: `spw:prd`, `spw:plan`, `spw:design-research`, `spw:design-draft`, `spw:tasks-plan`, `spw:tasks-check`, `spw:exec`, `spw:checkpoint`, `spw:post-mortem`, `spw:qa`, `spw:qa-check`, `spw:qa-exec`, `spw:status`.
 
 ## Command entry points
 
@@ -303,3 +311,25 @@ Hook enforcement:
 - `warn` -> diagnostics only
 - `block` -> deny violating actions
 - details: `AGENTS.md` + `.spec-workflow/spw-config.toml` comments (fallback legado: `.spw/spw-config.toml`)
+
+## Glossary
+
+- **Agent Teams**: Optional mode where SPW spawns multiple Claude Code agents to work in parallel on a phase. Enabled via `spw install --enable-teams`; controlled by `[agent_teams]` in `spw-config.toml`.
+
+- **Checkpoint**: Quality gate run after each execution wave via `spw:checkpoint`. Produces a PASS/BLOCKED report that determines whether the next wave can proceed.
+
+- **Dispatch Pattern**: The orchestration strategy a command uses. One of three categories: Pipeline (sequential stages leading to a synthesizer), Audit (parallel reviewers feeding an aggregator), or Wave Execution (iterative implementation cycles with checkpoints). Declared via `<dispatch_pattern>` in each workflow.
+
+- **File-First Communication**: Subagents communicate exclusively via filesystem artifacts (`brief.md`, `report.md`, `status.json`) rather than chat messages. Artifacts are stored in `_comms/` directories under each phase.
+
+- **Overlay**: Symlink-based mechanism that switches command behavior between solo mode (symlink to `noop.md`) and Agent Teams mode (symlink to `teams/<cmd>.md`). Located in `.claude/workflows/spw/overlays/active/`.
+
+- **Rolling Wave**: Planning strategy where tasks are generated one wave at a time, allowing later waves to incorporate lessons from earlier execution. Set via `[planning].tasks_generation_strategy = "rolling-wave"` in `spw-config.toml`. Alternative: `all-at-once`.
+
+- **Scout**: Lightweight subagent dispatched before a wave to gather execution state (checkpoint status, in-progress tasks, next actions) without reading full spec files. Returns compact resume state used by the orchestrator to scope its reads.
+
+- **Synthesizer**: Final subagent in a Pipeline dispatch that reads all prior subagent reports from disk and produces the consolidated output artifact. Follows thin-dispatch rules (receives filesystem paths, not inline content).
+
+- **Thin Dispatch**: Core architectural principle: orchestrators read only `status.json` after each subagent (never full reports), pass filesystem paths between stages, and delegate all detailed logic to workflows. Enforced by the 5 core thin-dispatch rules (see Dispatch Categories).
+
+- **Wave**: A batch of tasks executed together in `spw:exec`. Each wave is followed by a checkpoint. Wave size is controlled by `[planning].max_wave_size` in `spw-config.toml`.
