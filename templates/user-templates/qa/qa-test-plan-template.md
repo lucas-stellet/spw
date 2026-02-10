@@ -88,5 +88,5 @@ bru run --env <env-name> --reporter-junit --reporter-json --reporter-html
 ```
 
 ## Reporting Outputs
-- Execution report path: `.spec-workflow/specs/<spec-name>/qa/QA-EXECUTION-REPORT.md`
-- Defect report path: `.spec-workflow/specs/<spec-name>/qa/QA-DEFECT-REPORT.md`
+- Execution report path: `.spec-workflow/specs/<spec-name>/_generated/QA-EXECUTION-REPORT.md`
+- Defect report path: `.spec-workflow/specs/<spec-name>/_generated/QA-DEFECT-REPORT.md`

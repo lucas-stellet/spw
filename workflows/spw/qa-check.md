@@ -24,13 +24,13 @@ Validate QA test plan against actual code. Confirm selectors/endpoints exist, ve
 
 <artifact_boundary>
 Reads:
-- `.spec-workflow/specs/<spec-name>/qa/QA-TEST-PLAN.md`
+- `.spec-workflow/specs/<spec-name>/_generated/QA-TEST-PLAN.md`
 - `.spec-workflow/specs/<spec-name>/requirements.md`
 - `.spec-workflow/specs/<spec-name>/design.md`
 - Implementation source files (selector-verifier only)
 
 Writes:
-- `.spec-workflow/specs/<spec-name>/qa/QA-CHECK.md`
+- `.spec-workflow/specs/<spec-name>/_generated/QA-CHECK.md`
 - `.spec-workflow/specs/<spec-name>/_agent-comms/qa-check/<run-id>/`
 </artifact_boundary>
 
@@ -126,10 +126,10 @@ When `enabled=true` and `qa-check` is NOT listed in `exclude_phases`:
 
 <workflow>
 1. Resolve `SPEC_DIR=.spec-workflow/specs/<spec-name>` and stop BLOCKED if missing.
-2. Verify `qa/QA-TEST-PLAN.md` exists in SPEC_DIR; stop BLOCKED if missing → recommend `spw:qa <spec-name>`.
+2. Verify `_generated/QA-TEST-PLAN.md` exists in SPEC_DIR; stop BLOCKED if missing → recommend `spw:qa <spec-name>`.
 3. Inspect existing qa-check run dirs and apply `<resume_policy>` decision gate.
 4. Read context files:
-   - `.spec-workflow/specs/<spec-name>/qa/QA-TEST-PLAN.md`
+   - `.spec-workflow/specs/<spec-name>/_generated/QA-TEST-PLAN.md`
    - `.spec-workflow/specs/<spec-name>/requirements.md`
    - `.spec-workflow/specs/<spec-name>/design.md`
 5. If Agent Teams are enabled for this phase, create a team before dispatching subagents.
@@ -141,7 +141,7 @@ When `enabled=true` and `qa-check` is NOT listed in `exclude_phases`:
 7. Require `report.md` + `status.json` from each auditor; stop BLOCKED if missing.
 8. Dispatch `qa-check-aggregator` with file handoff to produce PASS/BLOCKED decision.
    - If resuming, always rerun `qa-check-aggregator`.
-9. Generate `.spec-workflow/specs/<spec-name>/qa/QA-CHECK.md` containing:
+9. Generate `.spec-workflow/specs/<spec-name>/_generated/QA-CHECK.md` containing:
    - PASS or BLOCKED status
    - Verified selector map (test-id → selector/endpoint → file:line)
    - Traceability percentage (tested requirements / total requirements)
@@ -163,7 +163,7 @@ When `enabled=true` and `qa-check` is NOT listed in `exclude_phases`:
 
 <completion_guidance>
 On PASS:
-- Confirm output path: `.spec-workflow/specs/<spec-name>/qa/QA-CHECK.md`.
+- Confirm output path: `.spec-workflow/specs/<spec-name>/_generated/QA-CHECK.md`.
 - Recommend next command: `spw:qa-exec <spec-name>`.
 - Recommend running `/clear` before execution.
 

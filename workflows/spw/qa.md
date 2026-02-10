@@ -27,7 +27,7 @@ Create a risk-based QA validation plan for the target spec and select the best v
 
 <artifact_boundary>
 Write outputs under:
-- `.spec-workflow/specs/<spec-name>/qa/QA-TEST-PLAN.md`
+- `.spec-workflow/specs/<spec-name>/_generated/QA-TEST-PLAN.md`
 
 Communication/handoff (`<run-id>` MUST be `run-NNN` format — e.g. `run-001`, never dates):
 - `.spec-workflow/specs/<spec-name>/_agent-comms/qa/<run-id>/`
@@ -182,7 +182,7 @@ Plan synthesizer verification:
    - `hybrid` -> both in parallel
 10. Enforce `<playwright_runtime_policy>` for all Playwright MCP scenarios.
 11. Dispatch `qa-plan-synthesizer` with previous outputs.
-12. Generate artifact under `.spec-workflow/specs/<spec-name>/qa/`:
+12. Generate artifact under `.spec-workflow/specs/<spec-name>/_generated/`:
    - `QA-TEST-PLAN.md` — must include a `Selector/Endpoint` column in the Coverage Matrix
 13. Write `<run-dir>/_handoff.md` linking evidence, selected tool rationale, and unresolved risks.
 </workflow>
@@ -200,7 +200,7 @@ Plan synthesizer verification:
 
 <completion_guidance>
 On success:
-- Confirm output path: `.spec-workflow/specs/<spec-name>/qa/QA-TEST-PLAN.md`.
+- Confirm output path: `.spec-workflow/specs/<spec-name>/_generated/QA-TEST-PLAN.md`.
 - Recommend next command: `spw:qa-check <spec-name>` to validate selectors and traceability before execution.
 - Recommend running `/clear` before validation.
 

@@ -112,7 +112,12 @@ Stored under `.spec-workflow/specs/<spec-name>/_agent-comms/` with command-speci
 │   ├── CHECKPOINT-REPORT.md
 │   ├── TASKS-CHECK.md
 │   ├── STATUS-SUMMARY.md
-│   └── SKILLS-*.md
+│   ├── SKILLS-*.md
+│   ├── QA-TEST-PLAN.md
+│   ├── QA-CHECK.md
+│   ├── QA-EXECUTION-REPORT.md
+│   ├── QA-DEFECT-REPORT.md
+│   └── qa-artifacts/
 ├── _agent-comms/                ← subagent file-first handoffs
 │   ├── prd/<run-id>/
 │   ├── design-research/<run-id>/

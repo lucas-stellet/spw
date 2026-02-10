@@ -24,14 +24,14 @@ Execute the validated QA test plan. All selectors/routes come from QA-CHECK.md �
 
 <artifact_boundary>
 Reads:
-- `.spec-workflow/specs/<spec-name>/qa/QA-TEST-PLAN.md`
-- `.spec-workflow/specs/<spec-name>/qa/QA-CHECK.md` (verified selectors)
-- `.spec-workflow/specs/<spec-name>/qa/QA-EXECUTION-REPORT.md` (if resuming)
+- `.spec-workflow/specs/<spec-name>/_generated/QA-TEST-PLAN.md`
+- `.spec-workflow/specs/<spec-name>/_generated/QA-CHECK.md` (verified selectors)
+- `.spec-workflow/specs/<spec-name>/_generated/QA-EXECUTION-REPORT.md` (if resuming)
 - **Never reads implementation source files**
 
 Writes:
-- `.spec-workflow/specs/<spec-name>/qa/QA-EXECUTION-REPORT.md`
-- `.spec-workflow/specs/<spec-name>/qa/QA-DEFECT-REPORT.md`
+- `.spec-workflow/specs/<spec-name>/_generated/QA-EXECUTION-REPORT.md`
+- `.spec-workflow/specs/<spec-name>/_generated/QA-DEFECT-REPORT.md`
 - `.spec-workflow/specs/<spec-name>/_agent-comms/qa-exec/<run-id>/`
 </artifact_boundary>
 
@@ -182,7 +182,7 @@ Skill gate:
 - `qa-evidence-collector` (model: implementation)
   - Gathers traces, screenshots, junit/json/html reports.
   - Maps each artifact to its test ID.
-  - Organizes evidence under `qa/artifacts/`.
+  - Organizes evidence under `_generated/qa-artifacts/`.
 - `qa-exec-synthesizer` (model: complex_reasoning)
   - Consumes all test runner and evidence collector outputs.
   - Fills QA-EXECUTION-REPORT.md and QA-DEFECT-REPORT.md.
@@ -192,14 +192,14 @@ Skill gate:
 <workflow>
 1. Resolve `SPEC_DIR=.spec-workflow/specs/<spec-name>` and stop BLOCKED if missing.
 2. Verify prerequisites exist in SPEC_DIR:
-   - `qa/QA-TEST-PLAN.md` must exist; stop BLOCKED if missing → recommend `spw:qa <spec-name>`.
-   - `qa/QA-CHECK.md` must exist and contain `PASS` status; stop BLOCKED if missing or BLOCKED → recommend `spw:qa-check <spec-name>`.
+   - `_generated/QA-TEST-PLAN.md` must exist; stop BLOCKED if missing → recommend `spw:qa <spec-name>`.
+   - `_generated/QA-CHECK.md` must exist and contain `PASS` status; stop BLOCKED if missing or BLOCKED → recommend `spw:qa-check <spec-name>`.
 3. Dispatch `qa-state-scout` for compact resume state.
 4. Inspect existing qa-exec run dirs and apply `<resume_policy>` decision gate.
 5. Read scenario-scoped context only (filtered by `--scope` and `--rerun-failed`):
-   - `qa/QA-TEST-PLAN.md` for scenario definitions
-   - `qa/QA-CHECK.md` for verified selector map
-   - `qa/QA-EXECUTION-REPORT.md` (if resuming or `--rerun-failed true`)
+   - `_generated/QA-TEST-PLAN.md` for scenario definitions
+   - `_generated/QA-CHECK.md` for verified selector map
+   - `_generated/QA-EXECUTION-REPORT.md` (if resuming or `--rerun-failed true`)
    - **No implementation source files** (enforced by `<no_source_read_policy>`).
 6. If Agent Teams are enabled for this phase, create a team before dispatching subagents.
 7. For each scenario batch (grouped by tool type — Playwright MCP / Bruno CLI):
@@ -213,7 +213,7 @@ Skill gate:
 8. Require `report.md` + `status.json` from each subagent; stop BLOCKED if missing.
 9. Dispatch `qa-exec-synthesizer` with all test runner and evidence collector outputs.
    - If resuming, always rerun `qa-exec-synthesizer`.
-10. Generate artifacts under `.spec-workflow/specs/<spec-name>/qa/`:
+10. Generate artifacts under `.spec-workflow/specs/<spec-name>/_generated/`:
     - `QA-EXECUTION-REPORT.md` (filled with results, evidence paths, GO/NO-GO)
     - `QA-DEFECT-REPORT.md` (filled with any defects found, including selector drift)
 11. Write `<run-dir>/_handoff.md` linking all subagent outputs, evidence paths, and execution summary.
@@ -236,8 +236,8 @@ Skill gate:
 On GO:
 - Show pass/fail/blocked counts and overall result.
 - Confirm output paths:
-  - `.spec-workflow/specs/<spec-name>/qa/QA-EXECUTION-REPORT.md`
-  - `.spec-workflow/specs/<spec-name>/qa/QA-DEFECT-REPORT.md`
+  - `.spec-workflow/specs/<spec-name>/_generated/QA-EXECUTION-REPORT.md`
+  - `.spec-workflow/specs/<spec-name>/_generated/QA-DEFECT-REPORT.md`
 
 On NO-GO:
 - Show failed scenarios with defect IDs.
