@@ -70,6 +70,36 @@ Observação:
 26. Em `spw:qa-check`, validar seletores/endpoints do plano contra código fonte real (único comando QA que lê arquivos de implementação); produzir mapa verificado em `QA-CHECK.md`.
 27. Em `spw:qa-exec`, nunca ler arquivos fonte de implementação; usar apenas seletores verificados de `QA-CHECK.md`. Se seletor falhar em runtime, registrar como defeito "selector drift" e recomendar `spw:qa-check`.
 
+## Padrão thin-dispatch (obrigatório)
+
+Todos os comandos SPW seguem o modelo thin-dispatch (`docs/DISPATCH-PATTERNS.md`):
+
+28. O orquestrador lê APENAS `status.json` após cada despacho de subagente. Nunca lê `report.md` no fluxo normal — somente quando `status=blocked` (para decidir ação).
+29. Entre subagentes, o orquestrador passa paths de arquivo no `brief.md`, nunca conteúdo inline. Subagente-B recebe o path do `report.md` de subagente-A, não seu conteúdo.
+30. Synthesizers e aggregators leem todos os reports anteriores diretamente do filesystem via paths recebidos no brief.
+31. Comandos são categorizados em três padrões de despacho:
+    - **Pipeline** (sequência → synthesizer): `prd`, `design-research`, `design-draft`, `tasks-plan`, `qa`, `post-mortem`
+    - **Audit** (auditors paralelos → aggregator): `tasks-check`, `qa-check`, `checkpoint`
+    - **Wave Execution** (scout → waves iterativas → synthesizer): `exec`, `qa-exec`
+32. Em Wave Execution, trabalho iterativo (tarefas, cenários) é dividido em waves (`wave-NN`). Cada wave despacha subagentes sequencialmente, escreve `_wave-summary.json`, e o orquestrador só acumula status — nunca resultados completos.
+
+## Estrutura de diretório por fase (obrigatório)
+
+Artefatos são organizados por **fase de workflow**, não em dumps flat. Cada fase é dona dos seus outputs e das suas comms de agentes (`_comms/`). Referência completa: `docs/SPEC-DIRECTORY-STRUCTURE.md`.
+
+33. Artefatos gerados pertencem à pasta da fase que os produziu (ex: `qa/QA-CHECK.md`, não `_generated/QA-CHECK.md`). As pastas `_generated/` e `_agent-comms/` de topo não existem mais.
+34. Agent comms ficam em `<fase>/_comms/<comando>/run-NNN/` (Pipeline e Audit) ou `<fase>/_comms/<comando>/waves/wave-NN/run-NNN/` (Wave Execution).
+35. Fases: `prd/`, `design/`, `planning/`, `execution/`, `qa/`, `post-mortem/`. Quando uma fase contém comandos de categorias diferentes (ex: `qa/` tem pipeline, audit e wave), cada comando usa o subdiretório de `_comms/` apropriado.
+36. Dashboard files (`requirements.md`, `design.md`, `tasks.md`) permanecem na raiz da spec — o MCP dashboard lê daqui.
+37. Diretórios de fase são criados sob demanda. Se `spw:qa` nunca rodou, `qa/` não existe.
+
+## PR review optimization (obrigatório)
+
+Arquivos de spec-workflow são marcados como `linguist-generated` para GitHub colapsar por default no diff de PRs. Referência completa: `docs/PR-REVIEW-OPTIMIZATION.md`.
+
+38. O installer (`spw install`) deve adicionar `.spec-workflow/specs/** linguist-generated=true` ao `.gitattributes` do projeto. A regra é idempotente — se já existir, não duplicar.
+39. Apenas arquivos sob `.spec-workflow/specs/` são marcados. Config (`.spec-workflow/spw-config.toml`) e templates (`.spec-workflow/user-templates/`) não são afetados.
+
 ## File-first comms (não quebrar)
 
 Para comandos que exigem handoff por arquivos, garantir presença de:

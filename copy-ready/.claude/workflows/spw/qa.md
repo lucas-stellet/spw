@@ -4,12 +4,11 @@ description: Build a QA validation plan for a spec using Playwright MCP, Bruno C
 argument-hint: "<spec-name> [--focus <what-to-validate>] [--tool auto|playwright|bruno|hybrid]"
 ---
 
-<objective>
-Create a risk-based QA validation plan for the target spec and select the best validation toolchain:
-- Playwright MCP for browser flows
-- Bruno CLI for API behavior/contracts
-- Hybrid when both are required
-</objective>
+<dispatch_pattern>
+category: pipeline
+subcategory: synthesis
+policy: @.claude/workflows/spw/shared/dispatch-pipeline.md
+</dispatch_pattern>
 
 <shared_policies>
 - @.claude/workflows/spw/shared/config-resolution.md
@@ -19,51 +18,134 @@ Create a risk-based QA validation plan for the target spec and select the best v
 - @.claude/workflows/spw/shared/approval-reconciliation.md
 </shared_policies>
 
-<path_conventions>
-- Canonical spec root: `.spec-workflow/specs/<spec-name>/`
-- Never use `.specs/`
-- QA outputs must stay inside the active spec directory
-</path_conventions>
+<objective>
+Create a risk-based QA validation plan for the target spec and select the best validation toolchain:
+- Playwright MCP for browser flows
+- Bruno CLI for API behavior/contracts
+- Hybrid when both are required
+</objective>
 
 <artifact_boundary>
-Write outputs under:
-- `.spec-workflow/specs/<spec-name>/_generated/QA-TEST-PLAN.md`
+inputs:
+- `.spec-workflow/specs/<spec-name>/requirements.md`
+- `.spec-workflow/specs/<spec-name>/design.md`
+- `.spec-workflow/specs/<spec-name>/tasks.md` (if present)
+- `.spec-workflow/specs/<spec-name>/execution/CHECKPOINT-REPORT.md` (if present)
+- Router/route config files (e.g. `router.ex`, `routes.ts`) for URL paths
+- Template/component files for `data-testid` and CSS selectors
 
-Communication/handoff (`<run-id>` MUST be `run-NNN` format — e.g. `run-001`, never dates):
-- `.spec-workflow/specs/<spec-name>/_agent-comms/qa/<run-id>/`
+output:
+- `.spec-workflow/specs/<spec-name>/qa/QA-TEST-PLAN.md`
+
+comms:
+- `.spec-workflow/specs/<spec-name>/qa/_comms/qa/run-NNN/`
 </artifact_boundary>
 
-<file_handoff_protocol>
-Subagent communication must be file-first.
+<!-- ============================================================
+     SUBAGENTS — who does what, in what order, with which model
+     ============================================================ -->
 
-For each subagent, use:
-- `<run-dir>/<subagent>/brief.md`
-- `<run-dir>/<subagent>/report.md`
-- `<run-dir>/<subagent>/status.json`
+<subagents>
+- `qa-scope-analyst` (model: complex_reasoning)
+  Maps user intent + spec risks to a test strategy.
+  Inputs: requirements.md, design.md, tasks.md, CHECKPOINT-REPORT.md (paths in brief).
 
-After synthesis, write:
-- `<run-dir>/_handoff.md`
+- `browser-test-designer` (model: implementation)
+  Produces Playwright MCP scenarios with concrete CSS/data-testid selectors.
+  Inputs: qa-scope-analyst/report.md path, router/template source files.
+  Conditional: dispatched only when tool=playwright or tool=hybrid.
 
-If a required handoff file is missing, stop BLOCKED.
-</file_handoff_protocol>
+- `api-test-designer` (model: implementation)
+  Produces Bruno CLI scenarios with endpoints, methods, schemas.
+  Inputs: qa-scope-analyst/report.md path, router/controller source files.
+  Conditional: dispatched only when tool=bruno or tool=hybrid.
 
-<resume_policy>
-Before creating a new run, inspect existing QA run folders:
-- `.spec-workflow/specs/<spec-name>/_agent-comms/qa/<run-id>/`
+- `qa-plan-synthesizer` (model: complex_reasoning)
+  Generates final QA-TEST-PLAN.md with Coverage Matrix including Selector/Endpoint column.
+  Inputs: all previous report paths. Reads from filesystem.
+</subagents>
 
-A run is `unfinished` when any of these is true:
-- `_handoff.md` is missing
-- any subagent folder is missing `brief.md`, `report.md`, or `status.json`
-- any `status.json` reports `status=blocked`
+<!-- ============================================================
+     EXTENSION POINTS — command-specific logic injected into
+     the pipeline dispatch pattern
+     ============================================================ -->
 
-Resume decision gate (mandatory):
-1. Find latest unfinished run.
-2. Ask user once (AskUserQuestion):
-   - `continue-unfinished` (Recommended)
-   - `delete-and-restart`
-3. Never choose automatically.
-4. If no explicit decision, stop with `WAITING_FOR_USER_DECISION`.
-</resume_policy>
+<extensions>
+
+<!-- pre_pipeline: user intent + tool selection ................. -->
+<pre_pipeline>
+1. Resolve `SPEC_DIR=.spec-workflow/specs/<spec-name>` and stop BLOCKED if missing.
+2. Apply skills policy: if `[skills].enabled=true`, load `qa-validation-planning` first.
+3. Apply user intent gate (§ user_intent_gate).
+4. Apply tool selection (§ tool_selection_policy).
+5. Read router/template files to extract concrete selectors for designer briefs.
+   This is the ONE planning phase where implementation files should be read.
+6. Inspect existing qa run dirs and apply resume decision gate.
+</pre_pipeline>
+
+<!-- pre_dispatch: conditional designer selection ............... -->
+<pre_dispatch subagent="browser-test-designer">
+Skip this subagent if tool selection resolved to `bruno`.
+</pre_dispatch>
+
+<pre_dispatch subagent="api-test-designer">
+Skip this subagent if tool selection resolved to `playwright`.
+</pre_dispatch>
+
+<!-- post_pipeline: artifact generation + guidance .............. -->
+<post_pipeline>
+1. Verify QA-TEST-PLAN.md includes Selector/Endpoint column in Coverage Matrix.
+2. Verify all scenarios have concrete identifiers (per § concrete_selector_policy).
+   Mark scenarios missing selectors as INCOMPLETE — does not block plan generation.
+3. Write `<run-dir>/_handoff.md` linking evidence, tool rationale, unresolved risks.
+4. Recommend next: `spw:qa-check <spec-name>` then `/clear`.
+</post_pipeline>
+
+</extensions>
+
+<!-- ============================================================
+     COMMAND-SPECIFIC POLICIES — referenced by extensions above
+     ============================================================ -->
+
+<user_intent_gate>
+When `--focus` is missing:
+1. AskUserQuestion with options:
+   - `Browser journey validation (Recommended)`
+   - `API contract/behavior validation`
+   - `Release regression (UI + API)`
+2. Ask follow-up clarifiers:
+   - target environment/base URL
+   - critical user flows or endpoints in scope
+   - hard blockers or known flaky areas
+Do not assume validation scope without this step.
+</user_intent_gate>
+
+<tool_selection_policy>
+If `--tool` is explicit, honor it.
+If `--tool=auto` (or omitted), choose by risk/scope:
+- `playwright`: multi-page UI behavior, rendering, navigation, browser-only defects.
+- `bruno`: API status codes, schema/contracts, auth, idempotency, error payloads.
+- `hybrid`: user journeys AND API side effects must be validated together.
+Write rationale in the plan.
+</tool_selection_policy>
+
+<concrete_selector_policy>
+Every test scenario must contain concrete identifiers, not abstract descriptions.
+
+Browser scenarios: CSS or `data-testid` selectors, URL routes, expected DOM state.
+API scenarios: endpoint paths + HTTP methods, request schemas, expected responses.
+
+Synthesizer must verify all scenarios have concrete identifiers.
+INCOMPLETE scenarios are listed with warning; they do not block plan generation.
+</concrete_selector_policy>
+
+<playwright_runtime_policy>
+Playwright MCP is a pre-configured MCP server.
+- Must be registered: `claude mcp add playwright -- npx @playwright/mcp@latest --headless --isolated`
+- If unavailable, stop BLOCKED with setup instructions.
+- Use browser tools from the `playwright` MCP server — never invoke npx/node directly.
+- Discover available tools at runtime — do not assume specific tool names.
+</playwright_runtime_policy>
 
 <skills_policy>
 If `[skills].enabled=true`, load `qa-validation-planning` first.
@@ -75,132 +157,32 @@ Skill gate:
   - otherwise -> warn and continue.
 </skills_policy>
 
-<agent_teams_policy>
-Resolve Agent Teams config from `.spec-workflow/spw-config.toml` `[agent_teams]`:
-- `enabled` (default `false`)
-- `teammate_mode` (default `"in-process"`)
-- `max_teammates`
-- `exclude_phases` (default `[]`)
+<!-- ============================================================
+     AGENT TEAMS OVERLAY
+     ============================================================ -->
 
-When `enabled=true` and `qa` is NOT listed in `exclude_phases`:
-- create a team and set `teammate_mode`
-- map QA roles to teammates (scope analyst, browser/API designers, synthesizer)
-- assign only active designer roles based on selected tool (`playwright|bruno|hybrid`)
-- each teammate must still write `brief.md`, `report.md`, and `status.json`
+<agent_teams_policy>
+@.claude/workflows/spw/overlays/active/qa.md
 </agent_teams_policy>
 
-<user_intent_gate>
-This command must ask what the user wants to validate before drafting the plan.
-
-When `--focus` is missing:
-1. AskUserQuestion with options:
-   - `Browser journey validation (Recommended)`
-   - `API contract/behavior validation`
-   - `Release regression (UI + API)`
-2. Ask follow-up clarifiers in plain language:
-   - target environment/base URL
-   - critical user flows or endpoints in scope
-   - hard blockers or known flaky areas
-
-Do not assume validation scope without this step.
-</user_intent_gate>
-
-<tool_selection_policy>
-If `--tool` is explicit, honor it.
-
-If `--tool=auto` (or omitted), choose by risk/scope:
-- choose `playwright` when confidence depends on multi-page UI behavior, rendering states, navigation, or browser-only defects.
-- choose `bruno` when confidence depends on API status codes, schema/contracts, auth behavior, idempotency, or error payloads.
-- choose `hybrid` when user journeys and API side effects must be validated together.
-
-Always write the rationale in the plan.
-</tool_selection_policy>
-
-<playwright_runtime_policy>
-Playwright MCP is a pre-configured MCP server that exposes browser automation tools.
-
-Prerequisites:
-- Server must be registered before the session: `claude mcp add playwright -- npx @playwright/mcp@latest --headless --isolated`
-- If Playwright MCP tools are not available in the current session, stop BLOCKED with setup instructions above.
-
-Rules:
-- Use the browser automation tools provided by the `playwright` MCP server for all browser interactions
-- Never invoke npx, node scripts, or shell commands for browser automation
-- Discover available tools from the `playwright` server at runtime — do not assume specific tool names
-- Collect evidence: take screenshots after assertions, capture console messages for logs
-</playwright_runtime_policy>
-
-<concrete_selector_policy>
-Every test scenario in the plan must contain concrete identifiers, not abstract descriptions.
-
-Browser test designer must produce:
-- CSS or `data-testid` selectors for each UI element under test
-- URL routes for each page/navigation step
-- Expected DOM state (visible text, attribute values, element counts) per assertion
-
-API test designer must produce:
-- Endpoint paths (e.g. `/api/v1/users`) and HTTP methods
-- Request body schemas or example payloads
-- Expected response status codes and key response fields
-
-Plan synthesizer verification:
-- After receiving designer outputs, verify all scenarios have concrete identifiers
-- Mark any scenario missing selectors/endpoints as `INCOMPLETE`
-- `INCOMPLETE` scenarios must be listed in the plan with a warning; they do not block plan generation but signal that `spw:qa-check` will likely flag them
-</concrete_selector_policy>
-
-<subagents>
-- `qa-scope-analyst` (model: complex_reasoning)
-  - Maps user intent + spec risks to a test strategy.
-- `browser-test-designer` (model: implementation)
-  - Produces Playwright MCP scenarios, evidence strategy, and execution order.
-- `api-test-designer` (model: implementation)
-  - Produces Bruno collection execution strategy, env matrix, and assertions.
-- `qa-plan-synthesizer` (model: complex_reasoning)
-  - Generates final QA artifacts and go/no-go guidance.
-</subagents>
-
-<workflow>
-1. Resolve `SPEC_DIR=.spec-workflow/specs/<spec-name>` and stop BLOCKED if missing.
-2. Apply `<resume_policy>` and determine active run dir.
-3. Apply `<user_intent_gate>` and capture explicit validation target.
-4. Read required context and extract concrete selectors:
-   - `.spec-workflow/specs/<spec-name>/requirements.md`
-   - `.spec-workflow/specs/<spec-name>/design.md`
-   - `.spec-workflow/specs/<spec-name>/tasks.md` (if present)
-   - `.spec-workflow/specs/<spec-name>/_generated/CHECKPOINT-REPORT.md` (if present)
-   - Router/route configuration files (e.g. `router.ex`, `routes.ts`, `urls.py`) for URL paths
-   - Referenced template/component files for `data-testid` attributes and CSS selectors
-   This is the ONE planning phase where implementation files should be read — to extract concrete identifiers for the test plan.
-5. If Agent Teams are enabled for this phase, create a team before dispatching subagents.
-6. Dispatch `qa-scope-analyst`.
-7. Apply `<tool_selection_policy>`.
-8. If Agent Teams are enabled for this phase, assign active roles to teammates based on selected tool.
-9. Dispatch designers based on selected tool:
-   - `playwright` -> `browser-test-designer`
-   - `bruno` -> `api-test-designer`
-   - `hybrid` -> both in parallel
-10. Enforce `<playwright_runtime_policy>` for all Playwright MCP scenarios.
-11. Dispatch `qa-plan-synthesizer` with previous outputs.
-12. Generate artifact under `.spec-workflow/specs/<spec-name>/_generated/`:
-   - `QA-TEST-PLAN.md` — must include a `Selector/Endpoint` column in the Coverage Matrix
-13. Write `<run-dir>/_handoff.md` linking evidence, selected tool rationale, and unresolved risks.
-</workflow>
+<!-- ============================================================
+     ACCEPTANCE CRITERIA
+     ============================================================ -->
 
 <acceptance_criteria>
 - [ ] User validation target was explicitly captured.
 - [ ] Tool selection (`playwright|bruno|hybrid`) is justified by risk/scope.
 - [ ] Plan includes test levels, priority, data/env strategy, and pass/fail gates.
-- [ ] Every test scenario contains concrete selectors/endpoints (per `<concrete_selector_policy>`).
+- [ ] Every test scenario contains concrete selectors/endpoints.
 - [ ] Coverage Matrix includes `Selector/Endpoint` column.
-- [ ] File-first handoff exists under `.spec-workflow/specs/<spec-name>/_agent-comms/qa/<run-id>/`.
-- [ ] If Agent Teams are enabled for `qa`, teammate assignment was applied for active roles.
-- [ ] All browser interactions used tools from the Playwright MCP server (no direct npx/node invocations).
+- [ ] File-first handoff exists under `qa/_comms/qa/run-NNN/`.
+- [ ] Orchestrator never read report.md from any subagent (thin-dispatch).
+- [ ] All browser interactions used Playwright MCP server tools.
 </acceptance_criteria>
 
 <completion_guidance>
 On success:
-- Confirm output path: `.spec-workflow/specs/<spec-name>/_generated/QA-TEST-PLAN.md`.
+- Confirm output path: `.spec-workflow/specs/<spec-name>/qa/QA-TEST-PLAN.md`.
 - Recommend next command: `spw:qa-check <spec-name>` to validate selectors and traceability before execution.
 - Recommend running `/clear` before validation.
 

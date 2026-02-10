@@ -8,7 +8,7 @@ spw:
   updated_at: "YYYY-MM-DD"
   inputs:
     - ".spec-workflow/specs/<spec-name>/requirements.md"
-    - ".spec-workflow/specs/<spec-name>/_generated/DESIGN-RESEARCH.md"
+    - ".spec-workflow/specs/<spec-name>/design/DESIGN-RESEARCH.md"
   requirements: []
   decisions: []
   risk: "low"

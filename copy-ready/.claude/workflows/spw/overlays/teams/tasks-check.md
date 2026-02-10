@@ -15,7 +15,8 @@ When `enabled=true` and `tasks-check` is NOT listed in `exclude_phases`:
 - each teammate must still write `brief.md`, `report.md`, `status.json` in the run dir
 </agent_teams_policy>
 
-<workflow_overlay>
-Apply these additions to base workflow:
-- Create team before auditor/aggregator dispatch when enabled for phase.
-</workflow_overlay>
+<extensions_overlay>
+Apply these additions to base extensions:
+- In `<pre_pipeline>`: create team before auditor dispatch when enabled for phase.
+Dispatch mechanism comes from dispatch-audit.md shared policy.
+</extensions_overlay>

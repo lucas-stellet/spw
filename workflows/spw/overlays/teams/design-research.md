@@ -15,8 +15,9 @@ When `enabled=true` and `design-research` is NOT listed in `exclude_phases`:
 - each teammate must still write `brief.md`, `report.md`, `status.json` in the run dir
 </agent_teams_policy>
 
-<workflow_overlay>
-Apply these additions to base workflow:
-- In resume decision gate, do not create a new run-id or team before user decision.
-- Before subagent dispatch, create team and assign roles to teammates when enabled.
-</workflow_overlay>
+<extensions_overlay>
+Apply these additions to base extensions:
+- In `<pre_pipeline>`: do not create a new run-id or team before resume decision.
+- Before `<pre_dispatch>` steps: create team and assign roles to teammates when enabled.
+Dispatch mechanism comes from dispatch-pipeline.md shared policy.
+</extensions_overlay>

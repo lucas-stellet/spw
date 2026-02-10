@@ -129,10 +129,32 @@ Optional: Agent Teams (disabled by default)
 
 ## Thin-Orchestrator Architecture
 
-SPW now uses thin orchestrators by default:
+SPW uses thin orchestrators with a dispatch pattern system:
 - command wrappers live in `.claude/commands/spw/*.md`
 - detailed orchestration workflows live in `.claude/workflows/spw/*.md`
-- shared policy references live in `.claude/workflows/spw/shared/*.md`
+- shared dispatch policies live in `.claude/workflows/spw/shared/dispatch-{pipeline,audit,wave}.md`
+- shared cross-cutting policies live in `.claude/workflows/spw/shared/*.md`
+
+### Dispatch Categories
+
+Every workflow declares a `<dispatch_pattern>` referencing one of three shared policies:
+
+| Category | Policy | Commands |
+|----------|--------|----------|
+| **Pipeline** | `dispatch-pipeline.md` | `prd`, `design-research`, `design-draft`, `tasks-plan`, `qa`, `post-mortem` |
+| **Audit** | `dispatch-audit.md` | `tasks-check`, `qa-check`, `checkpoint` |
+| **Wave Execution** | `dispatch-wave.md` | `exec`, `qa-exec` |
+
+All categories enforce the 5 core thin-dispatch rules:
+1. Orchestrator reads only `status.json` after dispatch (never `report.md` on pass).
+2. Briefs contain filesystem paths to prior reports (never content).
+3. Synthesizers/aggregators read from disk directly.
+4. Run structure follows category layout.
+5. Resume skips completed subagents, always reruns final stage.
+
+Command-specific logic is injected via `<extensions>` at named points (`pre_pipeline`, `pre_dispatch`, `post_dispatch`, `post_pipeline`, `inter_wave`, `per_task`).
+
+### Agent Teams
 
 Agent Teams uses base + overlay via symlinks:
 - base workflow: `.claude/workflows/spw/<command>.md`
@@ -186,11 +208,14 @@ Approval reconciliation for MCP-gated commands (`spw:prd`, `spw:status`, `spw:pl
 - If status is missing/unknown/inconsistent, resolve approval ID (from `spec-status` or approval records under `.spec-workflow/approvals/<spec-name>/`) and confirm via MCP `approvals status`.
 - `STATUS-SUMMARY.md` is output-only and must not be used as approval source of truth.
 
-File-first subagent communication is enabled for planning/validation flows and
-stored under:
-- planning/research: `.spec-workflow/specs/<spec-name>/_agent-comms/<command>/<run-id>/`
-- execution/checkpoint by wave: `.spec-workflow/specs/<spec-name>/_agent-comms/waves/wave-<NN>/<stage>/<run-id>/`
-- post-mortem: `.spec-workflow/specs/<spec-name>/_agent-comms/post-mortem/<run-id>/`
+File-first subagent communication is stored under phase-based `_comms/` directories:
+- prd: `.spec-workflow/specs/<spec-name>/prd/_comms/run-NNN/`
+- design: `.spec-workflow/specs/<spec-name>/design/_comms/{design-research,design-draft}/run-NNN/`
+- planning: `.spec-workflow/specs/<spec-name>/planning/_comms/{tasks-plan,tasks-check}/run-NNN/`
+- execution: `.spec-workflow/specs/<spec-name>/execution/waves/wave-NN/{execution,checkpoint}/run-NNN/`
+- qa: `.spec-workflow/specs/<spec-name>/qa/_comms/{qa,qa-check}/run-NNN/`
+- qa-exec: `.spec-workflow/specs/<spec-name>/qa/_comms/qa-exec/waves/wave-NN/run-NNN/`
+- post-mortem: `.spec-workflow/specs/<spec-name>/post-mortem/_comms/run-NNN/`
 
 `<run-id>` format: `run-NNN` (zero-padded sequential, e.g. `run-001`).
 

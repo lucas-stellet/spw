@@ -15,8 +15,9 @@ When `enabled=true` and `qa` is NOT listed in `exclude_phases`:
 - each teammate must still write `brief.md`, `report.md`, `status.json`
 </agent_teams_policy>
 
-<workflow_overlay>
-Apply these additions to base workflow:
-- Keep one-question focus selection behavior unchanged when focus is missing.
-- Before subagent dispatch, create team and assign only active roles for selected tool (`playwright|bruno|hybrid`).
-</workflow_overlay>
+<extensions_overlay>
+Apply these additions to base extensions:
+- In `<pre_pipeline>`: keep user intent gate unchanged.
+- Before `<pre_dispatch>`: create team and assign only active roles for selected tool (`playwright|bruno|hybrid`).
+Dispatch mechanism comes from dispatch-pipeline.md shared policy.
+</extensions_overlay>

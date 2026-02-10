@@ -15,7 +15,8 @@ When `enabled=true` and `qa-exec` is NOT listed in `exclude_phases`:
 - each teammate must still write `brief.md`, `report.md`, `status.json` in the run dir
 </agent_teams_policy>
 
-<workflow_overlay>
-Apply these additions to base workflow:
-- Create team and assign qa-exec roles before subagent dispatch when enabled for phase.
-</workflow_overlay>
+<extensions_overlay>
+Apply these additions to base extensions:
+- In `<pre_pipeline>`: create team and assign qa-exec roles before dispatch when enabled for phase.
+Dispatch mechanism comes from dispatch-wave.md shared policy.
+</extensions_overlay>

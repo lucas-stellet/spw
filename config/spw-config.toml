@@ -87,6 +87,14 @@ tasks_generation_strategy = "rolling-wave"
 # CLI argument `--max-wave-size` always overrides this value.
 max_wave_size = 3
 
+[qa]
+# Controls wave-based execution for `spw:qa-exec`.
+#
+# max_scenarios_per_wave:
+# - Maximum number of test scenarios per execution wave.
+# - Larger waves execute faster but risk broader failures.
+max_scenarios_per_wave = 5
+
 [post_mortem_memory]
 # Controls how planning/design commands consume previous post-mortems.
 #

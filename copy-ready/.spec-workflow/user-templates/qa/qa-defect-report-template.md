@@ -7,7 +7,7 @@ spw:
   source: "spw:qa-exec"
   updated_at: "YYYY-MM-DD"
   inputs:
-    - ".spec-workflow/specs/<spec-name>/_generated/QA-EXECUTION-REPORT.md"
+    - ".spec-workflow/specs/<spec-name>/qa/QA-EXECUTION-REPORT.md"
   requirements: []
   risk: "medium"
   open_questions: []

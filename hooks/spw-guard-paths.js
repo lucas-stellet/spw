@@ -51,15 +51,17 @@ if (config.guardPaths) {
 }
 
 if (config.guardWaveLayout) {
-  if (relPath.includes("_agent-comms/checkpoint/")) {
-    emitViolation(config, "Legacy checkpoint folder layout is not allowed", [
+  // Block legacy _agent-comms/ paths entirely
+  if (relPath.includes("_agent-comms/")) {
+    emitViolation(config, "Legacy _agent-comms/ path is not allowed", [
       `File: ${relPath}`,
-      "Use: .spec-workflow/specs/<spec-name>/_agent-comms/waves/wave-<NN>/checkpoint/<run-id>/"
+      "Use phase-based _comms/ directories instead (e.g. execution/waves/, qa/_comms/)"
     ]);
   }
 
-  if (relPath.includes("_agent-comms/waves/")) {
-    const waveMatch = relPath.match(/agent-comms\/waves\/([^/]+)/);
+  // Validate execution wave format: execution/waves/wave-NN/
+  if (relPath.includes("execution/waves/")) {
+    const waveMatch = relPath.match(/execution\/waves\/([^/]+)/);
     if (waveMatch) {
       const waveId = waveMatch[1];
       if (!/^wave-\d{2}$/.test(waveId)) {
@@ -70,14 +72,28 @@ if (config.guardWaveLayout) {
       }
     }
 
-    const stageMatch = relPath.match(/agent-comms\/waves\/wave-\d{2}\/([^/]+)/);
+    const stageMatch = relPath.match(/execution\/waves\/wave-\d{2}\/([^/]+)/);
     if (stageMatch) {
       const stage = stageMatch[1];
-      const allowedStages = new Set(["execution", "checkpoint", "post-check", "_wave-summary.md", "_latest.json"]);
+      const allowedStages = new Set(["execution", "checkpoint", "post-check", "_wave-summary.json", "_latest.json"]);
       if (!allowedStages.has(stage)) {
         emitViolation(config, "Invalid wave stage folder", [
           `File: ${relPath}`,
-          "Allowed wave entries: execution, checkpoint, post-check, _wave-summary.md, _latest.json"
+          "Allowed wave entries: execution, checkpoint, post-check, _wave-summary.json, _latest.json"
+        ]);
+      }
+    }
+  }
+
+  // Validate QA exec wave format: qa/_comms/qa-exec/waves/wave-NN/
+  if (relPath.includes("qa/_comms/qa-exec/waves/")) {
+    const waveMatch = relPath.match(/qa-exec\/waves\/([^/]+)/);
+    if (waveMatch) {
+      const waveId = waveMatch[1];
+      if (!/^wave-\d{2}$/.test(waveId)) {
+        emitViolation(config, "QA exec wave folder must use zero-padded format", [
+          `Found wave folder: ${waveId}`,
+          "Expected format: wave-01, wave-02, ..."
         ]);
       }
     }

@@ -15,8 +15,9 @@ When `enabled=true` and `design-draft` is NOT listed in `exclude_phases`:
 - each teammate must still produce expected outputs for downstream approval gate
 </agent_teams_policy>
 
-<workflow_overlay>
-Apply these additions to base workflow:
-- Create team and assign draft roles before subagent dispatch when enabled for phase.
+<extensions_overlay>
+Apply these additions to base extensions:
+- In `<pre_pipeline>`: create team and assign draft roles before dispatch when enabled for phase.
 - Keep approval reconciliation and markdown profile gates unchanged.
-</workflow_overlay>
+Dispatch mechanism comes from dispatch-pipeline.md shared policy.
+</extensions_overlay>

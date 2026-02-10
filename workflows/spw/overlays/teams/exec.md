@@ -17,8 +17,9 @@ When `enabled=true` and `exec` is NOT listed in `exclude_phases`:
 - treat each teammate as the task subagent and still require file-first handoff files
 </agent_teams_policy>
 
-<workflow_overlay>
-Apply these additions to base workflow:
-- Before task execution, create team and map/claim wave tasks.
+<extensions_overlay>
+Apply these additions to base extensions:
+- In `<pre_pipeline>`: create team and map/claim wave tasks when enabled.
 - In strict mode, block when teams are enabled and delegate mode is required but not enforced.
-</workflow_overlay>
+Dispatch mechanism comes from dispatch-wave.md shared policy.
+</extensions_overlay>

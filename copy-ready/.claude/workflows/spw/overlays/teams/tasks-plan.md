@@ -15,9 +15,10 @@ When `enabled=true` and `tasks-plan` is NOT listed in `exclude_phases`:
 - each teammate must still write `brief.md`, `report.md`, `status.json` in the run dir
 </agent_teams_policy>
 
-<workflow_overlay>
-Apply these additions to base workflow:
-- In resume decision gate, do not create a new run-id or team before user decision.
-- Before tasks-plan subagent dispatch, create team and assign roles when enabled for phase.
+<extensions_overlay>
+Apply these additions to base extensions:
+- In `<pre_pipeline>`: do not create a new run-id or team before resume decision.
+- Before tasks-plan dispatch: create team and assign roles when enabled for phase.
 - Keep mode precedence and dashboard markdown compatibility rules unchanged.
-</workflow_overlay>
+Dispatch mechanism comes from dispatch-pipeline.md shared policy.
+</extensions_overlay>

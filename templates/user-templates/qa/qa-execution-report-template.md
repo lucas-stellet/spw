@@ -7,7 +7,7 @@ spw:
   source: "spw:qa-exec"
   updated_at: "YYYY-MM-DD"
   inputs:
-    - ".spec-workflow/specs/<spec-name>/_generated/QA-TEST-PLAN.md"
+    - ".spec-workflow/specs/<spec-name>/qa/QA-TEST-PLAN.md"
   requirements: []
   risk: "medium"
   open_questions: []

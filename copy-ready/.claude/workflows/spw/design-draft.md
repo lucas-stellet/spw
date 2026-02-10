@@ -4,9 +4,11 @@ description: Subagent-driven design.md drafting from requirements + DESIGN-RESEA
 argument-hint: "<spec-name>"
 ---
 
-<objective>
-Generate `.spec-workflow/specs/<spec-name>/design.md` with strong traceability back to requirements.
-</objective>
+<dispatch_pattern>
+category: pipeline
+subcategory: synthesis
+policy: @.claude/workflows/spw/shared/dispatch-pipeline.md
+</dispatch_pattern>
 
 <shared_policies>
 - @.claude/workflows/spw/shared/config-resolution.md
@@ -16,20 +18,94 @@ Generate `.spec-workflow/specs/<spec-name>/design.md` with strong traceability b
 - @.claude/workflows/spw/shared/approval-reconciliation.md
 </shared_policies>
 
-<preconditions>
-- `.spec-workflow/specs/<spec-name>/requirements.md` exists.
-- `.spec-workflow/specs/<spec-name>/_generated/DESIGN-RESEARCH.md` exists (mandatory intermediate artifact).
-- If `DESIGN-RESEARCH.md` is missing, stop BLOCKED and instruct:
-  - `spw:design-research <spec-name>`
-</preconditions>
+<objective>
+Generate `.spec-workflow/specs/<spec-name>/design.md` with strong traceability back to requirements.
+</objective>
 
 <artifact_boundary>
-Use only spec-local research artifacts:
-- `.spec-workflow/specs/<spec-name>/_generated/DESIGN-RESEARCH.md`
-- `.spec-workflow/specs/<spec-name>/research/*` (optional supporting notes)
+inputs:
+- `.spec-workflow/specs/<spec-name>/requirements.md`
+- `.spec-workflow/specs/<spec-name>/design/DESIGN-RESEARCH.md` (required)
+- `.spec-workflow/specs/<spec-name>/research/*` (optional)
+- post-mortem memory entries (if enabled)
+
+output:
+- `.spec-workflow/specs/<spec-name>/design.md`
+
+comms:
+- `.spec-workflow/specs/<spec-name>/design/_comms/design-draft/run-NNN/`
 
 Do not consume generated research from generic locations (for example `docs/*`).
 </artifact_boundary>
+
+<!-- ============================================================
+     SUBAGENTS — who does what, in what order, with which model
+     ============================================================ -->
+
+<subagents>
+- `traceability-mapper` (model: complex_reasoning)
+  - Maps REQ-IDs to technical decisions, files, and tests.
+- `design-writer` (model: implementation)
+  - Produces design draft from mapped decisions.
+- `design-critic` (model: complex_reasoning)
+  - Runs consistency and completeness gate.
+</subagents>
+
+<!-- ============================================================
+     EXTENSION POINTS — command-specific logic injected into
+     the pipeline dispatch pattern
+     ============================================================ -->
+
+<extensions>
+
+<!-- pre_pipeline: approval reconciliation, skills, preconditions .. -->
+<pre_pipeline>
+1. Resolve `SPEC_DIR=.spec-workflow/specs/<spec-name>`.
+2. Apply skills policy: run design skills preflight and write `SKILLS-DESIGN-DRAFT.md`.
+3. Verify preconditions:
+   - `requirements.md` exists.
+   - `design/DESIGN-RESEARCH.md` exists; stop BLOCKED if missing → instruct `spw:design-research <spec-name>`.
+4. Load post-mortem memory inputs via `<post_mortem_memory>`.
+5. Read templates:
+   - `.spec-workflow/user-templates/design-template.md` (preferred)
+   - fallback: `.spec-workflow/templates/design-template.md`
+6. Inspect existing design-draft run dirs and apply resume decision gate.
+</pre_pipeline>
+
+<!-- post_dispatch: critic gate ................................... -->
+<post_dispatch subagent="design-critic">
+If critic returns BLOCKED:
+- Revise with `design-writer`
+- Re-run `design-critic`
+</post_dispatch>
+
+<!-- post_pipeline: artifact save + Mermaid validation + approval .. -->
+<post_pipeline>
+1. Validate Mermaid diagram(s) per `<diagram_policy>`.
+2. Validate markdown per `<ui_approval_markdown_profile>`.
+3. Save to `.spec-workflow/specs/<spec-name>/design.md`.
+4. Write `<run-dir>/_handoff.md`.
+5. Handle approval via MCP only:
+   - call `spec-status`, resolve via `<approval_reconciliation>`
+   - if approved: continue
+   - if `needs-revision`/`changes-requested`/`rejected`: stop BLOCKED
+   - if pending: stop with `WAITING_FOR_APPROVAL`
+   - only if never requested: call `request-approval` then `get-approval-status` once
+   - never ask for approval in chat
+</post_pipeline>
+
+</extensions>
+
+<!-- ============================================================
+     COMMAND-SPECIFIC POLICIES — referenced by extensions above
+     ============================================================ -->
+
+<preconditions>
+- `.spec-workflow/specs/<spec-name>/requirements.md` exists.
+- `.spec-workflow/specs/<spec-name>/design/DESIGN-RESEARCH.md` exists (mandatory intermediate artifact).
+- If `DESIGN-RESEARCH.md` is missing, stop BLOCKED and instruct:
+  - `spw:design-research <spec-name>`
+</preconditions>
 
 <model_policy>
 Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
@@ -61,22 +137,13 @@ Resolve skill policy from `.spec-workflow/spw-config.toml`:
 
 Skill gate (mandatory when `skills.enabled=true`):
 1. Run availability preflight and write:
-   - `.spec-workflow/specs/<spec-name>/_generated/SKILLS-DESIGN-DRAFT.md`
+   - `.spec-workflow/specs/<spec-name>/design/SKILLS-DESIGN-DRAFT.md`
 2. Avoid loading full skill content in main context (subagent-first).
 3. Require subagent outputs to explicitly mention skills used/missing.
 4. If any required skill is missing/not used where required:
    - `enforce_required=true` -> BLOCKED
    - `enforce_required=false` -> warn and continue
 </skills_policy>
-
-<subagents>
-- `traceability-mapper` (model: complex_reasoning)
-  - Maps REQ-IDs to technical decisions, files, and tests.
-- `design-writer` (model: implementation)
-  - Produces design draft from mapped decisions.
-- `design-critic` (model: complex_reasoning)
-  - Runs consistency and completeness gate.
-</subagents>
 
 <diagram_policy>
 For `design.md` output:
@@ -116,34 +183,17 @@ Resolve design approval with MCP-first reconciliation:
 - Never infer approval from `overallStatus`/phase labels alone.
 </approval_reconciliation>
 
-<workflow>
-1. Run design skills preflight (availability) and write `SKILLS-DESIGN-DRAFT.md`.
-2. Read:
-   - `.spec-workflow/specs/<spec-name>/requirements.md`
-   - `.spec-workflow/specs/<spec-name>/_generated/DESIGN-RESEARCH.md` (required)
-   - `.spec-workflow/specs/<spec-name>/research/*` (if present)
-   - post-mortem memory inputs via `<post_mortem_memory>`
-   - `.spec-workflow/user-templates/design-template.md` (preferred)
-   - fallback: `.spec-workflow/templates/design-template.md`
-3. Dispatch `traceability-mapper`.
-4. Dispatch `design-writer` using mapper output and apply `<diagram_policy>` + `<ui_approval_markdown_profile>`.
-5. Dispatch `design-critic`.
-6. If critic returns BLOCKED:
-   - revise with `design-writer`
-   - re-run `design-critic`
-7. Save to `.spec-workflow/specs/<spec-name>/design.md`.
-8. Handle approval via MCP only:
-   - call `spec-status`
-   - resolve design status via `<approval_reconciliation>`
-   - if approved, continue without re-requesting
-   - if `needs-revision`/`changes-requested`/`rejected`, stop BLOCKED
-   - if pending, stop with `WAITING_FOR_APPROVAL` and instruct UI approval + rerun
-   - only if approval was never requested (missing/empty/unknown status):
-     - call `request-approval` then `get-approval-status` once
-     - if pending, stop with `WAITING_FOR_APPROVAL`
-     - if needs revision, stop BLOCKED
-   - never ask for approval in chat
-</workflow>
+<!-- ============================================================
+     AGENT TEAMS OVERLAY
+     ============================================================ -->
+
+<agent_teams_policy>
+@.claude/workflows/spw/overlays/active/design-draft.md
+</agent_teams_policy>
+
+<!-- ============================================================
+     ACCEPTANCE CRITERIA
+     ============================================================ -->
 
 <acceptance_criteria>
 - [ ] Requirements traceability matrix exists.
@@ -153,6 +203,7 @@ Resolve design approval with MCP-first reconciliation:
 - [ ] Mermaid diagram uses fenced lowercase language marker `mermaid`.
 - [ ] Document satisfies UI-safe markdown profile (headings/tables/fences/emphasis balanced).
 - [ ] Critic gate returned PASS before approval request.
+- [ ] Orchestrator never read report.md from any subagent (thin-dispatch).
 </acceptance_criteria>
 
 <completion_guidance>

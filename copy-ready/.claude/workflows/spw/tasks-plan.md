@@ -4,9 +4,11 @@ description: Subagent-driven tasks.md generation for waves, parallelism, and per
 argument-hint: "<spec-name> [--mode initial|next-wave] [--max-wave-size <N>] [--allow-no-test-exception true|false]"
 ---
 
-<objective>
-Generate `.spec-workflow/specs/<spec-name>/tasks.md` for predictable parallel execution.
-</objective>
+<dispatch_pattern>
+category: pipeline
+subcategory: synthesis
+policy: @.claude/workflows/spw/shared/dispatch-pipeline.md
+</dispatch_pattern>
 
 <shared_policies>
 - @.claude/workflows/spw/shared/config-resolution.md
@@ -15,6 +17,83 @@ Generate `.spec-workflow/specs/<spec-name>/tasks.md` for predictable parallel ex
 - @.claude/workflows/spw/shared/skills-policy.md
 - @.claude/workflows/spw/shared/approval-reconciliation.md
 </shared_policies>
+
+<objective>
+Generate `.spec-workflow/specs/<spec-name>/tasks.md` for predictable parallel execution.
+</objective>
+
+<artifact_boundary>
+inputs:
+- `.spec-workflow/specs/<spec-name>/requirements.md`
+- `.spec-workflow/specs/<spec-name>/design.md`
+- `.spec-workflow/specs/<spec-name>/tasks.md` (required for `next-wave`; optional for reconciliation)
+- `.spec-workflow/specs/<spec-name>/execution/CHECKPOINT-REPORT.md` (if present)
+- post-mortem memory entries (if enabled)
+
+output:
+- `.spec-workflow/specs/<spec-name>/tasks.md`
+
+comms:
+- `.spec-workflow/specs/<spec-name>/planning/_comms/tasks-plan/run-NNN/`
+</artifact_boundary>
+
+<!-- ============================================================
+     SUBAGENTS — who does what, in what order, with which model
+     ============================================================ -->
+
+<subagents>
+- `task-decomposer` (model: complex_reasoning)
+  - Creates atomic tasks from requirements/design.
+- `dependency-graph-builder` (model: complex_reasoning)
+  - Builds DAG and wave grouping.
+- `parallel-conflict-checker` (model: implementation)
+  - Detects same-wave file/lock conflicts.
+- `test-policy-enforcer` (model: complex_reasoning)
+  - Enforces test-per-task and valid exceptions.
+- `tasks-writer` (model: implementation)
+  - Writes final markdown in template format.
+</subagents>
+
+<!-- ============================================================
+     EXTENSION POINTS — command-specific logic injected into
+     the pipeline dispatch pattern
+     ============================================================ -->
+
+<extensions>
+
+<!-- pre_pipeline: mode selection, skills, resume .................. -->
+<pre_pipeline>
+1. Resolve `SPEC_DIR=.spec-workflow/specs/<spec-name>`.
+2. Apply skills policy: run design skills preflight and write `SKILLS-TASKS-PLAN.md`.
+3. Resolve effective planning behavior (per `<mode_policy>` + `<planning_defaults>`):
+   - resolve effective `max_wave_size`
+   - resolve effective generation mode (`initial`, `next-wave`, or `all-at-once`)
+   - validate preconditions per mode
+4. Load post-mortem memory inputs via `<post_mortem_memory>`.
+5. Read templates:
+   - `.spec-workflow/user-templates/tasks-template.md` (preferred)
+   - fallback: `.spec-workflow/templates/tasks-template.md`
+6. Inspect existing tasks-plan run dirs and apply resume decision gate.
+</pre_pipeline>
+
+<!-- post_pipeline: dashboard compatibility + approval ............. -->
+<post_pipeline>
+1. Verify `tasks.md` satisfies `<dashboard_markdown_profile>`.
+2. Write `<run-dir>/_handoff.md` with mode decisions, DAG rationale, conflict/test policy outcomes.
+3. Handle approval via MCP only:
+   - call `spec-status`, resolve via `<approval_reconciliation>`
+   - if approved: continue
+   - if `needs-revision`/`changes-requested`/`rejected`: stop BLOCKED
+   - if pending: stop with `WAITING_FOR_APPROVAL`
+   - only if never requested: call `request-approval` then `get-approval-status` once
+   - never ask for approval in chat
+</post_pipeline>
+
+</extensions>
+
+<!-- ============================================================
+     COMMAND-SPECIFIC POLICIES — referenced by extensions above
+     ============================================================ -->
 
 <planning_defaults>
 Resolve planning defaults from `.spec-workflow/spw-config.toml` `[planning]`:
@@ -46,61 +125,6 @@ If `--mode` is omitted:
   - do not require prior completed/checkpointed wave
 </mode_policy>
 
-<file_handoff_protocol>
-Subagent communication must be file-first (no implicit-only handoff).
-
-Create a run folder (`<run-id>` MUST be `run-NNN` format — e.g. `run-001`, never dates):
-- `.spec-workflow/specs/<spec-name>/_agent-comms/tasks-plan/<run-id>/`
-
-For each subagent, use:
-- `<run-dir>/<subagent>/brief.md` (written by orchestrator before dispatch)
-- `<run-dir>/<subagent>/report.md` (written by subagent after execution)
-- `<run-dir>/<subagent>/status.json` (written by subagent)
-
-Status schema (minimum):
-- `status`: `pass|blocked`
-- `summary`: short result
-- `inputs`: key files used
-- `outputs`: generated artifacts
-- `open_questions`: unresolved items
-- `skills_used`: skills actually used by the subagent
-- `skills_missing`: required skills not available for the subagent (if any)
-
-After planning, write:
-- `<run-dir>/_handoff.md` (orchestrator synthesis and final decisions)
-
-If a required `report.md` or `status.json` is missing, stop BLOCKED.
-</file_handoff_protocol>
-
-<resume_policy>
-Before creating a new run, inspect existing tasks-plan run folders:
-- `.spec-workflow/specs/<spec-name>/_agent-comms/tasks-plan/<run-id>/`
-
-A run is `unfinished` when any of these is true:
-- `_handoff.md` is missing
-- any subagent directory is missing `brief.md`, `report.md`, or `status.json`
-- any subagent `status.json` reports `status=blocked`
-
-Resume decision gate (mandatory):
-1. Find latest unfinished run (if multiple, sort by mtime descending and use the newest).
-2. If found, ask user once (AskUserQuestion) with options:
-   - `continue-unfinished` (Recommended): continue with that run directory.
-   - `delete-and-restart`: delete that unfinished run directory and start a new run.
-3. Never choose automatically. Do not infer user intent.
-4. If explicit user decision is unavailable, stop with `WAITING_FOR_USER_DECISION`.
-5. Do not create a new run-id before this decision.
-
-If user chooses `continue-unfinished`:
-- Reuse completed subagent outputs (`report.md` + `status.json` with `status=pass`) from decomposition/checker roles.
-- Redispatch only missing/blocked subagents.
-- Always rerun `tasks-writer` before finalizing `tasks.md`.
-
-If user chooses `delete-and-restart`:
-- Delete the selected unfinished run dir.
-- Continue workflow with a fresh run-id.
-- Record deleted path in final output.
-</resume_policy>
-
 <model_policy>
 Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - complex_reasoning -> default `opus`
@@ -131,26 +155,13 @@ Resolve skill policy from `.spec-workflow/spw-config.toml`:
 
 Skill gate (mandatory when `skills.enabled=true`):
 1. Run availability preflight and write:
-   - `.spec-workflow/specs/<spec-name>/_generated/SKILLS-TASKS-PLAN.md`
+   - `.spec-workflow/specs/<spec-name>/planning/SKILLS-TASKS-PLAN.md`
 2. Avoid loading full skill content in main context (subagent-first).
 3. Require each subagent `status.json` to include `skills_used`/`skills_missing`.
 4. If any required skill is missing/not used where required:
    - `enforce_required=true` -> BLOCKED
    - `enforce_required=false` -> warn and continue
 </skills_policy>
-
-<subagents>
-- `task-decomposer` (model: complex_reasoning)
-  - Creates atomic tasks from requirements/design.
-- `dependency-graph-builder` (model: complex_reasoning)
-  - Builds DAG and wave grouping.
-- `parallel-conflict-checker` (model: implementation)
-  - Detects same-wave file/lock conflicts.
-- `test-policy-enforcer` (model: complex_reasoning)
-  - Enforces test-per-task and valid exceptions.
-- `tasks-writer` (model: implementation)
-  - Writes final markdown in template format.
-</subagents>
 
 <rules>
 - Each task must be self-contained.
@@ -200,56 +211,17 @@ Resolve tasks approval with MCP-first reconciliation:
 - Never infer approval from `overallStatus`/phase labels alone.
 </approval_reconciliation>
 
-<workflow>
-1. Run design skills preflight (availability) and write `SKILLS-TASKS-PLAN.md`.
-2. Inspect existing tasks-plan run dirs and apply `<resume_policy>` decision gate.
-3. Determine active run directory:
-   - `continue-unfinished` -> reuse latest unfinished run dir
-   - `delete-and-restart` or no unfinished run -> create:
-     `.spec-workflow/specs/<spec-name>/_agent-comms/tasks-plan/<run-id>/`
-4. Resolve effective planning behavior (per mode_policy + planning_defaults):
-   - resolve effective `max_wave_size`
-   - resolve effective generation mode:
-     - explicit `--mode initial` -> `initial`
-     - explicit `--mode next-wave` -> `next-wave`
-     - omitted `--mode` + `rolling-wave` -> derive `initial` or `next-wave` from `tasks.md` presence
-     - omitted `--mode` + `all-at-once` -> `all-at-once`
-   - validate preconditions:
-     - `initial` requires no prior completed executable wave
-     - `next-wave` requires existing `tasks.md` plus at least one completed or checkpointed wave
-     - `all-at-once` does not require prior completed/checkpointed wave
-5. Read:
-   - `.spec-workflow/specs/<spec-name>/requirements.md`
-   - `.spec-workflow/specs/<spec-name>/design.md`
-   - `.spec-workflow/specs/<spec-name>/tasks.md` (required for `next-wave`; optional for `all-at-once` reconciliation)
-   - `.spec-workflow/specs/<spec-name>/_generated/CHECKPOINT-REPORT.md` (if present, for reconciliation)
-   - post-mortem memory inputs via `<post_mortem_memory>`
-   - `.spec-workflow/user-templates/tasks-template.md` (preferred)
-   - fallback: `.spec-workflow/templates/tasks-template.md`
-6. Write briefs (including mode + required skills per role) and dispatch `task-decomposer`.
-7. Write briefs (including mode + required skills per role) and dispatch `dependency-graph-builder`.
-8. Write briefs (including mode + required skills per role) and dispatch `parallel-conflict-checker`.
-9. Write briefs (including mode + required skills per role) and dispatch `test-policy-enforcer`.
-   - if resuming, redispatch only missing/blocked subagents
-10. Require subagent `report.md` + `status.json` (with skill fields); BLOCKED if missing.
-11. Dispatch `tasks-writer` with file handoff and save `.spec-workflow/specs/<spec-name>/tasks.md`:
-    - `initial`: only Wave 1 executable tasks
-    - `next-wave`: only one newly appended executable wave
-    - `all-at-once`: full executable plan (all waves) respecting `max_wave_size`
-    - if resuming, always rerun `tasks-writer` before final save
-12. Write `<run-dir>/_handoff.md` with mode decisions, DAG rationale, conflict/test policy outcomes, and resume decision taken (`continue-unfinished` or `delete-and-restart`).
-13. Handle approval via MCP only:
-   - call `spec-status`
-   - resolve tasks status via `<approval_reconciliation>`
-   - if approved, continue without re-requesting
-   - if `needs-revision`/`changes-requested`/`rejected`, stop BLOCKED
-   - if pending, stop with `WAITING_FOR_APPROVAL` and instruct UI approval + rerun
-   - only if approval was never requested (missing/empty/unknown status):
-     - call `request-approval` then `get-approval-status` once
-     - if pending, stop with `WAITING_FOR_APPROVAL`
-     - if needs revision, stop BLOCKED
-   - never ask for approval in chat
-</workflow>
+<!-- ============================================================
+     AGENT TEAMS OVERLAY
+     ============================================================ -->
+
+<agent_teams_policy>
+@.claude/workflows/spw/overlays/active/tasks-plan.md
+</agent_teams_policy>
+
+<!-- ============================================================
+     ACCEPTANCE CRITERIA
+     ============================================================ -->
 
 <acceptance_criteria>
 - [ ] All tasks have `Requirements`.
@@ -262,8 +234,9 @@ Resolve tasks approval with MCP-first reconciliation:
 - [ ] If effective mode is `initial`, only Wave 1 executable tasks were produced.
 - [ ] If effective mode is `next-wave`, exactly one new executable wave was produced.
 - [ ] If effective mode is `all-at-once`, a full executable multi-wave plan was produced.
-- [ ] File-based handoff exists under `.spec-workflow/specs/<spec-name>/_agent-comms/tasks-plan/<run-id>/`.
+- [ ] File-based handoff exists under `planning/_comms/tasks-plan/run-NNN/`.
 - [ ] If unfinished run exists, explicit user decision (`continue-unfinished` or `delete-and-restart`) was respected.
+- [ ] Orchestrator never read report.md from any subagent (thin-dispatch).
 </acceptance_criteria>
 
 <completion_guidance>

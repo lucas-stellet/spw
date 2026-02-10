@@ -283,29 +283,66 @@ function listDirSafe(dirPath) {
 }
 
 function collectRunDirs(specDir) {
-  const commsRoot = path.join(specDir, "_agent-comms");
-  if (!fs.existsSync(commsRoot)) return [];
   const runs = [];
 
-  const simpleCommands = ["design-research", "prd", "tasks-plan", "tasks-check", "checkpoint"];
-  for (const command of simpleCommands) {
-    const commandRoot = path.join(commsRoot, command);
-    for (const entry of listDirSafe(commandRoot)) {
+  // Phase dirs with direct run dirs: prd/_comms/run-NNN/, post-mortem/_comms/run-NNN/
+  for (const phase of ["prd", "post-mortem"]) {
+    const commsRoot = path.join(specDir, phase, "_comms");
+    for (const entry of listDirSafe(commsRoot)) {
       if (!entry.isDirectory()) continue;
-      runs.push(path.join(commandRoot, entry.name));
+      // Skip known non-run subdirs (e.g. prd/_comms/prd-revision/)
+      if (!/^run-\d{3}$/.test(entry.name)) continue;
+      runs.push(path.join(commsRoot, entry.name));
+    }
+    // Also scan nested command dirs (e.g. prd/_comms/prd-revision/run-NNN/)
+    for (const entry of listDirSafe(commsRoot)) {
+      if (!entry.isDirectory() || /^run-\d{3}$/.test(entry.name)) continue;
+      const subDir = path.join(commsRoot, entry.name);
+      for (const runEntry of listDirSafe(subDir)) {
+        if (!runEntry.isDirectory()) continue;
+        runs.push(path.join(subDir, runEntry.name));
+      }
     }
   }
 
-  const wavesRoot = path.join(commsRoot, "waves");
-  for (const waveEntry of listDirSafe(wavesRoot)) {
+  // Phase dirs with command-scoped run dirs
+  const commandScoped = [
+    { phase: "design", commands: ["design-research", "design-draft"] },
+    { phase: "planning", commands: ["tasks-plan", "tasks-check"] },
+    { phase: "qa", commands: ["qa", "qa-check"] }
+  ];
+  for (const { phase, commands } of commandScoped) {
+    for (const command of commands) {
+      const commandRoot = path.join(specDir, phase, "_comms", command);
+      for (const entry of listDirSafe(commandRoot)) {
+        if (!entry.isDirectory()) continue;
+        runs.push(path.join(commandRoot, entry.name));
+      }
+    }
+  }
+
+  // Execution waves: execution/waves/wave-NN/{execution,checkpoint,post-check}/run-NNN/
+  const execWavesRoot = path.join(specDir, "execution", "waves");
+  for (const waveEntry of listDirSafe(execWavesRoot)) {
     if (!waveEntry.isDirectory()) continue;
-    const waveDir = path.join(wavesRoot, waveEntry.name);
+    const waveDir = path.join(execWavesRoot, waveEntry.name);
     for (const stage of ["execution", "checkpoint", "post-check"]) {
       const stageDir = path.join(waveDir, stage);
       for (const runEntry of listDirSafe(stageDir)) {
         if (!runEntry.isDirectory()) continue;
         runs.push(path.join(stageDir, runEntry.name));
       }
+    }
+  }
+
+  // QA exec waves: qa/_comms/qa-exec/waves/wave-NN/run-NNN/
+  const qaWavesRoot = path.join(specDir, "qa", "_comms", "qa-exec", "waves");
+  for (const waveEntry of listDirSafe(qaWavesRoot)) {
+    if (!waveEntry.isDirectory()) continue;
+    const waveDir = path.join(qaWavesRoot, waveEntry.name);
+    for (const runEntry of listDirSafe(waveDir)) {
+      if (!runEntry.isDirectory()) continue;
+      runs.push(path.join(waveDir, runEntry.name));
     }
   }
 

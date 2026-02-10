@@ -94,41 +94,53 @@ Subagent handoffs use filesystem artifacts, not chat. Required files per subagen
 
 Stored under `.spec-workflow/specs/<spec-name>/_agent-comms/` with command-specific subdirectories.
 
+### Dispatch Categories
+
+All commands follow a **thin-dispatch** model: the orchestrator reads only `status.json` after each subagent (never `report.md` unless blocked), and passes filesystem paths between stages — never inline content. Synthesizers/aggregators read all reports directly from disk. See `docs/DISPATCH-PATTERNS.md` for the full reference.
+
+Commands are organized into three dispatch categories:
+
+| Category | Pattern | Commands |
+|----------|---------|----------|
+| **Pipeline** | Sequential subagents → synthesizer | `prd`, `design-research`, `design-draft`, `tasks-plan`, `qa`, `post-mortem` |
+| **Audit** | Parallel auditors → aggregator | `tasks-check`, `qa-check`, `checkpoint` |
+| **Wave Execution** | Scout → iterative waves → synthesizer | `exec`, `qa-exec` |
+
+Pipeline has two subcategories: **Research** (external sources, may branch — `prd`, `design-research`) and **Synthesis** (local artifacts, linear — the rest). Audit splits into **Artifact** (document-only — `tasks-check`) and **Code** (reads source — `qa-check`, `checkpoint`). Wave Execution splits into **Implementation** (code changes + checkpoints — `exec`) and **Validation** (no code changes — `qa-exec`).
+
 ### Spec Directory Structure
+
+Artifacts are organized by **workflow phase**, not in flat dumps. Each phase directory owns its generated outputs and agent communications (`_comms/`). See `docs/SPEC-DIRECTORY-STRUCTURE.md` for the full reference and migration table.
 
 ```
 .spec-workflow/specs/<spec-name>/
-├── requirements.md              ← dashboard (approval)
-├── design.md                    ← dashboard (approval)
-├── tasks.md                     ← dashboard (approval)
-├── _generated/                  ← ALL intermediate + skills + snapshots
-│   ├── PRD.md
-│   ├── PRD-SOURCE-NOTES.md
-│   ├── PRD-STRUCTURE.md
-│   ├── PRD-REVISION-PLAN.md
-│   ├── PRD-REVISION-QUESTIONS.md
-│   ├── PRD-REVISION-NOTES.md
-│   ├── DESIGN-RESEARCH.md
-│   ├── CHECKPOINT-REPORT.md
-│   ├── TASKS-CHECK.md
-│   ├── STATUS-SUMMARY.md
-│   ├── SKILLS-*.md
-│   ├── QA-TEST-PLAN.md
-│   ├── QA-CHECK.md
-│   ├── QA-EXECUTION-REPORT.md
-│   ├── QA-DEFECT-REPORT.md
-│   └── qa-artifacts/
-├── _agent-comms/                ← subagent file-first handoffs
-│   ├── prd/<run-id>/
-│   ├── design-research/<run-id>/
-│   ├── tasks-plan/<run-id>/
-│   ├── tasks-check/<run-id>/
-│   ├── waves/wave-<NN>/
-│   ├── post-mortem/<run-id>/
-│   ├── qa/<run-id>/
-│   ├── qa-check/<run-id>/
-│   └── qa-exec/<run-id>/
-└── _implementation-logs/
+├── requirements.md                    ← dashboard (MCP approval)
+├── design.md                          ← dashboard (MCP approval)
+├── tasks.md                           ← dashboard (MCP approval)
+├── STATUS-SUMMARY.md                  ← output-only (not source of truth)
+│
+├── prd/                               ← PRD.md, PRD-SOURCE-NOTES.md, ...
+│   └── _comms/run-NNN/
+├── design/                            ← DESIGN-RESEARCH.md, SKILLS-DESIGN.md
+│   └── _comms/{design-research,design-draft}/run-NNN/
+├── planning/                          ← TASKS-CHECK.md, SKILLS-EXEC.md
+│   └── _comms/{tasks-plan,tasks-check}/run-NNN/
+├── execution/                         ← CHECKPOINT-REPORT.md, _implementation-logs/
+│   └── waves/wave-NN/{execution,checkpoint}/run-NNN/
+├── qa/                                ← QA-TEST-PLAN.md, QA-CHECK.md, QA-*-REPORT.md
+│   ├── qa-artifacts/wave-NN/
+│   └── _comms/{qa,qa-check}/run-NNN/
+│   └── _comms/qa-exec/waves/wave-NN/run-NNN/
+└── post-mortem/                       ← report.md
+    └── _comms/run-NNN/
+```
+
+### PR Review Optimization
+
+Spec-workflow files are marked as `linguist-generated` via `.gitattributes` so GitHub collapses them by default in PR diffs. Reviewers see only feature code changes; spec artifacts are expandable on demand. The installer adds the rule automatically during `spw install`. See `docs/PR-REVIEW-OPTIMIZATION.md`.
+
+```gitattributes
+.spec-workflow/specs/** linguist-generated=true
 ```
 
 ## Key Constraints

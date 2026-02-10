@@ -121,6 +121,15 @@ toml_bool_value() {
   esac
 }
 
+setup_gitattributes() {
+  local rule='.spec-workflow/specs/** linguist-generated=true'
+  local gitattributes="${TARGET_ROOT}/.gitattributes"
+  if [ ! -f "$gitattributes" ] || ! grep -qF "$rule" "$gitattributes"; then
+    echo "$rule" >> "$gitattributes"
+    echo "[spw-kit] Added .gitattributes rule for PR review optimization."
+  fi
+}
+
 activate_teams_overlay_symlinks() {
   local active_dir="${TARGET_ROOT}/.claude/workflows/spw/overlays/active"
   local teams_dir="${TARGET_ROOT}/.claude/workflows/spw/overlays/teams"
@@ -239,6 +248,9 @@ cmd_install() {
   # Copy only SPW runtime assets (avoid touching project root files like README.md)
   rsync -a "${SCRIPT_DIR}/.claude/" "${TARGET_ROOT}/.claude/"
   rsync -a "${SCRIPT_DIR}/.spec-workflow/" "${TARGET_ROOT}/.spec-workflow/"
+
+  # PR review optimization: collapse spec-workflow files in GitHub diffs
+  setup_gitattributes
 
   # Smart merge: preserve user config values with new template structure
   if [ -n "$config_backup" ]; then
