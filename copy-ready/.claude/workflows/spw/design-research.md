@@ -127,6 +127,17 @@ Skill gate (mandatory when `skills.enabled=true`):
    - `enforce_required=false` -> warn and continue
 </skills_policy>
 
+<prototype_url_policy>
+When a web scout fetches a URL that returns an SPA shell (minimal HTML with only JS bundle references, no meaningful text content), or the URL matches a known prototype/deploy-preview domain (`*.lovable.app`, `*.vercel.app`, `*.netlify.app`, `*.framer.app`, `*.webflow.io`, `*.stackblitz.com`):
+
+1. Use Playwright MCP to navigate the URL, take screenshots, and extract visible content.
+   - Playwright MCP is a pre-configured MCP server; discover its tools at runtime. Never invoke `npx` or Node scripts directly for browser automation.
+2. If Playwright MCP tools are not available in the current session:
+   - Warn the user: "Playwright MCP is not configured — prototype content may be incomplete."
+   - Continue with whatever `WebFetch` returned.
+3. Include extracted prototype content in the scout's `report.md`.
+</prototype_url_policy>
+
 <subagents>
 - `codebase-pattern-scanner` (model: implementation)
   - Finds reusable patterns, boundaries, integration points.

@@ -65,9 +65,10 @@ Observação:
 21. Em `spw:exec` (normal e teams), antes de leitura ampla o orquestrador deve despachar `execution-state-scout` (modelo implementation/sonnet por padrão) para consolidar checkpoint, tarefa `[-]` em progresso, próxima(s) executável(eis) e ação de retomada; o principal deve consumir apenas o resumo compacto e então ler contexto por tarefa.
 22. Em `spw:qa`, quando o foco não for informado, perguntar explicitamente ao usuário o alvo de validação e escolher `playwright|bruno|hybrid` com justificativa de risco/escopo. O plano deve incluir seletores/endpoints concretos por cenário (CSS, `data-testid`, rotas, métodos HTTP).
 23. Em validações com Playwright no `spw:qa`/`spw:qa-exec`, utilizar tools do servidor Playwright MCP pré-configurado; nunca invocar npx ou scripts Node diretamente para automação de browser.
-24. Cobertura de Agent Teams para comandos subagent-first usa symlinks em `workflows/spw/overlays/active/` (apontando para `../noop.md` quando desabilitado ou `../teams/<cmd>.md` quando habilitado); por padrão todas as fases são elegíveis (`[agent_teams].exclude_phases = []`); fases podem ser excluídas adicionando-as a `exclude_phases`.
-25. Em `spw:qa-check`, validar seletores/endpoints do plano contra código fonte real (único comando QA que lê arquivos de implementação); produzir mapa verificado em `QA-CHECK.md`.
-26. Em `spw:qa-exec`, nunca ler arquivos fonte de implementação; usar apenas seletores verificados de `QA-CHECK.md`. Se seletor falhar em runtime, registrar como defeito "selector drift" e recomendar `spw:qa-check`.
+24. Em `spw:prd` e `spw:design-research`, quando uma URL retornar shell SPA (HTML mínimo com apenas refs de bundle JS) ou pertencer a domínio de protótipo (`*.lovable.app`, `*.vercel.app`, etc.), usar Playwright MCP para navegar e extrair conteúdo visível; se indisponível, avisar usuário e continuar com o resultado de WebFetch.
+25. Cobertura de Agent Teams para comandos subagent-first usa symlinks em `workflows/spw/overlays/active/` (apontando para `../noop.md` quando desabilitado ou `../teams/<cmd>.md` quando habilitado); por padrão todas as fases são elegíveis (`[agent_teams].exclude_phases = []`); fases podem ser excluídas adicionando-as a `exclude_phases`.
+26. Em `spw:qa-check`, validar seletores/endpoints do plano contra código fonte real (único comando QA que lê arquivos de implementação); produzir mapa verificado em `QA-CHECK.md`.
+27. Em `spw:qa-exec`, nunca ler arquivos fonte de implementação; usar apenas seletores verificados de `QA-CHECK.md`. Se seletor falhar em runtime, registrar como defeito "selector drift" e recomendar `spw:qa-check`.
 
 ## File-first comms (não quebrar)
 

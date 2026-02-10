@@ -183,6 +183,18 @@ If `--source` is provided and looks like a URL (`http://` or `https://`) or mark
    - "Choose another MCP"
 </source_handling>
 
+<prototype_url_policy>
+When fetching a URL provided in a source (issue, brief, user input):
+
+1. If `WebFetch` returns an SPA shell (minimal HTML with only JS bundle references, no meaningful text content), or the URL matches a known prototype/deploy-preview domain (`*.lovable.app`, `*.vercel.app`, `*.netlify.app`, `*.framer.app`, `*.webflow.io`, `*.stackblitz.com`):
+   - Use Playwright MCP to navigate the URL, take screenshots, and extract visible content.
+   - Playwright MCP is a pre-configured MCP server; discover its tools at runtime. Never invoke `npx` or Node scripts directly for browser automation.
+2. If Playwright MCP tools are not available in the current session:
+   - Warn the user: "Playwright MCP is not configured — prototype content may be incomplete. Run `claude mcp add playwright -- npx @playwright/mcp@latest --headless --isolated` to enable."
+   - Continue with whatever `WebFetch` returned.
+3. Include any screenshots or extracted content in the PRD source notes (`PRD-SOURCE-NOTES.md`).
+</prototype_url_policy>
+
 <ui_approval_markdown_profile>
 `requirements.md` must stay render-safe and review-friendly in Spec Workflow UI:
 - Use plain Markdown (avoid raw HTML blocks unless strictly necessary).

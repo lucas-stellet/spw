@@ -92,7 +92,7 @@ After install:
    - In implementation phases (`spw:exec`, `spw:checkpoint`), this skill is treated as required only when `[execution].tdd_default=true`.
 7. (Optional) enable SPW enforcement hooks with `hooks.enforcement_mode=warn|block`.
 
-8. (Optional) For QA browser validation (`spw:qa`, `spw:qa-exec`), configure Playwright MCP:
+8. (Optional) For QA browser validation (`spw:qa`, `spw:qa-exec`) and prototype/SPA URL exploration in planning stages (`spw:prd`, `spw:design-research`), configure Playwright MCP:
    ```
    claude mcp add playwright -- npx @playwright/mcp@latest --headless --isolated
    ```
