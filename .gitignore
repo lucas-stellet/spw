@@ -1,0 +1,4 @@
+# Local runtime / workspace
+.claude/settings.json
+.entire/
+.spec-workflow/
