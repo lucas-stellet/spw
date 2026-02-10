@@ -178,7 +178,7 @@ Execution context guardrail (`spw:exec`):
 - Scout returns only compact resume state: checkpoint status, task `[-]` in progress, next executable tasks, and required action (`resume|wait-user-authorization|manual-handoff|done|blocked`).
 - Orchestrator then reads only task-scoped files for the selected IDs (avoid full `requirements.md`/`design.md` unless needed for blockers).
 
-Planning defaults are configured in `.spec-workflow/spw-config.toml` (fallback legado: `.spw/spw-config.toml`):
+Planning defaults are configured in `.spec-workflow/spw-config.toml` (legacy fallback: `.spw/spw-config.toml`):
 
 ```toml
 [planning]
@@ -191,7 +191,7 @@ max_wave_size = 3
 - `all-at-once`: one planning pass creates all executable waves.
 - Explicit CLI args still override config (`--mode`, `--max-wave-size`).
 
-Post-mortem memory defaults are configured in `.spec-workflow/spw-config.toml` (fallback legado: `.spw/spw-config.toml`):
+Post-mortem memory defaults are configured in `.spec-workflow/spw-config.toml` (legacy fallback: `.spw/spw-config.toml`):
 
 ```toml
 [post_mortem_memory]
@@ -311,7 +311,7 @@ spw:qa (plan) → spw:qa-check (validate) → spw:qa-exec (execute)
 Hook enforcement:
 - `warn` -> diagnostics only
 - `block` -> deny violating actions
-- details: `AGENTS.md` + `.spec-workflow/spw-config.toml` comments (fallback legado: `.spw/spw-config.toml`)
+- details: `AGENTS.md` + `.spec-workflow/spw-config.toml` comments (legacy fallback: `.spw/spw-config.toml`)
 
 ## Glossary
 

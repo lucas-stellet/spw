@@ -71,9 +71,9 @@ Arquivos esperados em todo repositorio publico.
 
 Remover barreiras de idioma para contribuidores externos.
 
-- [ ] Traduzir `AGENTS.md` para ingles (ou criar versao bilingue)
-- [ ] Revisar todos os docs para consistencia de idioma (ingles como padrao publico)
-- [ ] Avaliar se comentarios no `spw-config.toml` precisam de revisao
+- [x] Traduzir `AGENTS.md` para ingles (ou criar versao bilingue)
+- [x] Revisar todos os docs para consistencia de idioma (ingles como padrao publico)
+- [x] Avaliar se comentarios no `spw-config.toml` precisam de revisao
 
 ---
 

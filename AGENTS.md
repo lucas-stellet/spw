@@ -1,19 +1,19 @@
 # AGENTS.md
 
-## Objetivo do projeto
+## Project purpose
 
-SPW é um kit de comandos/templates para `spec-workflow-mcp`, com execução subagent-first, gates explícitos de aprovação e checkpoints por wave.
+SPW is a command/template kit for `spec-workflow-mcp`, with subagent-first execution, explicit approval gates, and per-wave checkpoints.
 
-## Fontes canônicas (ordem de leitura)
+## Canonical sources (read order)
 
-1. `README.md` (fonte principal para instalação/uso/workflow)
-2. `AGENTS.md` (regras operacionais para agentes e contribuição)
-3. `config/spw-config.toml` (defaults operacionais)
+1. `README.md` (primary source for installation/usage/workflow)
+2. `AGENTS.md` (operational rules for agents and contributors)
+3. `config/spw-config.toml` (operational defaults)
 
-Observação:
-- `docs/SPW-WORKFLOW.md`, `hooks/README.md` e `copy-ready/README.md` devem permanecer enxutos e apontar para `README.md`.
+Note:
+- `docs/SPW-WORKFLOW.md`, `hooks/README.md`, and `copy-ready/README.md` should remain lean and point to `README.md`.
 
-## Mapa de arquivos que devem ficar em espelho
+## Mirror file map
 
 - `commands/spw/*.md` <-> `copy-ready/.claude/commands/spw/*.md`
 - `workflows/spw/*.md` <-> `copy-ready/.claude/workflows/spw/*.md`
@@ -23,95 +23,95 @@ Observação:
 - `templates/user-templates/**` <-> `copy-ready/.spec-workflow/user-templates/**`
 - `config/spw-config.toml` <-> `copy-ready/.spec-workflow/spw-config.toml`
 - `hooks/*.js|*.sh` <-> `copy-ready/.claude/hooks/*`
-- `hooks/claude-hooks.snippet.json` alinhado com `copy-ready/.claude/settings.json.example`
+- `hooks/claude-hooks.snippet.json` aligned with `copy-ready/.claude/settings.json.example`
 
-## Regras operacionais obrigatórias
+## Mandatory operational rules
 
-1. Respeitar paths canônicos SPW: usar `.spec-workflow/specs/<spec-name>/` (nunca `.specs/`).
-2. Runtime config canônico: `.spec-workflow/spw-config.toml` (com fallback legado para `.spw/spw-config.toml`).
-3. Manter localidade de artefatos: pesquisa/planejamento ficam dentro da spec ativa; apoio em `.spec-workflow/specs/<spec-name>/research/`.
-4. Aprovação é MCP-only: checar status via MCP; não substituir por aprovação manual em chat.
-5. Preservar contrato dos comandos (`spw:prd`, `spw:plan`, `spw:tasks-plan`, `spw:exec`, `spw:checkpoint`, `spw:status`, `spw:post-mortem`, `spw:qa`, `spw:qa-check`, `spw:qa-exec`) e atualizar docs se comportamento mudar.
-6. Padrão thin-orchestrator obrigatório: `commands/` são wrappers finos (máx. 60 linhas) e a lógica detalhada fica em `workflows/`.
-7. Em `spw:tasks-plan`, manter semântica + precedência:
-   - `--mode initial`: gera apenas wave executável inicial
-   - `--mode next-wave`: adiciona apenas próxima wave executável
-   - sem `--mode`, usar `[planning].tasks_generation_strategy`:
-     - `rolling-wave`: gera uma wave executável por ciclo
-     - `all-at-once`: gera todas as waves executáveis em uma execução
-   - `--max-wave-size` sobrescreve `[planning].max_wave_size`; sem argumento, usar config
-8. Em `spw:exec`, execução é via subagentes por tarefa (inclusive waves sequenciais de 1 tarefa); orquestrador não implementa código direto.
-9. Se `execution.require_user_approval_between_waves=true`, não avançar wave sem autorização explícita do usuário.
-10. Se `execution.commit_per_task="auto"` ou `"manual"`, exigir commit atômico por tarefa; se `"manual"`, parar com comandos git explícitos; se `"none"`, pular enforcement de commit por tarefa. Respeitar gate de worktree limpo quando habilitado.
-11. `spw update` deve atualizar primeiro o próprio binário (`spw`) e, em seguida, limpar cache local do kit antes de atualizar, para evitar templates/comandos stale.
-12. Em comandos longos com subagentes (`spw:prd`, `spw:design-research`, `spw:tasks-plan`, `spw:tasks-check`, `spw:checkpoint`, `spw:post-mortem`, `spw:qa`, `spw:qa-check`, `spw:qa-exec`), se existir run incompleto, é obrigatório AskUserQuestion (`continue-unfinished` ou `delete-and-restart`); o agente não pode escolher reiniciar sozinho.
-13. Compatibilidade com dashboard (`spec-workflow-mcp`) em `tasks.md` é obrigatória:
-   - checkbox apenas em linhas de tarefa (`- [ ]`, `- [-]`, `- [x]` com ID numérico)
-   - IDs de tarefa devem ser únicos no arquivo (sem duplicatas)
-   - task row usa `-` (nunca `*` para linha de tarefa)
-   - nunca usar checkbox aninhado em DoD/metadados
-   - metadados devem ser bullets normais (`- ...`), nunca checkbox
-   - `Files` deve ser parseável em uma linha (`- Files: a, b`)
-   - usar metadados com underscore: `_Requirements: ..._`, `_Leverage: ..._` (quando houver), `_Prompt: ..._` (fechando com `_`)
-   - `_Prompt` deve incluir `Role|Task|Restrictions|Success`
-14. Em `design.md`, incluir ao menos um diagrama Mermaid válido em `## Architecture` (fluxo principal), preferindo a skill `mermaid-architecture` para padronização.
-   - usar bloco fenced com marcador de linguagem `mermaid` em minúsculo
-15. UX do CLI: `spw` deve mostrar help por padrão; instalação explícita via `spw install`.
-16. Em gates de aprovação (`spw:prd`, `spw:status`, `spw:plan`, `spw:design-draft`, `spw:tasks-plan`), quando `spec-status` vier incompleto/ambíguo, reconciliar via MCP `approvals status` (resolvendo `approvalId` por `spec-status` e, se necessário, por `.spec-workflow/approvals/<spec-name>/`); nunca decidir por `overallStatus`/fases apenas e nunca usar `STATUS-SUMMARY.md` como fonte de verdade.
-17. Em `spw:post-mortem`, salvar relatórios em `.spec-workflow/post-mortems/<spec-name>/` com front matter YAML (`spec`, `topic`, `tags`, `range_from`, `range_to`) e atualizar `.spec-workflow/post-mortems/INDEX.md`.
-18. Com `[post_mortem_memory].enabled=true`, comandos de design/planning (`spw:prd`, `spw:design-research`, `spw:design-draft`, `spw:tasks-plan`, `spw:tasks-check`) devem consultar o índice de post-mortems e aplicar no máximo `[post_mortem_memory].max_entries_for_design` entradas relevantes.
-19. Catálogo padrão de skills: não incluir `requesting-code-review`; manter alinhamento entre `copy-ready/install.sh`, `config/spw-config.toml` e `copy-ready/.spec-workflow/spw-config.toml`.
-20. `test-driven-development` pertence ao catálogo comum; em `spw:exec`/`spw:checkpoint`, só vira obrigatório quando `[execution].tdd_default=true`.
-21. Em `spw:exec` (normal e teams), antes de leitura ampla o orquestrador deve despachar `execution-state-scout` (modelo implementation/sonnet por padrão) para consolidar checkpoint, tarefa `[-]` em progresso, próxima(s) executável(eis) e ação de retomada; o principal deve consumir apenas o resumo compacto e então ler contexto por tarefa.
-22. Em `spw:qa`, quando o foco não for informado, perguntar explicitamente ao usuário o alvo de validação e escolher `playwright|bruno|hybrid` com justificativa de risco/escopo. O plano deve incluir seletores/endpoints concretos por cenário (CSS, `data-testid`, rotas, métodos HTTP).
-23. Em validações com Playwright no `spw:qa`/`spw:qa-exec`, utilizar tools do servidor Playwright MCP pré-configurado; nunca invocar npx ou scripts Node diretamente para automação de browser.
-24. Em `spw:prd` e `spw:design-research`, quando uma URL retornar shell SPA (HTML mínimo com apenas refs de bundle JS) ou pertencer a domínio de protótipo (`*.lovable.app`, `*.vercel.app`, etc.), usar Playwright MCP para navegar e extrair conteúdo visível; se indisponível, avisar usuário e continuar com o resultado de WebFetch.
-25. Cobertura de Agent Teams para comandos subagent-first usa symlinks em `workflows/spw/overlays/active/` (apontando para `../noop.md` quando desabilitado ou `../teams/<cmd>.md` quando habilitado); por padrão todas as fases são elegíveis (`[agent_teams].exclude_phases = []`); fases podem ser excluídas adicionando-as a `exclude_phases`.
-26. Em `spw:qa-check`, validar seletores/endpoints do plano contra código fonte real (único comando QA que lê arquivos de implementação); produzir mapa verificado em `QA-CHECK.md`.
-27. Em `spw:qa-exec`, nunca ler arquivos fonte de implementação; usar apenas seletores verificados de `QA-CHECK.md`. Se seletor falhar em runtime, registrar como defeito "selector drift" e recomendar `spw:qa-check`.
+1. Respect canonical SPW paths: use `.spec-workflow/specs/<spec-name>/` (never `.specs/`).
+2. Canonical runtime config: `.spec-workflow/spw-config.toml` (with legacy fallback to `.spw/spw-config.toml`).
+3. Keep artifact locality: research/planning artifacts stay inside the active spec; supporting material goes in `.spec-workflow/specs/<spec-name>/research/`.
+4. Approval is MCP-only: check status via MCP; never substitute with manual chat approval.
+5. Preserve command contracts (`spw:prd`, `spw:plan`, `spw:tasks-plan`, `spw:exec`, `spw:checkpoint`, `spw:status`, `spw:post-mortem`, `spw:qa`, `spw:qa-check`, `spw:qa-exec`) and update docs if behavior changes.
+6. Thin-orchestrator pattern is mandatory: `commands/` are thin wrappers (max 60 lines) and detailed logic lives in `workflows/`.
+7. In `spw:tasks-plan`, maintain semantics + precedence:
+   - `--mode initial`: generates only the initial executable wave
+   - `--mode next-wave`: adds only the next executable wave
+   - without `--mode`, use `[planning].tasks_generation_strategy`:
+     - `rolling-wave`: generates one executable wave per cycle
+     - `all-at-once`: generates all executable waves in a single run
+   - `--max-wave-size` overrides `[planning].max_wave_size`; without the argument, use config
+8. In `spw:exec`, execution is via per-task subagents (including sequential waves of 1 task); the orchestrator never implements code directly.
+9. If `execution.require_user_approval_between_waves=true`, do not advance to the next wave without explicit user authorization.
+10. If `execution.commit_per_task="auto"` or `"manual"`, require atomic commit per task; if `"manual"`, stop with explicit git commands; if `"none"`, skip per-task commit enforcement. Respect the clean worktree gate when enabled.
+11. `spw update` must first update the binary itself (`spw`) and then clear the local kit cache before updating, to avoid stale templates/commands.
+12. In long-running commands with subagents (`spw:prd`, `spw:design-research`, `spw:tasks-plan`, `spw:tasks-check`, `spw:checkpoint`, `spw:post-mortem`, `spw:qa`, `spw:qa-check`, `spw:qa-exec`), if an incomplete run exists, AskUserQuestion is mandatory (`continue-unfinished` or `delete-and-restart`); the agent must not choose to restart on its own.
+13. Dashboard compatibility (`spec-workflow-mcp`) in `tasks.md` is mandatory:
+   - checkboxes only on task lines (`- [ ]`, `- [-]`, `- [x]` with numeric ID)
+   - task IDs must be unique within the file (no duplicates)
+   - task rows use `-` (never `*` for task lines)
+   - never use nested checkboxes in DoD/metadata
+   - metadata must be plain bullets (`- ...`), never checkboxes
+   - `Files` must be parseable on a single line (`- Files: a, b`)
+   - use underscore-delimited metadata: `_Requirements: ..._`, `_Leverage: ..._` (when applicable), `_Prompt: ..._` (closing with `_`)
+   - `_Prompt` must include `Role|Task|Restrictions|Success`
+14. In `design.md`, include at least one valid Mermaid diagram in `## Architecture` (main flow), preferring the `mermaid-architecture` skill for standardization.
+   - use a fenced code block with lowercase `mermaid` language marker
+15. CLI UX: `spw` must show help by default; installation is explicit via `spw install`.
+16. In approval gates (`spw:prd`, `spw:status`, `spw:plan`, `spw:design-draft`, `spw:tasks-plan`), when `spec-status` returns incomplete/ambiguous, reconcile via MCP `approvals status` (resolving `approvalId` from `spec-status` and, if needed, from `.spec-workflow/approvals/<spec-name>/`); never decide based on `overallStatus`/phases alone and never use `STATUS-SUMMARY.md` as source of truth.
+17. In `spw:post-mortem`, save reports to `.spec-workflow/post-mortems/<spec-name>/` with YAML front matter (`spec`, `topic`, `tags`, `range_from`, `range_to`) and update `.spec-workflow/post-mortems/INDEX.md`.
+18. When `[post_mortem_memory].enabled=true`, design/planning commands (`spw:prd`, `spw:design-research`, `spw:design-draft`, `spw:tasks-plan`, `spw:tasks-check`) must consult the post-mortems index and apply at most `[post_mortem_memory].max_entries_for_design` relevant entries.
+19. Default skill catalog: do not include `requesting-code-review`; keep alignment between `copy-ready/install.sh`, `config/spw-config.toml`, and `copy-ready/.spec-workflow/spw-config.toml`.
+20. `test-driven-development` belongs to the common catalog; in `spw:exec`/`spw:checkpoint`, it only becomes mandatory when `[execution].tdd_default=true`.
+21. In `spw:exec` (normal and teams), before broad reading the orchestrator must dispatch `execution-state-scout` (implementation/sonnet model by default) to consolidate checkpoint, in-progress `[-]` task, next executable task(s), and resume action; the main agent must consume only the compact summary and then read context per task.
+22. In `spw:qa`, when the focus is not provided, explicitly ask the user for the validation target and choose `playwright|bruno|hybrid` with risk/scope justification. The plan must include concrete selectors/endpoints per scenario (CSS, `data-testid`, routes, HTTP methods).
+23. In Playwright validations within `spw:qa`/`spw:qa-exec`, use pre-configured Playwright MCP server tools; never invoke npx or Node scripts directly for browser automation.
+24. In `spw:prd` and `spw:design-research`, when a URL returns an SPA shell (minimal HTML with only JS bundle refs) or belongs to a prototype domain (`*.lovable.app`, `*.vercel.app`, etc.), use Playwright MCP to navigate and extract visible content; if unavailable, warn the user and continue with the WebFetch result.
+25. Agent Teams coverage for subagent-first commands uses symlinks in `workflows/spw/overlays/active/` (pointing to `../noop.md` when disabled or `../teams/<cmd>.md` when enabled); by default all phases are eligible (`[agent_teams].exclude_phases = []`); phases can be excluded by adding them to `exclude_phases`.
+26. In `spw:qa-check`, validate plan selectors/endpoints against actual source code (the only QA command that reads implementation files); produce a verified map in `QA-CHECK.md`.
+27. In `spw:qa-exec`, never read implementation source files; use only verified selectors from `QA-CHECK.md`. If a selector fails at runtime, log it as a "selector drift" defect and recommend `spw:qa-check`.
 
-## Padrão thin-dispatch (obrigatório)
+## Thin-dispatch pattern (mandatory)
 
-Todos os comandos SPW seguem o modelo thin-dispatch (`docs/DISPATCH-PATTERNS.md`):
+All SPW commands follow the thin-dispatch model (`docs/DISPATCH-PATTERNS.md`):
 
-28. O orquestrador lê APENAS `status.json` após cada despacho de subagente. Nunca lê `report.md` no fluxo normal — somente quando `status=blocked` (para decidir ação).
-29. Entre subagentes, o orquestrador passa paths de arquivo no `brief.md`, nunca conteúdo inline. Subagente-B recebe o path do `report.md` de subagente-A, não seu conteúdo.
-30. Synthesizers e aggregators leem todos os reports anteriores diretamente do filesystem via paths recebidos no brief.
-31. Comandos são categorizados em três padrões de despacho:
-    - **Pipeline** (sequência → synthesizer): `prd`, `design-research`, `design-draft`, `tasks-plan`, `qa`, `post-mortem`
-    - **Audit** (auditors paralelos → aggregator): `tasks-check`, `qa-check`, `checkpoint`
-    - **Wave Execution** (scout → waves iterativas → synthesizer): `exec`, `qa-exec`
-32. Em Wave Execution, trabalho iterativo (tarefas, cenários) é dividido em waves (`wave-NN`). Cada wave despacha subagentes sequencialmente, escreve `_wave-summary.json`, e o orquestrador só acumula status — nunca resultados completos.
+28. The orchestrator reads ONLY `status.json` after each subagent dispatch. It never reads `report.md` in the normal flow -- only when `status=blocked` (to decide on action).
+29. Between subagents, the orchestrator passes file paths in `brief.md`, never inline content. Subagent-B receives the path to subagent-A's `report.md`, not its content.
+30. Synthesizers and aggregators read all previous reports directly from the filesystem via paths received in the brief.
+31. Commands are categorized into three dispatch patterns:
+    - **Pipeline** (sequence -> synthesizer): `prd`, `design-research`, `design-draft`, `tasks-plan`, `qa`, `post-mortem`
+    - **Audit** (parallel auditors -> aggregator): `tasks-check`, `qa-check`, `checkpoint`
+    - **Wave Execution** (scout -> iterative waves -> synthesizer): `exec`, `qa-exec`
+32. In Wave Execution, iterative work (tasks, scenarios) is divided into waves (`wave-NN`). Each wave dispatches subagents sequentially, writes `_wave-summary.json`, and the orchestrator only accumulates status -- never full results.
 
-## Estrutura de diretório por fase (obrigatório)
+## Phase-based directory structure (mandatory)
 
-Artefatos são organizados por **fase de workflow**, não em dumps flat. Cada fase é dona dos seus outputs e das suas comms de agentes (`_comms/`). Referência completa: `docs/SPEC-DIRECTORY-STRUCTURE.md`.
+Artifacts are organized by **workflow phase**, not in flat dumps. Each phase owns its outputs and its agent comms (`_comms/`). Full reference: `docs/SPEC-DIRECTORY-STRUCTURE.md`.
 
-33. Artefatos gerados pertencem à pasta da fase que os produziu (ex: `qa/QA-CHECK.md`, não `_generated/QA-CHECK.md`). As pastas `_generated/` e `_agent-comms/` de topo não existem mais.
-34. Agent comms ficam em `<fase>/_comms/<comando>/run-NNN/` (Pipeline e Audit) ou `<fase>/_comms/<comando>/waves/wave-NN/run-NNN/` (Wave Execution).
-35. Fases: `prd/`, `design/`, `planning/`, `execution/`, `qa/`, `post-mortem/`. Quando uma fase contém comandos de categorias diferentes (ex: `qa/` tem pipeline, audit e wave), cada comando usa o subdiretório de `_comms/` apropriado.
-36. Dashboard files (`requirements.md`, `design.md`, `tasks.md`) permanecem na raiz da spec — o MCP dashboard lê daqui.
-37. Diretórios de fase são criados sob demanda. Se `spw:qa` nunca rodou, `qa/` não existe.
+33. Generated artifacts belong to the phase directory that produced them (e.g., `qa/QA-CHECK.md`, not `_generated/QA-CHECK.md`). The top-level `_generated/` and `_agent-comms/` directories no longer exist.
+34. Agent comms go in `<phase>/_comms/<command>/run-NNN/` (Pipeline and Audit) or `<phase>/_comms/<command>/waves/wave-NN/run-NNN/` (Wave Execution).
+35. Phases: `prd/`, `design/`, `planning/`, `execution/`, `qa/`, `post-mortem/`. When a phase contains commands from different categories (e.g., `qa/` has pipeline, audit, and wave), each command uses the appropriate `_comms/` subdirectory.
+36. Dashboard files (`requirements.md`, `design.md`, `tasks.md`) remain at the spec root -- the MCP dashboard reads from here.
+37. Phase directories are created on demand. If `spw:qa` has never run, `qa/` does not exist.
 
-## PR review optimization (obrigatório)
+## PR review optimization (mandatory)
 
-Arquivos de spec-workflow são marcados como `linguist-generated` para GitHub colapsar por default no diff de PRs. Referência completa: `docs/PR-REVIEW-OPTIMIZATION.md`.
+Spec-workflow files are marked as `linguist-generated` so GitHub collapses them by default in PR diffs. Full reference: `docs/PR-REVIEW-OPTIMIZATION.md`.
 
-38. O installer (`spw install`) deve adicionar `.spec-workflow/specs/** linguist-generated=true` ao `.gitattributes` do projeto. A regra é idempotente — se já existir, não duplicar.
-39. Apenas arquivos sob `.spec-workflow/specs/` são marcados. Config (`.spec-workflow/spw-config.toml`) e templates (`.spec-workflow/user-templates/`) não são afetados.
+38. The installer (`spw install`) must add `.spec-workflow/specs/** linguist-generated=true` to the project's `.gitattributes`. The rule is idempotent -- if it already exists, do not duplicate.
+39. Only files under `.spec-workflow/specs/` are marked. Config (`.spec-workflow/spw-config.toml`) and templates (`.spec-workflow/user-templates/`) are not affected.
 
-## File-first comms (não quebrar)
+## File-first comms (do not break)
 
-Para comandos que exigem handoff por arquivos, garantir presença de:
+For commands that require file-based handoff, ensure the following files are present:
 
 - `<subagent>/brief.md`
 - `<subagent>/report.md`
 - `<subagent>/status.json`
 - `<run-dir>/_handoff.md`
 
-Ausência desses arquivos deve resultar em `BLOCKED`.
+Absence of these files must result in `BLOCKED`.
 
-## Checklist mínimo de validação
+## Minimum validation checklist
 
 - `bash -n bin/spw`
 - `bash -n scripts/bootstrap.sh`
@@ -125,12 +125,12 @@ Ausência desses arquivos deve resultar em `BLOCKED`.
 - `node hooks/spw-guard-paths.js <<< '{"cwd":"'"$(pwd)"'","tool_input":{"file_path":"README.md"}}'`
 - `node hooks/spw-guard-stop.js <<< '{}'`
 
-## Sincronização de documentação
+## Documentation sync
 
-Se mudar comportamento, defaults ou guardrails, atualizar no mesmo patch:
+When changing behavior, defaults, or guardrails, update in the same patch:
 
 - `README.md`
 - `AGENTS.md`
-- `docs/SPW-WORKFLOW.md` (ponteiro)
-- `hooks/README.md` (ponteiro)
-- `copy-ready/README.md` (ponteiro)
+- `docs/SPW-WORKFLOW.md` (pointer)
+- `hooks/README.md` (pointer)
+- `copy-ready/README.md` (pointer)
