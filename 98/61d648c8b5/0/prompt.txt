@@ -1,0 +1,265 @@
+Implement the following plan:
+
+# Execution Plan: SPW Refactor (REFACTOR-PLAN.md)
+
+## Context
+
+The SPW codebase has detailed reference docs and a refactor plan (`docs/REFACTOR-PLAN.md`) but **zero implementation** has been done. The refactor standardizes dispatch patterns, directory structure, and PR review across all 11 commands.
+
+Current state: all 13 workflows use inline `<workflow>`, `<file_handoff_protocol>`, `<resume_policy>`, `<skills_policy>` sections with old path patterns (`_generated/`, `_agent-comms/`). The target replaces these with shared dispatch policies (`dispatch-pipeline.md`, `dispatch-audit.md`, `dispatch-wave.md`) and `<extensions>` at named injection points.
+
+Reference artifacts already exist:
+- `docs/DISPATCH-PATTERNS.md`, `docs/SPEC-DIRECTORY-STRUCTURE.md`, `docs/PR-REVIEW-OPTIMIZATION.md`
+- `.entire/examples/qa-workflow-example.md` (target workflow structure)
+- `.entire/examples/shared-dispatch-pipeline.md` (target policy structure)
+
+---
+
+## Execution Order
+
+```
+Phase 3 → Phase 1 (1.1 → 1.2 → 1.3 → 1.4 → 1.5 → 1.6 → 1.7) → Phase 2 (2.1 → 2.2 → 2.3 → 2.4 → 2.5 → 2.6)
+```
+
+One commit per step. Each commit includes source + mirror + validation.
+
+---
+
+## Phase 3: PR Review Optimization (quick win)
+
+### Step 3.1 — Add `setup_gitattributes()` to installer
+
+**Files to modify:**
+- `copy-ready/install.sh` — add `setup_gitattributes()` function per `docs/PR-REVIEW-OPTIMIZATION.md`, call after file copy
+
+**Transformation:** Add idempotent function that appends `.spec-workflow/specs/** linguist-generated=true` to target project's `.gitattributes`.
+
+**Verify:**
+```bash
+bash -n copy-ready/install.sh
+```
+
+---
+
+## Phase 1: Thin-Dispatch + Workflow Refactor
+
+### Step 1.1 — Create 3 shared dispatch policies
+
+**Files to create (from `.entire/examples/shared-dispatch-pipeline.md` as template):**
+- `workflows/spw/shared/dispatch-pipeline.md` — sequential dispatch, status-only reads, path-based briefs, synthesizer-reads-from-fs, pipeline resume, extension points (pre_pipeline, pre_dispatch, post_dispatch, post_pipeline)
+- `workflows/spw/shared/dispatch-audit.md` — parallel/sequential auditor dispatch, status-only reads, aggregator-reads-from-fs, audit resume (skip passed, always rerun aggregator)
+- `workflows/spw/shared/dispatch-wave.md` — scout dispatch, wave splitting, per-wave sequential loop, wave-summary.json, status-only reads, synthesizer-reads-from-fs, wave-level resume, extension points (pre_pipeline, inter_wave, per_task, post_pipeline)
+
+Each policy must include the 5 core thin-dispatch rules from `docs/DISPATCH-PATTERNS.md`.
+
+**Mirror:** Copy all 3 to `copy-ready/.claude/workflows/spw/shared/`
+
+**Verify:** `scripts/validate-thin-orchestrator.sh`
+
+### Step 1.2 — Refactor 6 Pipeline workflows
+
+Refactor in order: `prd` → `design-research` → `design-draft` → `tasks-plan` → `qa` → `post-mortem`
+
+**Per-workflow transformation (use `.entire/examples/qa-workflow-example.md` as reference):**
+
+1. Add `<dispatch_pattern>` tag after frontmatter:
+   ```
+   <dispatch_pattern>
+   category: pipeline
+   subcategory: research|synthesis
+   policy: @.claude/workflows/spw/shared/dispatch-pipeline.md
+   </dispatch_pattern>
+   ```
+
+2. **Remove** inline sections that are now in shared policies:
+   - `<file_handoff_protocol>` → covered by dispatch-pipeline.md + file-handoff.md
+   - `<resume_policy>` → covered by dispatch-pipeline.md + resume-policy.md
+   - `<path_conventions>` → covered by dispatch-pipeline.md
+   - `<workflow>` section → replaced by `<extensions>`
+   - `<completion_guidance>` → simplified or moved to shared
+
+3. **Simplify** inline `<skills_policy>` and `<agent_teams_policy>` to just reference the overlay
+
+4. **Add** `<extensions>` with command-specific logic at named extension points:
+   - `<pre_pipeline>`: preflight, user intent gates, skill loading
+   - `<pre_dispatch subagent="...">`: conditional dispatch decisions
+   - `<post_dispatch subagent="...">`: mid-pipeline decisions
+   - `<post_pipeline>`: artifact verification, next-step guidance
+
+5. **Keep** unchanged: frontmatter, `<shared_policies>`, `<objective>`, `<artifact_boundary>`, `<subagents>`, command-specific policies, `<acceptance_criteria>`
+
+6. Add thin-dispatch verification line to `<acceptance_criteria>`
+
+**Key extensions per command:**
+
+| Command | Subcategory | pre_pipeline | pre_dispatch | post_pipeline |
+|---------|-------------|--------------|--------------|---------------|
+| `prd` | Research | user intent gate, revision loop | conditional scout branching | — |
+| `design-research` | Research | SPA/prototype URL detection | Playwright MCP fallback | — |
+| `design-draft` | Synthesis | approval reconciliation | — | Mermaid diagram validation |
+| `tasks-plan` | Synthesis | mode selection (initial/next-wave/config) | — | dashboard compatibility check |
+| `qa` | Synthesis | user intent + tool selection | conditional designer (playwright/bruno/hybrid) | selector verification |
+| `post-mortem` | Synthesis | — | — | memory index update |
+
+**Files:** 6 workflows in `workflows/spw/` + 6 mirrors in `copy-ready/.claude/workflows/spw/`
+
+**Verify:** `scripts/validate-thin-orchestrator.sh` + `wc -l commands/spw/*.md` (wrappers still <60 lines)
+
+### Step 1.3 — Refactor 3 Audit workflows
+
+Same transformation pattern but referencing `dispatch-audit.md`.
+
+| Command | Subcategory | pre_pipeline | Key difference |
+|---------|-------------|--------------|----------------|
+| `tasks-check` | Artifact | verify tasks.md exists | auditors check docs only |
+| `qa-check` | Code | verify QA-TEST-PLAN.md exists | auditors read source code |
+| `checkpoint` | Code | wave-awareness (reads current wave context) | auditors read source code |
+
+**Files:** 3 workflows + 3 mirrors
+
+**Verify:** `scripts/validate-thin-orchestrator.sh`
+
+### Step 1.4 — Refactor 2 Wave Execution workflows + config
+
+Same transformation pattern but referencing `dispatch-wave.md`.
+
+| Command | Subcategory | inter_wave | per_task | Key difference |
+|---------|-------------|------------|----------|----------------|
+| `exec` | Implementation | checkpoint + user authorization | git hygiene, commit policy | code changes |
+| `qa-exec` | Validation | re-auth (--isolated) | — | no code changes, lighter gates |
+
+**Config:** Add `[qa]` section with `max_scenarios_per_wave = 5` to:
+- `config/spw-config.toml`
+- `copy-ready/.spec-workflow/spw-config.toml`
+
+**Files:** 2 workflows + 2 mirrors + 2 config files
+
+**Verify:** `scripts/validate-thin-orchestrator.sh`
+
+### Step 1.5 — Update existing shared policies
+
+**Files to modify:**
+- `workflows/spw/shared/file-handoff.md` — add reference to thin-dispatch rules, note that category policies add category-specific behavior on top
+- Mirror to `copy-ready/`
+
+Other shared policies (`config-resolution.md`, `resume-policy.md`, `skills-policy.md`, `approval-reconciliation.md`) stay unchanged.
+
+### Step 1.6 — Update teams overlays
+
+All 11 command overlays in `workflows/spw/overlays/teams/` need minor updates to reference the new dispatch pattern format. The overlay adds team creation/role mapping; dispatch comes from shared policy.
+
+Overlays for `plan.md` and `status.md` are utility commands — no dispatch pattern changes needed.
+
+**Files:** 11 overlays in `workflows/spw/overlays/teams/` + 11 mirrors
+
+### Step 1.7 — Phase 1 validation + docs
+
+**Run full validation:**
+```bash
+bash -n bin/spw && bash -n scripts/*.sh && bash -n copy-ready/install.sh
+scripts/validate-thin-orchestrator.sh
+node hooks/spw-guard-stop.js <<< '{}'
+node hooks/spw-statusline.js <<< '{"workspace":{"current_dir":"'"$(pwd)"'"}}'
+node hooks/spw-guard-user-prompt.js <<< '{"prompt":"/spw:qa-exec my-spec"}'
+wc -l commands/spw/*.md
+grep -L "dispatch_pattern" workflows/spw/{prd,design-research,design-draft,tasks-plan,tasks-check,qa,qa-check,qa-exec,exec,checkpoint,post-mortem}.md
+```
+
+**Docs update:** `README.md`, `AGENTS.md`, `copy-ready/README.md` — mention dispatch pattern system
+
+---
+
+## Phase 2: Spec Directory Restructure
+
+### Step 2.1 — Update artifact paths in all 11 workflows
+
+Replace old path patterns with new phase-based paths in `<artifact_boundary>` and any remaining path references:
+
+| Old | New |
+|-----|-----|
+| `_generated/PRD.md` | `prd/PRD.md` |
+| `_generated/DESIGN-RESEARCH.md` | `design/DESIGN-RESEARCH.md` |
+| `_generated/TASKS-CHECK.md` | `planning/TASKS-CHECK.md` |
+| `_generated/CHECKPOINT-REPORT.md` | `execution/CHECKPOINT-REPORT.md` |
+| `_generated/QA-*.md` | `qa/QA-*.md` |
+| `_agent-comms/prd/run-NNN/` | `prd/_comms/run-NNN/` |
+| `_agent-comms/design-research/` | `design/_comms/design-research/` |
+| `_agent-comms/design-draft/` | `design/_comms/design-draft/` |
+| `_agent-comms/tasks-plan/` | `planning/_comms/tasks-plan/` |
+| `_agent-comms/tasks-check/` | `planning/_comms/tasks-check/` |
+| `_agent-comms/waves/wave-NN/` | `execution/waves/wave-NN/` |
+| `_agent-comms/qa/` | `qa/_comms/qa/` |
+| `_agent-comms/qa-check/` | `qa/_comms/qa-check/` |
+| `_agent-comms/qa-exec/` | `qa/_comms/qa-exec/waves/wave-NN/` |
+| `_agent-comms/post-mortem/` | `post-mortem/_comms/` |
+| `_agent-comms/checkpoint/` | (via wave path) |
+
+**Files:** 11 workflows + 11 mirrors (also update `status.md` paths)
+
+### Step 2.2 — Update hooks
+
+| Hook | Changes |
+|------|---------|
+| `spw-statusline.js` | Update spec detection path patterns (scan phase dirs instead of `_generated/`) |
+| `spw-guard-paths.js` | Update allowed write paths (add phase dirs, remove `_generated/` patterns) |
+| `spw-guard-stop.js` | Already delegates to `spw-hook-lib.js` |
+| `spw-hook-lib.js` | Update `simpleCommands` array (add `design-draft`, `qa`, `post-mortem`); update `collectRunDirs()` to scan `<phase>/_comms/` instead of `_agent-comms/` |
+
+**Files:** 4 hooks + 4 mirrors in `copy-ready/.claude/hooks/`
+
+### Step 2.3 — Update templates
+
+Check and update `templates/user-templates/` for `_generated/` or `_agent-comms/` references.
+Mirror to `copy-ready/.spec-workflow/user-templates/`.
+
+### Step 2.4 — Update shared policies
+
+Update `workflows/spw/shared/file-handoff.md` path examples from old to new pattern.
+Update the 3 new dispatch policies from Step 1.1 if they reference old paths.
+Mirror all changes.
+
+### Step 2.5 — Update status command
+
+`workflows/spw/status.md` reads artifacts from multiple locations. Update all paths.
+Mirror to `copy-ready/`.
+
+### Step 2.6 — Phase 2 validation
+
+```bash
+scripts/validate-thin-orchestrator.sh
+node hooks/spw-statusline.js <<< '{"workspace":{"current_dir":"'"$(pwd)"'"}}'
+node hooks/spw-guard-paths.js <<< '{"cwd":"'"$(pwd)"'","tool_input":{"file_path":".spec-workflow/specs/test/qa/QA-CHECK.md"}}'
+node hooks/spw-guard-stop.js <<< '{}'
+# Verify no stale paths
+grep -r "_generated/" workflows/spw/ --include="*.md"
+grep -r "_agent-comms/" workflows/spw/ --include="*.md"
+```
+
+**Docs update:** `README.md`, `AGENTS.md`, `copy-ready/README.md`
+
+---
+
+## Verification (end-to-end)
+
+After all phases:
+1. `scripts/validate-thin-orchestrator.sh` — mirror integrity + wrapper sizes
+2. All hook smoke tests pass
+3. `grep -L "dispatch_pattern"` on 11 workflows returns empty
+4. `grep -r "_generated/\|_agent-comms/" workflows/spw/ --include="*.md"` returns empty
+5. `wc -l commands/spw/*.md` — all wrappers <60 lines
+
+---
+
+## Scope Summary
+
+| Phase | Steps | Files touched | Commits |
+|-------|-------|---------------|---------|
+| Phase 3 | 1 | 1 (installer) | 1 |
+| Phase 1 | 7 | ~35 (3 new policies + 11 workflows + 11 overlays + 1 config + mirrors + docs) | 7 |
+| Phase 2 | 6 | ~30 (11 workflows + 4 hooks + templates + policies + status + mirrors + docs) | 6 |
+| **Total** | **14** | **~65 file edits** | **14** |
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/lucas/.REDACTED.jsonl
+
+If this plan can be broken down into multiple independent tasks, consider using the TeamCreate tool to create a team and parallelize the work.

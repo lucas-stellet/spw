@@ -1,0 +1,42 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "9861d648c8b5",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "config/spw-config.toml",
+    "copy-ready/install.sh",
+    "workflows/spw/checkpoint.md",
+    "workflows/spw/design-draft.md",
+    "workflows/spw/design-research.md",
+    "workflows/spw/exec.md",
+    "workflows/spw/post-mortem.md",
+    "workflows/spw/prd.md",
+    "workflows/spw/qa-check.md",
+    "workflows/spw/qa-exec.md",
+    "workflows/spw/qa.md",
+    "workflows/spw/shared/dispatch-audit.md",
+    "workflows/spw/shared/dispatch-pipeline.md",
+    "workflows/spw/shared/dispatch-wave.md",
+    "workflows/spw/shared/file-handoff.md",
+    "workflows/spw/tasks-check.md",
+    "workflows/spw/tasks-plan.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/98/61d648c8b5/0/metadata.json",
+      "transcript": "/98/61d648c8b5/0/full.jsonl",
+      "context": "/98/61d648c8b5/0/context.md",
+      "content_hash": "/98/61d648c8b5/0/content_hash.txt",
+      "prompt": "/98/61d648c8b5/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 54,
+    "cache_creation_tokens": 142236,
+    "cache_read_tokens": 6731814,
+    "output_tokens": 10184,
+    "api_call_count": 52
+  }
+}
