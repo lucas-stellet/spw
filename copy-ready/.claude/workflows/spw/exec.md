@@ -99,7 +99,7 @@ Main-context rule:
 Execution/checkpoint communications must be grouped by wave:
 - base: `.spec-workflow/specs/<spec-name>/_agent-comms/waves/wave-<NN>/`
 
-Within each wave folder:
+Within each wave folder (`<run-id>` MUST be `run-NNN` format — e.g. `run-001`, never dates):
 - `execution/<run-id>/` (task execution communications/evidence)
 - `checkpoint/<run-id>/` (checkpoint communications/evidence)
 - `post-check/<run-id>/` (optional post-check validations)

@@ -19,7 +19,7 @@ Validate that the executed batch truly meets spec intent, code quality, and inte
 <file_handoff_protocol>
 Subagent communication must be file-first (no implicit-only handoff).
 
-Create a run folder under the current wave:
+Create a run folder under the current wave (`<run-id>` MUST be `run-NNN` format — e.g. `run-001`, never dates):
 - `.spec-workflow/specs/<spec-name>/_agent-comms/waves/wave-<NN>/checkpoint/<run-id>/`
 
 Wave container:

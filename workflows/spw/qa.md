@@ -29,7 +29,7 @@ Create a risk-based QA validation plan for the target spec and select the best v
 Write outputs under:
 - `.spec-workflow/specs/<spec-name>/qa/QA-TEST-PLAN.md`
 
-Communication/handoff:
+Communication/handoff (`<run-id>` MUST be `run-NNN` format — e.g. `run-001`, never dates):
 - `.spec-workflow/specs/<spec-name>/_agent-comms/qa/<run-id>/`
 </artifact_boundary>
 

@@ -69,7 +69,7 @@ If index/report files are missing, continue with warning (non-blocking).
 <file_handoff_protocol>
 Subagent communication must be file-first (no implicit-only handoff).
 
-Create a run folder:
+Create a run folder (`<run-id>` MUST be `run-NNN` format — e.g. `run-001`, never dates):
 - `.spec-workflow/specs/<spec-name>/_agent-comms/prd/<run-id>/`
 
 For each subagent, use:

@@ -38,7 +38,7 @@ Writes:
 <file_handoff_protocol>
 Subagent communication must be file-first (no implicit-only handoff).
 
-Create a run folder:
+Create a run folder (`<run-id>` MUST be `run-NNN` format — e.g. `run-001`, never dates):
 - `.spec-workflow/specs/<spec-name>/_agent-comms/qa-exec/<run-id>/`
 
 For each subagent, use:
