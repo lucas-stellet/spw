@@ -31,7 +31,7 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 Subagent communication must be file-first (no implicit-only handoff).
 
 Create a run folder:
-- `.spec-workflow/specs/<spec-name>/agent-comms/post-mortem/<run-id>/`
+- `.spec-workflow/specs/<spec-name>/_agent-comms/post-mortem/<run-id>/`
 
 For each subagent, use:
 - `<run-dir>/<subagent>/brief.md` (written by orchestrator before dispatch)
@@ -53,7 +53,7 @@ If a required `report.md` or `status.json` is missing, stop BLOCKED.
 
 <resume_policy>
 Before creating a new run, inspect existing post-mortem run folders:
-- `.spec-workflow/specs/<spec-name>/agent-comms/post-mortem/<run-id>/`
+- `.spec-workflow/specs/<spec-name>/_agent-comms/post-mortem/<run-id>/`
 
 A run is `unfinished` when any of these is true:
 - `_handoff.md` is missing
@@ -85,7 +85,7 @@ Post-mortem commit range:
 - `from` (exclusive):
   - if `--since-commit` is provided, use it.
   - otherwise auto-detect from latest commit related to execution completion for `<spec-name>`:
-    - latest commit touching `.spec-workflow/specs/<spec-name>/CHECKPOINT-REPORT.md` with PASS semantics, or
+    - latest commit touching `.spec-workflow/specs/<spec-name>/_generated/CHECKPOINT-REPORT.md` with PASS semantics, or
     - latest commit touching `.spec-workflow/specs/<spec-name>/tasks.md` where execution appears completed.
 - `to` (inclusive):
   - if `--until-ref` is provided, use it.
@@ -124,14 +124,14 @@ Classify each relevant change into one or more root-cause buckets:
 2. Determine active run directory:
    - `continue-unfinished` -> reuse latest unfinished run dir
    - `delete-and-restart` or no unfinished run -> create:
-     `.spec-workflow/specs/<spec-name>/agent-comms/post-mortem/<run-id>/`
+     `.spec-workflow/specs/<spec-name>/_agent-comms/post-mortem/<run-id>/`
 3. Resolve analysis commit range with `<range_resolution>`.
 4. Read baseline/head artifacts when present:
    - `.spec-workflow/specs/<spec-name>/requirements.md`
    - `.spec-workflow/specs/<spec-name>/design.md`
    - `.spec-workflow/specs/<spec-name>/tasks.md`
-   - `.spec-workflow/specs/<spec-name>/TASKS-CHECK.md`
-   - `.spec-workflow/specs/<spec-name>/CHECKPOINT-REPORT.md`
+   - `.spec-workflow/specs/<spec-name>/_generated/TASKS-CHECK.md`
+   - `.spec-workflow/specs/<spec-name>/_generated/CHECKPOINT-REPORT.md`
 5. Dispatch `commit-diff-analyzer` with commit range evidence.
    - if resuming, redispatch only when output is missing/blocked
 6. Dispatch `artifact-gap-analyzer` and `review-test-failure-analyzer` using step 5 output + artifacts.
@@ -172,7 +172,7 @@ Post-mortem report must include:
 - [ ] Preventive actions are concrete and command-stage specific.
 - [ ] YAML frontmatter exists with topic/tags/range metadata.
 - [ ] Shared index `.spec-workflow/post-mortems/INDEX.md` was updated with report path.
-- [ ] File-based handoff exists under `.spec-workflow/specs/<spec-name>/agent-comms/post-mortem/<run-id>/`.
+- [ ] File-based handoff exists under `.spec-workflow/specs/<spec-name>/_agent-comms/post-mortem/<run-id>/`.
 - [ ] If unfinished run exists, explicit user decision (`continue-unfinished` or `delete-and-restart`) was respected.
 </acceptance_criteria>
 

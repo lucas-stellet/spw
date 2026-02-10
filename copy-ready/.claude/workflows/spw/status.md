@@ -59,20 +59,20 @@ For each document (`requirements`, `design`, `tasks`):
    - if no ID exists: treat as not requested
 3. Never infer approval state from:
    - `overallStatus` or phase labels alone
-   - `.spec-workflow/specs/<spec-name>/STATUS-SUMMARY.md`
+   - `.spec-workflow/specs/<spec-name>/_generated/STATUS-SUMMARY.md`
 </approval_reconciliation>
 
 <workflow>
 1. Resolve target spec(s) from `.spec-workflow/specs/`.
 2. For each spec, dispatch `state-inspector` to collect:
-   - artifact presence: `requirements.md`, `DESIGN-RESEARCH.md`, `design.md`, `tasks.md`
+   - artifact presence: `requirements.md`, `_generated/DESIGN-RESEARCH.md`, `design.md`, `tasks.md`
    - tasks progress counts: `[ ]`, `[-]`, `[x]`
    - active wave/blocked/manual markers when present
    - wave comms state from:
-     - `.spec-workflow/specs/<spec-name>/agent-comms/waves/wave-<NN>/_latest.json`
-     - `.spec-workflow/specs/<spec-name>/agent-comms/waves/wave-<NN>/_wave-summary.md`
+     - `.spec-workflow/specs/<spec-name>/_agent-comms/waves/wave-<NN>/_latest.json`
+     - `.spec-workflow/specs/<spec-name>/_agent-comms/waves/wave-<NN>/_wave-summary.md`
    - legacy comms paths present (for migration warning):
-     - `.spec-workflow/specs/<spec-name>/agent-comms/checkpoint/*`
+     - `.spec-workflow/specs/<spec-name>/_agent-comms/checkpoint/*`
 3. Dispatch `approval-auditor`:
    - call `spec-status`
    - resolve document approval state via `<approval_reconciliation>`
@@ -85,7 +85,7 @@ For each document (`requirements`, `design`, `tasks`):
    - done
 5. Produce:
    - console summary (current stage, blockers, next command)
-   - `.spec-workflow/specs/<spec-name>/STATUS-SUMMARY.md` for each inspected spec (output-only snapshot; never reuse as approval input)
+   - `.spec-workflow/specs/<spec-name>/_generated/STATUS-SUMMARY.md` for each inspected spec (output-only snapshot; never reuse as approval input)
 </workflow>
 
 <output_contract>

@@ -283,7 +283,7 @@ function listDirSafe(dirPath) {
 }
 
 function collectRunDirs(specDir) {
-  const commsRoot = path.join(specDir, "agent-comms");
+  const commsRoot = path.join(specDir, "_agent-comms");
   if (!fs.existsSync(commsRoot)) return [];
   const runs = [];
 

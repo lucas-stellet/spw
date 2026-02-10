@@ -92,7 +92,39 @@ Subagent handoffs use filesystem artifacts, not chat. Required files per subagen
 - `<subagent>/brief.md`, `<subagent>/report.md`, `<subagent>/status.json`
 - `<run-dir>/_handoff.md`
 
-Stored under `.spec-workflow/specs/<spec-name>/agent-comms/` with command-specific subdirectories.
+Stored under `.spec-workflow/specs/<spec-name>/_agent-comms/` with command-specific subdirectories.
+
+### Spec Directory Structure
+
+```
+.spec-workflow/specs/<spec-name>/
+├── requirements.md              ← dashboard (approval)
+├── design.md                    ← dashboard (approval)
+├── tasks.md                     ← dashboard (approval)
+├── _generated/                  ← ALL intermediate + skills + snapshots
+│   ├── PRD.md
+│   ├── PRD-SOURCE-NOTES.md
+│   ├── PRD-STRUCTURE.md
+│   ├── PRD-REVISION-PLAN.md
+│   ├── PRD-REVISION-QUESTIONS.md
+│   ├── PRD-REVISION-NOTES.md
+│   ├── DESIGN-RESEARCH.md
+│   ├── CHECKPOINT-REPORT.md
+│   ├── TASKS-CHECK.md
+│   ├── STATUS-SUMMARY.md
+│   └── SKILLS-*.md
+├── _agent-comms/                ← subagent file-first handoffs
+│   ├── prd/<run-id>/
+│   ├── design-research/<run-id>/
+│   ├── tasks-plan/<run-id>/
+│   ├── tasks-check/<run-id>/
+│   ├── waves/wave-<NN>/
+│   ├── post-mortem/<run-id>/
+│   ├── qa/<run-id>/
+│   ├── qa-check/<run-id>/
+│   └── qa-exec/<run-id>/
+└── _implementation-logs/
+```
 
 ## Key Constraints
 

@@ -53,7 +53,7 @@ Load modes:
 
 Skill gate (mandatory when `skills.enabled=true`):
 1. Run availability preflight and write:
-   - `.spec-workflow/specs/<spec-name>/SKILLS-EXEC.md`
+   - `.spec-workflow/specs/<spec-name>/_generated/SKILLS-EXEC.md`
 2. If `load_mode=subagent-first`, avoid loading full skill content in main context.
 3. If `[execution].tdd_default=true`, treat `test-driven-development` as required for this phase (effective required set).
 4. Require task subagent outputs/logs to explicitly mention skills used/missing.
@@ -84,8 +84,8 @@ Before broad reads in the main context, dispatch `execution-state-scout` (implem
 
 Scout reads:
 - `.spec-workflow/specs/<spec-name>/tasks.md`
-- `.spec-workflow/specs/<spec-name>/agent-comms/waves/**/_latest.json`
-- `.spec-workflow/specs/<spec-name>/agent-comms/waves/**/_wave-summary.md`
+- `.spec-workflow/specs/<spec-name>/_agent-comms/waves/**/_latest.json`
+- `.spec-workflow/specs/<spec-name>/_agent-comms/waves/**/_wave-summary.md`
 - latest checkpoint status artifacts available in wave comms
 - `git status --porcelain` only when clean-worktree gate is enabled
 
@@ -108,7 +108,7 @@ Main-context rule:
 
 <wave_comms_layout>
 Execution/checkpoint communications must be grouped by wave:
-- base: `.spec-workflow/specs/<spec-name>/agent-comms/waves/wave-<NN>/`
+- base: `.spec-workflow/specs/<spec-name>/_agent-comms/waves/wave-<NN>/`
 
 Within each wave folder:
 - `execution/<run-id>/` (task execution communications/evidence)
@@ -118,7 +118,7 @@ Within each wave folder:
 - `_latest.json` (pointers to latest execution/checkpoint/post-check run IDs)
 
 Rules:
-- Do not create top-level timestamped wave folders under `agent-comms/checkpoint/`.
+- Do not create top-level timestamped wave folders under `_agent-comms/checkpoint/`.
 - Keep all wave evidence under its canonical `wave-<NN>/` folder.
 </wave_comms_layout>
 
@@ -202,7 +202,7 @@ For complex/critical tasks, run spec-compliance review on `complex_reasoning` mo
    - required immediate action (`resume`, `wait-user-authorization`, `manual-handoff`, `done`, `blocked`)
 4. Resolve current wave ID:
    - `wave-<NN>` (zero-padded, for example `wave-02`)
-   - ensure canonical wave comms folder exists under `agent-comms/waves/`
+   - ensure canonical wave comms folder exists under `_agent-comms/waves/`
 5. Read only task-scoped context required for selected task IDs:
    - `.spec-workflow/specs/<spec-name>/tasks.md`
    - task `Files` metadata targets
@@ -219,7 +219,7 @@ For complex/critical tasks, run spec-compliance review on `complex_reasoning` mo
      - enforce git_hygiene commit policy for this task
    - if any gate fails: mark BLOCKED and stop current batch
 8. Persist execution communication/evidence under:
-   - `.spec-workflow/specs/<spec-name>/agent-comms/waves/<wave-id>/execution/<run-id>/`
+   - `.spec-workflow/specs/<spec-name>/_agent-comms/waves/<wave-id>/execution/<run-id>/`
 9. At end of batch, run `spw:checkpoint <spec-name>`.
 10. If checkpoint BLOCKED, stop.
 11. If checkpoint PASS:

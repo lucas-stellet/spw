@@ -193,9 +193,9 @@ Approval reconciliation for MCP-gated commands (`spw:prd`, `spw:status`, `spw:pl
 
 File-first subagent communication is enabled for planning/validation flows and
 stored under:
-- planning/research: `.spec-workflow/specs/<spec-name>/agent-comms/<command>/<run-id>/`
-- execution/checkpoint by wave: `.spec-workflow/specs/<spec-name>/agent-comms/waves/wave-<NN>/<stage>/<run-id>/`
-- post-mortem: `.spec-workflow/specs/<spec-name>/agent-comms/post-mortem/<run-id>/`
+- planning/research: `.spec-workflow/specs/<spec-name>/_agent-comms/<command>/<run-id>/`
+- execution/checkpoint by wave: `.spec-workflow/specs/<spec-name>/_agent-comms/waves/wave-<NN>/<stage>/<run-id>/`
+- post-mortem: `.spec-workflow/specs/<spec-name>/_agent-comms/post-mortem/<run-id>/`
 
 `<run-id>` format: `run-NNN` (zero-padded sequential, e.g. `run-001`).
 
@@ -263,7 +263,7 @@ spw:qa (plan) → spw:qa-check (validate) → spw:qa-exec (execute)
 - Selects `Playwright MCP`, `Bruno CLI`, or `hybrid` by risk/scope
 - Produces `QA-TEST-PLAN.md` with concrete selectors/endpoints per scenario
 - Uses browser automation tools from pre-configured Playwright MCP server
-- Stores file-first communications under `.spec-workflow/specs/<spec-name>/agent-comms/qa/<run-id>/`
+- Stores file-first communications under `.spec-workflow/specs/<spec-name>/_agent-comms/qa/<run-id>/`
 
 ### `spw:qa-check` (validation)
 - Validates test plan against actual code (the ONE phase that reads implementation files)
@@ -271,14 +271,14 @@ spw:qa (plan) → spw:qa-check (validate) → spw:qa-exec (execute)
 - Checks requirement traceability and data feasibility
 - Produces `QA-CHECK.md` with verified selector map (test-id → selector → file:line)
 - PASS/BLOCKED decision gates `spw:qa-exec`
-- Stores file-first communications under `.spec-workflow/specs/<spec-name>/agent-comms/qa-check/<run-id>/`
+- Stores file-first communications under `.spec-workflow/specs/<spec-name>/_agent-comms/qa-check/<run-id>/`
 
 ### `spw:qa-exec` (execution)
 - Executes validated test plan using only verified selectors from `QA-CHECK.md`
 - **Never reads implementation source files** — selector drift is logged as defect
 - Supports `--scope smoke|regression|full` and `--rerun-failed true|false`
 - Produces `QA-EXECUTION-REPORT.md` and `QA-DEFECT-REPORT.md` with GO/NO-GO decision
-- Stores file-first communications under `.spec-workflow/specs/<spec-name>/agent-comms/qa-exec/<run-id>/`
+- Stores file-first communications under `.spec-workflow/specs/<spec-name>/_agent-comms/qa-exec/<run-id>/`
 
 Hook enforcement:
 - `warn` -> diagnostics only

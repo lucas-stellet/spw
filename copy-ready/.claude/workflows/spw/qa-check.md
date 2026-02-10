@@ -31,14 +31,14 @@ Reads:
 
 Writes:
 - `.spec-workflow/specs/<spec-name>/qa/QA-CHECK.md`
-- `.spec-workflow/specs/<spec-name>/agent-comms/qa-check/<run-id>/`
+- `.spec-workflow/specs/<spec-name>/_agent-comms/qa-check/<run-id>/`
 </artifact_boundary>
 
 <file_handoff_protocol>
 Subagent communication must be file-first (no implicit-only handoff).
 
 Create a run folder:
-- `.spec-workflow/specs/<spec-name>/agent-comms/qa-check/<run-id>/`
+- `.spec-workflow/specs/<spec-name>/_agent-comms/qa-check/<run-id>/`
 
 For each subagent, use:
 - `<run-dir>/<subagent>/brief.md` (written by orchestrator before dispatch)
@@ -62,7 +62,7 @@ If a required `report.md` or `status.json` is missing, stop BLOCKED.
 
 <resume_policy>
 Before creating a new run, inspect existing qa-check run folders:
-- `.spec-workflow/specs/<spec-name>/agent-comms/qa-check/<run-id>/`
+- `.spec-workflow/specs/<spec-name>/_agent-comms/qa-check/<run-id>/`
 
 A run is `unfinished` when any of these is true:
 - `_handoff.md` is missing
@@ -157,7 +157,7 @@ When `enabled=true` and `qa-check` is included in `use_for_phases`:
 - [ ] Test data/fixture feasibility was checked.
 - [ ] PASS/BLOCKED decision is justified by aggregated findings.
 - [ ] Verified selector map is included in QA-CHECK.md.
-- [ ] File-first handoff exists under `.spec-workflow/specs/<spec-name>/agent-comms/qa-check/<run-id>/`.
+- [ ] File-first handoff exists under `.spec-workflow/specs/<spec-name>/_agent-comms/qa-check/<run-id>/`.
 - [ ] If unfinished run exists, explicit user decision was respected.
 </acceptance_criteria>
 

@@ -30,7 +30,7 @@ Write outputs under:
 - `.spec-workflow/specs/<spec-name>/qa/QA-TEST-PLAN.md`
 
 Communication/handoff:
-- `.spec-workflow/specs/<spec-name>/agent-comms/qa/<run-id>/`
+- `.spec-workflow/specs/<spec-name>/_agent-comms/qa/<run-id>/`
 </artifact_boundary>
 
 <file_handoff_protocol>
@@ -49,7 +49,7 @@ If a required handoff file is missing, stop BLOCKED.
 
 <resume_policy>
 Before creating a new run, inspect existing QA run folders:
-- `.spec-workflow/specs/<spec-name>/agent-comms/qa/<run-id>/`
+- `.spec-workflow/specs/<spec-name>/_agent-comms/qa/<run-id>/`
 
 A run is `unfinished` when any of these is true:
 - `_handoff.md` is missing
@@ -168,7 +168,7 @@ Plan synthesizer verification:
    - `.spec-workflow/specs/<spec-name>/requirements.md`
    - `.spec-workflow/specs/<spec-name>/design.md`
    - `.spec-workflow/specs/<spec-name>/tasks.md` (if present)
-   - `.spec-workflow/specs/<spec-name>/CHECKPOINT-REPORT.md` (if present)
+   - `.spec-workflow/specs/<spec-name>/_generated/CHECKPOINT-REPORT.md` (if present)
    - Router/route configuration files (e.g. `router.ex`, `routes.ts`, `urls.py`) for URL paths
    - Referenced template/component files for `data-testid` attributes and CSS selectors
    This is the ONE planning phase where implementation files should be read — to extract concrete identifiers for the test plan.
@@ -193,7 +193,7 @@ Plan synthesizer verification:
 - [ ] Plan includes test levels, priority, data/env strategy, and pass/fail gates.
 - [ ] Every test scenario contains concrete selectors/endpoints (per `<concrete_selector_policy>`).
 - [ ] Coverage Matrix includes `Selector/Endpoint` column.
-- [ ] File-first handoff exists under `.spec-workflow/specs/<spec-name>/agent-comms/qa/<run-id>/`.
+- [ ] File-first handoff exists under `.spec-workflow/specs/<spec-name>/_agent-comms/qa/<run-id>/`.
 - [ ] If Agent Teams are enabled for `qa`, teammate assignment was applied for active roles.
 - [ ] All browser interactions used tools from the Playwright MCP server (no direct npx/node invocations).
 </acceptance_criteria>

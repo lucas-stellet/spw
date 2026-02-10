@@ -266,7 +266,7 @@ function cmdWaveResolveCurrent(cwd, args, raw) {
   const spec = args[0];
   if (!spec) fail('wave resolve-current requires <spec-name>', raw);
 
-  const wavesDir = path.join(cwd, '.spec-workflow', 'specs', spec, 'agent-comms', 'waves');
+  const wavesDir = path.join(cwd, '.spec-workflow', 'specs', spec, '_agent-comms', 'waves');
   if (!fs.existsSync(wavesDir)) {
     const result = { ok: true, spec, found: false, wave: null, directory: null };
     output(result, 'none', raw);

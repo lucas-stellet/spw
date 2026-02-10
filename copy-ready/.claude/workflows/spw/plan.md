@@ -125,7 +125,7 @@ Do not generate planning/research artifacts under generic folders like `docs/`.
 
 <completion_guidance>
 On success:
-- Summarize generated artifacts (`DESIGN-RESEARCH.md`, `design.md`, `tasks.md`, `TASKS-CHECK.md`).
+- Summarize generated artifacts (`_generated/DESIGN-RESEARCH.md`, `design.md`, `tasks.md`, `_generated/TASKS-CHECK.md`).
 - Confirm approval state for design/tasks.
 - Recommend next command: `spw:exec <spec-name> --batch-size <N>`.
 - Recommend running `/clear` before `spw:exec` for fresh execution context.

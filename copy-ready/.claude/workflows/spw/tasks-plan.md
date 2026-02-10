@@ -50,7 +50,7 @@ If `--mode` is omitted:
 Subagent communication must be file-first (no implicit-only handoff).
 
 Create a run folder:
-- `.spec-workflow/specs/<spec-name>/agent-comms/tasks-plan/<run-id>/`
+- `.spec-workflow/specs/<spec-name>/_agent-comms/tasks-plan/<run-id>/`
 
 For each subagent, use:
 - `<run-dir>/<subagent>/brief.md` (written by orchestrator before dispatch)
@@ -74,7 +74,7 @@ If a required `report.md` or `status.json` is missing, stop BLOCKED.
 
 <resume_policy>
 Before creating a new run, inspect existing tasks-plan run folders:
-- `.spec-workflow/specs/<spec-name>/agent-comms/tasks-plan/<run-id>/`
+- `.spec-workflow/specs/<spec-name>/_agent-comms/tasks-plan/<run-id>/`
 
 A run is `unfinished` when any of these is true:
 - `_handoff.md` is missing
@@ -143,7 +143,7 @@ Load modes:
 
 Skill gate (mandatory when `skills.enabled=true`):
 1. Run availability preflight and write:
-   - `.spec-workflow/specs/<spec-name>/SKILLS-TASKS-PLAN.md`
+   - `.spec-workflow/specs/<spec-name>/_generated/SKILLS-TASKS-PLAN.md`
 2. If `load_mode=subagent-first`, avoid loading full skill content in main context.
 3. Require each subagent `status.json` to include `skills_used`/`skills_missing`.
 4. If any required skill is missing/not used where required:
@@ -218,7 +218,7 @@ Resolve tasks approval with MCP-first reconciliation:
 3. Determine active run directory:
    - `continue-unfinished` -> reuse latest unfinished run dir
    - `delete-and-restart` or no unfinished run -> create:
-     `.spec-workflow/specs/<spec-name>/agent-comms/tasks-plan/<run-id>/`
+     `.spec-workflow/specs/<spec-name>/_agent-comms/tasks-plan/<run-id>/`
 4. Resolve effective planning behavior (per mode_policy + planning_defaults):
    - resolve effective `max_wave_size`
    - resolve effective generation mode:
@@ -234,7 +234,7 @@ Resolve tasks approval with MCP-first reconciliation:
    - `.spec-workflow/specs/<spec-name>/requirements.md`
    - `.spec-workflow/specs/<spec-name>/design.md`
    - `.spec-workflow/specs/<spec-name>/tasks.md` (required for `next-wave`; optional for `all-at-once` reconciliation)
-   - `.spec-workflow/specs/<spec-name>/CHECKPOINT-REPORT.md` (if present, for reconciliation)
+   - `.spec-workflow/specs/<spec-name>/_generated/CHECKPOINT-REPORT.md` (if present, for reconciliation)
    - post-mortem memory inputs via `<post_mortem_memory>`
    - `.spec-workflow/user-templates/tasks-template.md` (preferred)
    - fallback: `.spec-workflow/templates/tasks-template.md`
@@ -274,7 +274,7 @@ Resolve tasks approval with MCP-first reconciliation:
 - [ ] If effective mode is `initial`, only Wave 1 executable tasks were produced.
 - [ ] If effective mode is `next-wave`, exactly one new executable wave was produced.
 - [ ] If effective mode is `all-at-once`, a full executable multi-wave plan was produced.
-- [ ] File-based handoff exists under `.spec-workflow/specs/<spec-name>/agent-comms/tasks-plan/<run-id>/`.
+- [ ] File-based handoff exists under `.spec-workflow/specs/<spec-name>/_agent-comms/tasks-plan/<run-id>/`.
 - [ ] If unfinished run exists, explicit user decision (`continue-unfinished` or `delete-and-restart`) was respected.
 </acceptance_criteria>
 

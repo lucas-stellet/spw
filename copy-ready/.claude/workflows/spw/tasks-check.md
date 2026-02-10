@@ -20,7 +20,7 @@ Validate whether `tasks.md` is ready for subagent execution.
 Subagent communication must be file-first (no implicit-only handoff).
 
 Create a run folder:
-- `.spec-workflow/specs/<spec-name>/agent-comms/tasks-check/<run-id>/`
+- `.spec-workflow/specs/<spec-name>/_agent-comms/tasks-check/<run-id>/`
 
 For each subagent, use:
 - `<run-dir>/<subagent>/brief.md` (written by orchestrator before dispatch)
@@ -44,7 +44,7 @@ If a required `report.md` or `status.json` is missing, stop BLOCKED.
 
 <resume_policy>
 Before creating a new run, inspect existing tasks-check run folders:
-- `.spec-workflow/specs/<spec-name>/agent-comms/tasks-check/<run-id>/`
+- `.spec-workflow/specs/<spec-name>/_agent-comms/tasks-check/<run-id>/`
 
 A run is `unfinished` when any of these is true:
 - `_handoff.md` is missing
@@ -113,7 +113,7 @@ Load modes:
 
 Skill gate (mandatory when `skills.enabled=true`):
 1. Run availability preflight and write:
-   - `.spec-workflow/specs/<spec-name>/SKILLS-TASKS-CHECK.md`
+   - `.spec-workflow/specs/<spec-name>/_generated/SKILLS-TASKS-CHECK.md`
 2. If `load_mode=subagent-first`, avoid loading full skill content in main context.
 3. Require each subagent `status.json` to include `skills_used`/`skills_missing`.
 4. If any required skill is missing/not used where required:
@@ -134,7 +134,7 @@ Skill gate (mandatory when `skills.enabled=true`):
 3. Determine active run directory:
    - `continue-unfinished` -> reuse latest unfinished run dir
    - `delete-and-restart` or no unfinished run -> create:
-     `.spec-workflow/specs/<spec-name>/agent-comms/tasks-check/<run-id>/`
+     `.spec-workflow/specs/<spec-name>/_agent-comms/tasks-check/<run-id>/`
 4. Read `.spec-workflow/specs/<spec-name>/tasks.md` + requirements/design docs + post-mortem memory inputs via `<post_mortem_memory>`.
 5. Write briefs (including required skills per role) and dispatch in parallel:
    - `traceability-auditor`
@@ -144,7 +144,7 @@ Skill gate (mandatory when `skills.enabled=true`):
 6. Require auditor `report.md` + `status.json` (with skill fields); BLOCKED if missing.
 7. Dispatch `decision-aggregator` with file handoff to produce PASS/BLOCKED decision.
    - if resuming, always rerun `decision-aggregator`
-8. Generate `.spec-workflow/specs/<spec-name>/TASKS-CHECK.md` containing:
+8. Generate `.spec-workflow/specs/<spec-name>/_generated/TASKS-CHECK.md` containing:
    - PASS/BLOCKED
    - findings by severity
    - recommended fixes
@@ -156,13 +156,13 @@ Skill gate (mandatory when `skills.enabled=true`):
 - [ ] Every requirement maps to at least one task.
 - [ ] DAG has no cycles and wave order is valid.
 - [ ] Test policy gate is satisfied.
-- [ ] File-based handoff exists under `.spec-workflow/specs/<spec-name>/agent-comms/tasks-check/<run-id>/`.
+- [ ] File-based handoff exists under `.spec-workflow/specs/<spec-name>/_agent-comms/tasks-check/<run-id>/`.
 - [ ] If unfinished run exists, explicit user decision (`continue-unfinished` or `delete-and-restart`) was respected.
 </acceptance_criteria>
 
 <completion_guidance>
 On PASS:
-- Confirm output path: `.spec-workflow/specs/<spec-name>/TASKS-CHECK.md`.
+- Confirm output path: `.spec-workflow/specs/<spec-name>/_generated/TASKS-CHECK.md`.
 - Recommend next command: `spw:exec <spec-name> --batch-size <N>`.
 - Recommend running `/clear` before execution.
 

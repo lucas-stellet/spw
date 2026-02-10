@@ -18,14 +18,14 @@ Generate `.spec-workflow/specs/<spec-name>/design.md` with strong traceability b
 
 <preconditions>
 - `.spec-workflow/specs/<spec-name>/requirements.md` exists.
-- `.spec-workflow/specs/<spec-name>/DESIGN-RESEARCH.md` exists (mandatory intermediate artifact).
+- `.spec-workflow/specs/<spec-name>/_generated/DESIGN-RESEARCH.md` exists (mandatory intermediate artifact).
 - If `DESIGN-RESEARCH.md` is missing, stop BLOCKED and instruct:
   - `spw:design-research <spec-name>`
 </preconditions>
 
 <artifact_boundary>
 Use only spec-local research artifacts:
-- `.spec-workflow/specs/<spec-name>/DESIGN-RESEARCH.md`
+- `.spec-workflow/specs/<spec-name>/_generated/DESIGN-RESEARCH.md`
 - `.spec-workflow/specs/<spec-name>/research/*` (optional supporting notes)
 
 Do not consume generated research from generic locations (for example `docs/*`).
@@ -73,7 +73,7 @@ Load modes:
 
 Skill gate (mandatory when `skills.enabled=true`):
 1. Run availability preflight and write:
-   - `.spec-workflow/specs/<spec-name>/SKILLS-DESIGN-DRAFT.md`
+   - `.spec-workflow/specs/<spec-name>/_generated/SKILLS-DESIGN-DRAFT.md`
 2. If `load_mode=subagent-first`, avoid loading full skill content in main context.
 3. Require subagent outputs to explicitly mention skills used/missing.
 4. If any required skill is missing/not used where required:
@@ -132,7 +132,7 @@ Resolve design approval with MCP-first reconciliation:
 1. Run design skills preflight (availability + load mode) and write `SKILLS-DESIGN-DRAFT.md`.
 2. Read:
    - `.spec-workflow/specs/<spec-name>/requirements.md`
-   - `.spec-workflow/specs/<spec-name>/DESIGN-RESEARCH.md` (required)
+   - `.spec-workflow/specs/<spec-name>/_generated/DESIGN-RESEARCH.md` (required)
    - `.spec-workflow/specs/<spec-name>/research/*` (if present)
    - post-mortem memory inputs via `<post_mortem_memory>`
    - `.spec-workflow/user-templates/design-template.md` (preferred)

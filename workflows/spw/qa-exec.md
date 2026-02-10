@@ -32,14 +32,14 @@ Reads:
 Writes:
 - `.spec-workflow/specs/<spec-name>/qa/QA-EXECUTION-REPORT.md`
 - `.spec-workflow/specs/<spec-name>/qa/QA-DEFECT-REPORT.md`
-- `.spec-workflow/specs/<spec-name>/agent-comms/qa-exec/<run-id>/`
+- `.spec-workflow/specs/<spec-name>/_agent-comms/qa-exec/<run-id>/`
 </artifact_boundary>
 
 <file_handoff_protocol>
 Subagent communication must be file-first (no implicit-only handoff).
 
 Create a run folder:
-- `.spec-workflow/specs/<spec-name>/agent-comms/qa-exec/<run-id>/`
+- `.spec-workflow/specs/<spec-name>/_agent-comms/qa-exec/<run-id>/`
 
 For each subagent, use:
 - `<run-dir>/<subagent>/brief.md` (written by orchestrator before dispatch)
@@ -63,7 +63,7 @@ If a required `report.md` or `status.json` is missing, stop BLOCKED.
 
 <resume_policy>
 Before creating a new run, inspect existing qa-exec run folders:
-- `.spec-workflow/specs/<spec-name>/agent-comms/qa-exec/<run-id>/`
+- `.spec-workflow/specs/<spec-name>/_agent-comms/qa-exec/<run-id>/`
 
 A run is `unfinished` when any of these is true:
 - `_handoff.md` is missing
@@ -227,7 +227,7 @@ Skill gate:
 - [ ] Evidence artifacts (traces, screenshots, reports) are mapped to test IDs.
 - [ ] GO/NO-GO decision is justified by pass/fail counts and risk assessment.
 - [ ] QA-EXECUTION-REPORT.md and QA-DEFECT-REPORT.md were generated.
-- [ ] File-first handoff exists under `.spec-workflow/specs/<spec-name>/agent-comms/qa-exec/<run-id>/`.
+- [ ] File-first handoff exists under `.spec-workflow/specs/<spec-name>/_agent-comms/qa-exec/<run-id>/`.
 - [ ] If unfinished run exists, explicit user decision was respected.
 - [ ] Selector drift defects (if any) recommend `spw:qa-check` rerun.
 </acceptance_criteria>

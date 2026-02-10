@@ -6,7 +6,7 @@ argument-hint: "<spec-name> [--focus <topic>] [--web-depth low|medium|high]"
 
 <objective>
 Generate architecture and implementation research inputs for the spec design.
-Output: `.spec-workflow/specs/<spec-name>/DESIGN-RESEARCH.md`.
+Output: `.spec-workflow/specs/<spec-name>/_generated/DESIGN-RESEARCH.md`.
 </objective>
 
 <shared_policies>
@@ -19,7 +19,7 @@ Output: `.spec-workflow/specs/<spec-name>/DESIGN-RESEARCH.md`.
 
 <artifact_boundary>
 All research outputs must stay inside the spec directory:
-- canonical summary: `.spec-workflow/specs/<spec-name>/DESIGN-RESEARCH.md`
+- canonical summary: `.spec-workflow/specs/<spec-name>/_generated/DESIGN-RESEARCH.md`
 - supporting research files: `.spec-workflow/specs/<spec-name>/research/*`
 
 Forbidden output locations for generated research:
@@ -33,7 +33,7 @@ Forbidden output locations for generated research:
 Subagent communication must be file-first (no implicit-only handoff).
 
 Create a run folder:
-- `.spec-workflow/specs/<spec-name>/agent-comms/design-research/<run-id>/`
+- `.spec-workflow/specs/<spec-name>/_agent-comms/design-research/<run-id>/`
 
 For each subagent, use:
 - `<run-dir>/<subagent>/brief.md` (written by orchestrator before dispatch)
@@ -57,7 +57,7 @@ If a required `report.md` or `status.json` is missing, stop BLOCKED.
 
 <resume_policy>
 Before creating a new run, inspect existing design-research run folders:
-- `.spec-workflow/specs/<spec-name>/agent-comms/design-research/<run-id>/`
+- `.spec-workflow/specs/<spec-name>/_agent-comms/design-research/<run-id>/`
 
 A run is `unfinished` when any of these is true:
 - `_handoff.md` is missing
@@ -131,7 +131,7 @@ Load modes:
 
 Skill gate (mandatory when `skills.enabled=true`):
 1. Run availability preflight and write:
-   - `.spec-workflow/specs/<spec-name>/SKILLS-DESIGN-RESEARCH.md`
+   - `.spec-workflow/specs/<spec-name>/_generated/SKILLS-DESIGN-RESEARCH.md`
 2. If `load_mode=subagent-first`, do not load full skill content in main context.
 3. Require each subagent `status.json` to include `skills_used`/`skills_missing`.
 4. If any required skill is missing/not used where required:
@@ -162,7 +162,7 @@ Skill gate (mandatory when `skills.enabled=true`):
 3. Determine active run directory:
    - `continue-unfinished` -> reuse latest unfinished run dir
    - `delete-and-restart` or no unfinished run -> create:
-     `.spec-workflow/specs/<spec-name>/agent-comms/design-research/<run-id>/`
+     `.spec-workflow/specs/<spec-name>/_agent-comms/design-research/<run-id>/`
 4. Ensure research directory exists:
    - `.spec-workflow/specs/<spec-name>/research/`
 5. Read:
@@ -176,7 +176,7 @@ Skill gate (mandatory when `skills.enabled=true`):
 7. Require each subagent to write `report.md` + `status.json` (with skill fields); BLOCKED if missing.
 8. Dispatch `risk-analyst` using outputs from step 6 reports.
 9. Dispatch `research-synthesizer` using all prior reports to produce:
-   - `.spec-workflow/specs/<spec-name>/DESIGN-RESEARCH.md`
+   - `.spec-workflow/specs/<spec-name>/_generated/DESIGN-RESEARCH.md`
    - optional supporting files only under `.spec-workflow/specs/<spec-name>/research/`
 10. Write `<run-dir>/_handoff.md` with:
    - recommendation summary
@@ -197,13 +197,13 @@ Skill gate (mandatory when `skills.enabled=true`):
 - [ ] Existing-code reuse section is included.
 - [ ] Risks and recommended decisions section is included.
 - [ ] Web-only findings came from web_research model.
-- [ ] File-based handoff exists under `.spec-workflow/specs/<spec-name>/agent-comms/design-research/<run-id>/`.
+- [ ] File-based handoff exists under `.spec-workflow/specs/<spec-name>/_agent-comms/design-research/<run-id>/`.
 - [ ] If unfinished run exists, explicit user decision (`continue-unfinished` or `delete-and-restart`) was respected.
 </acceptance_criteria>
 
 <completion_guidance>
 On success:
-- Confirm output path: `.spec-workflow/specs/<spec-name>/DESIGN-RESEARCH.md`.
+- Confirm output path: `.spec-workflow/specs/<spec-name>/_generated/DESIGN-RESEARCH.md`.
 - Confirm supporting artifacts path: `.spec-workflow/specs/<spec-name>/research/`.
 - Recommend next command: `spw:design-draft <spec-name>`.
 

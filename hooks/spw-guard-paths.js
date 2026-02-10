@@ -51,14 +51,14 @@ if (config.guardPaths) {
 }
 
 if (config.guardWaveLayout) {
-  if (relPath.includes("agent-comms/checkpoint/")) {
+  if (relPath.includes("_agent-comms/checkpoint/")) {
     emitViolation(config, "Legacy checkpoint folder layout is not allowed", [
       `File: ${relPath}`,
-      "Use: .spec-workflow/specs/<spec-name>/agent-comms/waves/wave-<NN>/checkpoint/<run-id>/"
+      "Use: .spec-workflow/specs/<spec-name>/_agent-comms/waves/wave-<NN>/checkpoint/<run-id>/"
     ]);
   }
 
-  if (relPath.includes("agent-comms/waves/")) {
+  if (relPath.includes("_agent-comms/waves/")) {
     const waveMatch = relPath.match(/agent-comms\/waves\/([^/]+)/);
     if (waveMatch) {
       const waveId = waveMatch[1];
