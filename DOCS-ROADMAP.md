@@ -61,9 +61,9 @@ Tornar o README acessivel para quem nunca viu o projeto.
 
 Arquivos esperados em todo repositorio publico.
 
-- [ ] Criar `LICENSE` (escolher: MIT, Apache 2.0, ou outra)
-- [ ] Criar `CONTRIBUTING.md` basico (como contribuir, pre-requisitos, validacao)
-- [ ] Criar `CHANGELOG.md` com historico de versoes (pelo menos v2.0 atual)
+- [x] Criar `LICENSE` (escolher: MIT, Apache 2.0, ou outra)
+- [x] Criar `CONTRIBUTING.md` basico (como contribuir, pre-requisitos, validacao)
+- [x] Criar `CHANGELOG.md` com historico de versoes (pelo menos v2.0 atual)
 
 ---
 
