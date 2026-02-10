@@ -18,7 +18,6 @@ spw - install or inspect the SPW kit in the current project
 Usage:
   spw
   spw install
-  spw install --enable-teams
   spw skills
   spw status
   spw update

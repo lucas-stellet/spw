@@ -7,11 +7,11 @@ set -euo pipefail
 #
 # Behavior:
 # - help (default): prints usage
-# - install: copies kit files into current project
-# - install --enable-teams: enables Agent Teams in config/settings and activates team overlay symlinks
+# - install: copies kit files into current project (preserves user config across upgrades)
 # - skills: installs default SPW skills into .claude/skills (best effort)
 # - status: prints a quick summary of kit presence + default skills
 # - Does not overwrite .claude/settings.json (prints merge instruction instead)
+# - Agent Teams activation is driven by [agent_teams].enabled in spw-config.toml
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TARGET_ROOT="$(pwd)"
@@ -62,19 +62,19 @@ spw - install or inspect the SPW kit in the current project
 Usage:
   spw
   spw install
-  spw install --enable-teams
   spw skills
   spw status
 
 Behavior:
 - help (default): prints this help output.
 - install: copies commands, hooks, templates, and config into cwd.
-- install --enable-teams: enables Agent Teams in config/settings and activates team overlay symlinks.
 - skills: installs default SPW skills into .claude/skills (best effort).
 - status: prints a quick summary of kit presence + default skills.
 
 Notes:
 - If .claude/settings.json already exists, it is not overwritten (manual merge required).
+- User config (.spec-workflow/spw-config.toml) is preserved across installs via smart merge.
+- Agent Teams activation is driven by [agent_teams].enabled in spw-config.toml.
 USAGE
 }
 
@@ -121,53 +121,6 @@ toml_bool_value() {
   esac
 }
 
-enable_agent_teams() {
-  if [ ! -f "$CONFIG_PATH" ]; then
-    echo "[spw-kit] Unable to enable Agent Teams: missing ${CONFIG_PATH}" >&2
-    return 0
-  fi
-
-  local tmp_file
-  tmp_file="$(mktemp)"
-
-  awk '
-    BEGIN { in_section = 0 }
-    /^[ \t]*\[/ {
-      in_section = ($0 == "[agent_teams]")
-    }
-    {
-      if (in_section && $0 ~ /^[ \t]*enabled[ \t]*=/) {
-        print "enabled = true"
-        next
-      }
-      print
-    }
-  ' "$CONFIG_PATH" > "$tmp_file"
-
-  mv "$tmp_file" "$CONFIG_PATH"
-}
-
-apply_teams_settings() {
-  local settings_path="${TARGET_ROOT}/.claude/settings.json"
-  if ! command -v node >/dev/null 2>&1; then
-    echo "[spw-kit] Node not found; add Agent Teams settings manually:"
-    echo "[spw-kit] - env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = \"1\""
-    echo "[spw-kit] - teammateMode = \"in-process\" (or \"tmux\")"
-    return 0
-  fi
-
-  node -e '
-    const fs = require("fs");
-    const path = process.argv[1];
-    const data = JSON.parse(fs.readFileSync(path, "utf8"));
-    data.env = data.env || {};
-    data.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
-    data.teammateMode = "in-process";
-    fs.writeFileSync(path, JSON.stringify(data, null, 2));
-  ' "$settings_path"
-  echo "[spw-kit] Enabled Agent Teams in ${settings_path} (teammateMode=in-process)."
-}
-
 activate_teams_overlay_symlinks() {
   local active_dir="${TARGET_ROOT}/.claude/workflows/spw/overlays/active"
   local teams_dir="${TARGET_ROOT}/.claude/workflows/spw/overlays/teams"
@@ -180,6 +133,18 @@ activate_teams_overlay_symlinks() {
     ln -s "../teams/${name}" "${active_dir}/${name}"
   done
   echo "[spw-kit] Activated team overlays via symlinks in overlays/active/."
+}
+
+deactivate_teams_overlay_symlinks() {
+  local active_dir="${TARGET_ROOT}/.claude/workflows/spw/overlays/active"
+  [ -d "$active_dir" ] || return 0
+  for link in "$active_dir"/*.md; do
+    [ -L "$link" ] || continue
+    local name; name="$(basename "$link")"
+    rm -f "$link"
+    ln -s "../noop.md" "${active_dir}/${name}"
+  done
+  echo "[spw-kit] Deactivated team overlays (all symlinks → noop.md)."
 }
 
 find_skill_source_dir() {
@@ -256,25 +221,43 @@ status_default_skills() {
 }
 
 cmd_install() {
-  local enable_teams="false"
-  while [ "$#" -gt 0 ]; do
-    case "$1" in
-      --enable-teams)
-        enable_teams="true"
-        shift
-        ;;
-      *)
-        echo "[spw-kit] Unexpected arguments for install: $*" >&2
-        exit 1
-        ;;
-    esac
-  done
+  if [ "$#" -gt 0 ]; then
+    echo "[spw-kit] Unexpected arguments for install: $*" >&2
+    exit 1
+  fi
 
   echo "[spw-kit] Installing into project: ${TARGET_ROOT}"
+
+  # Backup user config before rsync overwrites it
+  local config_backup=""
+  resolve_config_path
+  if [ -f "$CONFIG_PATH" ]; then
+    config_backup="$(mktemp)"
+    cp "$CONFIG_PATH" "$config_backup"
+  fi
 
   # Copy only SPW runtime assets (avoid touching project root files like README.md)
   rsync -a "${SCRIPT_DIR}/.claude/" "${TARGET_ROOT}/.claude/"
   rsync -a "${SCRIPT_DIR}/.spec-workflow/" "${TARGET_ROOT}/.spec-workflow/"
+
+  # Smart merge: preserve user config values with new template structure
+  if [ -n "$config_backup" ]; then
+    local merge_script="${SCRIPT_DIR}/../scripts/merge-config.js"
+    # Fallback: try repo root location used during development
+    if [ ! -f "$merge_script" ]; then
+      merge_script="${SPW_REPO_ROOT}/scripts/merge-config.js"
+    fi
+
+    if command -v node >/dev/null 2>&1 && [ -f "$merge_script" ]; then
+      node "$merge_script" "$CONFIG_PATH" "$config_backup" "$CONFIG_PATH"
+      echo "[spw-kit] Config merged: user values preserved, new keys added."
+    else
+      # Fallback: restore user backup as-is (keeps values, misses new keys)
+      cp "$config_backup" "$CONFIG_PATH"
+      echo "[spw-kit] Node unavailable; restored user config as-is (new template keys may be missing)."
+    fi
+    rm -f "$config_backup"
+  fi
 
   local created_settings="false"
   if [ ! -f "${TARGET_ROOT}/.claude/settings.json" ]; then
@@ -298,17 +281,38 @@ cmd_install() {
     echo "[spw-kit] Skipping default skills install (auto_install_defaults_on_spw_install=false)."
   fi
 
-  if [ "$enable_teams" = "true" ]; then
-    enable_agent_teams
+  # Agent Teams: activate/deactivate overlay symlinks based on config
+  local teams_enabled
+  teams_enabled="$(toml_bool_value agent_teams enabled false)"
+  if [ "$teams_enabled" = "true" ]; then
     activate_teams_overlay_symlinks
     if [ "$created_settings" = "true" ]; then
-      apply_teams_settings
+      # Inject Agent Teams env into freshly created settings.json
+      if command -v node >/dev/null 2>&1; then
+        node -e '
+          const fs = require("fs");
+          const path = process.argv[1];
+          const data = JSON.parse(fs.readFileSync(path, "utf8"));
+          data.env = data.env || {};
+          data.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
+          data.teammateMode = "in-process";
+          fs.writeFileSync(path, JSON.stringify(data, null, 2));
+        ' "${TARGET_ROOT}/.claude/settings.json"
+        echo "[spw-kit] Enabled Agent Teams in settings.json (teammateMode=in-process)."
+      else
+        echo "[spw-kit] Agent Teams enabled in config but Node unavailable."
+        echo "[spw-kit] Add to .claude/settings.json manually:"
+        echo "[spw-kit] - env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = \"1\""
+        echo "[spw-kit] - teammateMode = \"in-process\" (or \"tmux\")"
+      fi
     else
       echo "[spw-kit] Agent Teams enabled in config."
-      echo "[spw-kit] Add to .claude/settings.json manually:"
+      echo "[spw-kit] Ensure .claude/settings.json has:"
       echo "[spw-kit] - env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = \"1\""
       echo "[spw-kit] - teammateMode = \"in-process\" (or \"tmux\")"
     fi
+  else
+    deactivate_teams_overlay_symlinks
   fi
 
   echo "[spw-kit] Installation complete."
