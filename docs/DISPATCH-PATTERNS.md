@@ -16,7 +16,9 @@ SPW commands follow a **thin-dispatch** model: the orchestrator (main agent) nev
 
 Sequential chain of subagents where each produces output that feeds the next. A synthesizer at the end consolidates everything into the command's final artifact.
 
-**Directory structure:** `_agent-comms/<command>/run-NNN/<subagent>/`
+**Directory structure:** `<phase>/_comms/<command>/run-NNN/<subagent>/`
+
+Phase mapping: `prd` → `prd/_comms/run-NNN/`, `design-research`/`design-draft` → `design/_comms/<command>/run-NNN/`, `tasks-plan` → `planning/_comms/tasks-plan/run-NNN/`, `qa` → `qa/_comms/qa/run-NNN/`, `post-mortem` → `post-mortem/_comms/run-NNN/`.
 
 **Dispatch pattern:**
 ```
@@ -64,7 +66,9 @@ Takes existing artifacts (spec documents, code, execution history) and produces 
 
 Multiple independent auditors examine the same artifact(s) from different angles. An aggregator synthesizes their findings into a PASS/BLOCKED decision.
 
-**Directory structure:** `_agent-comms/<command>/run-NNN/<auditor>/`
+**Directory structure:** `<phase>/_comms/<command>/run-NNN/<auditor>/`
+
+Phase mapping: `tasks-check` → `planning/_comms/tasks-check/run-NNN/`, `qa-check` → `qa/_comms/qa-check/run-NNN/`, `checkpoint` → `execution/waves/wave-NN/checkpoint/run-NNN/`.
 
 **Dispatch pattern:**
 ```
@@ -102,7 +106,7 @@ Validates artifacts against actual source code. At least one auditor reads imple
 
 **Distinguishing traits:**
 - One or more auditors read source files (heavier context per auditor).
-- `checkpoint` is wave-aware: runs within `_agent-comms/waves/wave-NN/checkpoint/run-NNN/`.
+- `checkpoint` is wave-aware: runs within `execution/waves/wave-NN/checkpoint/run-NNN/`.
 - `qa-check`'s selector-verifier is the **only** QA subagent that reads implementation files.
 
 ---
@@ -113,7 +117,8 @@ Iterative dispatch over a set of work items, split into waves. Each wave dispatc
 
 **Directory structure:**
 ```
-_agent-comms/<command>/waves/wave-NN/run-NNN/<subagent>/
+execution/waves/wave-NN/execution/run-NNN/<subagent>/       (exec)
+qa/_comms/qa-exec/waves/wave-NN/run-NNN/<subagent>/        (qa-exec)
 ```
 
 **Dispatch pattern:**

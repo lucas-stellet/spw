@@ -31,7 +31,7 @@ scripts/validate-thin-orchestrator.sh
 # Smoke-test Node.js hooks (each reads JSON from stdin)
 node hooks/spw-statusline.js <<< '{"workspace":{"current_dir":"'"$(pwd)"'"}}'
 node hooks/spw-guard-user-prompt.js <<< '{"prompt":"/spw:plan"}'
-node hooks/spw-guard-paths.js <<< '{"cwd":"'"$(pwd)"'","tool_input":{"file_path":"docs/DESIGN-RESEARCH.md"}}'
+node hooks/spw-guard-paths.js <<< '{"cwd":"'"$(pwd)"'","tool_input":{"file_path":"README.md"}}'
 node hooks/spw-guard-stop.js <<< '{}'
 ```
 
@@ -92,7 +92,7 @@ Subagent handoffs use filesystem artifacts, not chat. Required files per subagen
 - `<subagent>/brief.md`, `<subagent>/report.md`, `<subagent>/status.json`
 - `<run-dir>/_handoff.md`
 
-Stored under `.spec-workflow/specs/<spec-name>/_agent-comms/` with command-specific subdirectories.
+Stored under `.spec-workflow/specs/<spec-name>/<phase>/_comms/` within each phase directory.
 
 ### Dispatch Categories
 

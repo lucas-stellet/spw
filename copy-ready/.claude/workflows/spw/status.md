@@ -71,8 +71,8 @@ For each document (`requirements`, `design`, `tasks`):
    - wave comms state from:
      - `.spec-workflow/specs/<spec-name>/execution/waves/wave-<NN>/_latest.json`
      - `.spec-workflow/specs/<spec-name>/execution/waves/wave-<NN>/_wave-summary.md`
-   - legacy comms paths present (for migration warning):
-     - `.spec-workflow/specs/<spec-name>/_agent-comms/`
+   - legacy comms paths present (warn user to re-run spec with current SPW):
+     - `.spec-workflow/specs/<spec-name>/_agent-comms/` (pre-2.0 layout; current layout uses `<phase>/_comms/`)
 3. Dispatch `approval-auditor`:
    - call `spec-status`
    - resolve document approval state via `<approval_reconciliation>`

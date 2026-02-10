@@ -122,7 +122,7 @@ Ausência desses arquivos deve resultar em `BLOCKED`.
 - `bash -n copy-ready/install.sh`
 - `node hooks/spw-statusline.js <<< '{"workspace":{"current_dir":"'"$(pwd)"'"}}'`
 - `node hooks/spw-guard-user-prompt.js <<< '{"prompt":"/spw:plan"}'`
-- `node hooks/spw-guard-paths.js <<< '{"cwd":"'"$(pwd)"'","tool_input":{"file_path":"docs/DESIGN-RESEARCH.md"}}'`
+- `node hooks/spw-guard-paths.js <<< '{"cwd":"'"$(pwd)"'","tool_input":{"file_path":"README.md"}}'`
 - `node hooks/spw-guard-stop.js <<< '{}'`
 
 ## Sincronização de documentação
