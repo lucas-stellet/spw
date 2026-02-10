@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "d2b6bbc22cbf",
+  "session_id": "359af37b-8d13-4f21-ac1a-dbc995df036f",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-10T22:16:16.999626Z",
+  "branch": "main",
+  "checkpoints_count": 4,
+  "files_touched": [
+    "AGENTS.md",
+    "CLAUDE.md",
+    "docs/DISPATCH-PATTERNS.md",
+    "docs/PR-REVIEW-OPTIMIZATION.md",
+    "docs/REFACTOR-PLAN.md",
+    "docs/SPEC-DIRECTORY-STRUCTURE.md"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "448b07ee-87b5-4f5e-bacd-d91bf057eecb",
+  "token_usage": {
+    "input_tokens": 107,
+    "cache_creation_tokens": 123071,
+    "cache_read_tokens": 5790069,
+    "output_tokens": 8329,
+    "api_call_count": 57
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-10T22:16:16.874862Z",
+    "agent_lines": 0,
+    "human_added": 0,
+    "human_modified": 254,
+    "human_removed": 549,
+    "total_committed": 254,
+    "agent_percentage": 0
+  }
+}
