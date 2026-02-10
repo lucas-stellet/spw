@@ -35,26 +35,15 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 <skills_policy>
 Resolve skill policy from `.spec-workflow/spw-config.toml`:
 - `[skills].enabled`
-- `[skills].load_mode` (`subagent-first|principal-first`)
 - `[skills.implementation].required`
 - `[skills.implementation].optional`
 - `[skills.implementation].enforce_required` (boolean)
 - `[execution].tdd_default` (boolean)
 
-Backward compatibility:
-- if `[skills.implementation].enforce_required` is absent, map `[skills].enforcement`:
-  - `"strict"` -> `true`
-  - any other value -> `false`
-
-Load modes:
-- `subagent-first` (default): orchestrator does availability preflight only and
-  delegates skill loading/use to task subagents.
-- `principal-first` (legacy): orchestrator loads required skills before dispatch.
-
 Skill gate (mandatory when `skills.enabled=true`):
 1. Run availability preflight and write:
    - `.spec-workflow/specs/<spec-name>/_generated/SKILLS-EXEC.md`
-2. If `load_mode=subagent-first`, avoid loading full skill content in main context.
+2. Avoid loading full skill content in main context (subagent-first).
 3. If `[execution].tdd_default=true`, treat `test-driven-development` as required for this phase (effective required set).
 4. Require task subagent outputs/logs to explicitly mention skills used/missing.
 5. If any required skill is missing/not used where required:
@@ -155,18 +144,18 @@ Post-execution behavior:
 
 <git_hygiene>
 Resolve from `.spec-workflow/spw-config.toml` `[execution]`:
-- `commit_per_task` (default `true`)
-- `auto_commit_on_task_completion` (default `true`)
+- `commit_per_task` (`"auto"|"manual"|"none"`, default `"auto"`)
 - `require_clean_worktree_for_wave_pass` (default `true`)
 
 Rules:
-- For each completed implementation task, create an atomic commit before moving forward.
+- If `commit_per_task="auto"` or `"manual"`: for each completed implementation task, create an atomic commit before moving forward.
 - Commit must include task-scoped code changes plus task status artifacts (`tasks.md`).
 - Implementation logs should be recorded during execution, but missing logs are enforced only at `spw:checkpoint`.
 - Commit message must follow Conventional Commits:
   - `<type>(<spec-name>): task <task-id> - <short-title>`
   - type guidance: `feat|fix|refactor|test|docs|chore`
-- If auto-commit is disabled, stop with exact `git add`/`git commit` commands.
+- If `commit_per_task="manual"`, stop with exact `git add`/`git commit` commands.
+- If `commit_per_task="none"`, skip per-task commit enforcement.
 - If clean-worktree gate is enabled, checkpoint PASS cannot advance while `git status --porcelain` is non-empty.
 </git_hygiene>
 
@@ -192,7 +181,7 @@ For complex/critical tasks, run spec-compliance review on `complex_reasoning` mo
 0. Resolve spec directory:
    - `SPEC_DIR=.spec-workflow/specs/<spec-name>`
    - if `SPEC_DIR` does not exist, list available specs from `.spec-workflow/specs/*` and stop BLOCKED.
-1. Run implementation skills preflight (availability + load mode) and write `SKILLS-EXEC.md`.
+1. Run implementation skills preflight (availability) and write `SKILLS-EXEC.md`.
 2. Dispatch `execution-state-scout` and require compact handoff contract.
    - if `tasks.md` is missing, stop BLOCKED and instruct to run `spw:tasks-plan <spec-name>`.
 3. Resolve resume state from scout handoff:

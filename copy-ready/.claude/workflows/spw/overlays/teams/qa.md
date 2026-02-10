@@ -7,9 +7,9 @@ Resolve Agent Teams config from `.spec-workflow/spw-config.toml` (fallback legad
 - `enabled` (default `false`)
 - `teammate_mode` (default `"in-process"`)
 - `max_teammates`
-- `use_for_phases`
+- `exclude_phases` (default `[]`)
 
-When `enabled=true` and `qa` is included in `use_for_phases`:
+When `enabled=true` and `qa` is NOT listed in `exclude_phases`:
 - create a team and set `teammate_mode`
 - map QA roles to teammates (`qa-scope-analyst`, `browser-test-designer`, `api-test-designer`, `qa-plan-synthesizer`) (do not exceed `max_teammates`)
 - each teammate must still write `brief.md`, `report.md`, `status.json`

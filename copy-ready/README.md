@@ -90,10 +90,9 @@ After install:
    - `test-driven-development` belongs to the common/default catalog.
    - `qa-validation-planning` is available for QA planning (`spw:qa`) with Playwright MCP/Bruno CLI guidance.
    - In implementation phases (`spw:exec`, `spw:checkpoint`), this skill is treated as required only when `[execution].tdd_default=true`.
-7. (Optional) auto-clean template backups with `safety.cleanup_backups_after_sync=true` in `.spec-workflow/spw-config.toml` (fallback legado: `.spw/spw-config.toml`).
-8. (Optional) enable SPW enforcement hooks with `hooks.enforcement_mode=warn|block`.
+7. (Optional) enable SPW enforcement hooks with `hooks.enforcement_mode=warn|block`.
 
-9. (Optional) For QA browser validation (`spw:qa`, `spw:qa-exec`), configure Playwright MCP:
+8. (Optional) For QA browser validation (`spw:qa`, `spw:qa-exec`), configure Playwright MCP:
    ```
    claude mcp add playwright -- npx @playwright/mcp@latest --headless --isolated
    ```
@@ -107,16 +106,13 @@ Optional: Agent Teams (disabled by default)
   - add `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1"` in `.claude/settings.json`
   - set `teammateMode = "in-process"` (change to `"tmux"` manually if desired)
   - switch symlinks: `cd .claude/workflows/spw/overlays/active && ln -sf ../teams/<cmd>.md <cmd>.md`
-- When enabled and the phase is listed in `[agent_teams].use_for_phases`, SPW creates a team.
+- When enabled and the phase is NOT listed in `[agent_teams].exclude_phases`, SPW creates a team.
 - `spw:exec` enforces delegate mode when `[agent_teams].require_delegate_mode = true`.
 - Team overlays are available for all subagent-first entrypoints:
   `spw:prd`, `spw:plan`, `spw:design-research`, `spw:design-draft`,
   `spw:tasks-plan`, `spw:tasks-check`, `spw:exec`, `spw:checkpoint`,
   `spw:post-mortem`, `spw:qa`, `spw:qa-check`, `spw:qa-exec`, `spw:status`.
-- Default team-enabled phases include:
-  `prd`, `plan`, `design-research`, `design-draft`, `tasks-plan`,
-  `tasks-check`, `exec`, `checkpoint`, `post-mortem`, `qa`, `qa-check`,
-  `qa-exec`, `status`.
+- All phases are eligible by default (`exclude_phases = []`).
 
 ## Command entry points
 
@@ -170,7 +166,6 @@ Post-mortem memory defaults are configured in `.spec-workflow/spw-config.toml` (
 [post_mortem_memory]
 enabled = true
 max_entries_for_design = 5
-prefer_same_spec = true
 ```
 
 - `spw:post-mortem` writes reports to `.spec-workflow/post-mortems/<spec-name>/`.
@@ -247,8 +242,7 @@ In `spw:design-draft`, `design.md` should include at least one valid Mermaid
 diagram in the `## Architecture` section, using fenced lowercase `mermaid`
 code blocks.
 
-Skills are configured to be `subagent-first` by default to reduce main-context
-growth (`skills.load_mode = "subagent-first"`).
+Skills use subagent-first loading by default to reduce main-context growth.
 
 ## QA Validation (3-Phase)
 

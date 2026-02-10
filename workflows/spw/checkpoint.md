@@ -87,26 +87,15 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 <skills_policy>
 Resolve skill policy from `.spec-workflow/spw-config.toml`:
 - `[skills].enabled`
-- `[skills].load_mode` (`subagent-first|principal-first`)
 - `[skills.implementation].required`
 - `[skills.implementation].optional`
 - `[skills.implementation].enforce_required` (boolean)
 - `[execution].tdd_default` (boolean)
 
-Backward compatibility:
-- if `[skills.implementation].enforce_required` is absent, map `[skills].enforcement`:
-  - `"strict"` -> `true`
-  - any other value -> `false`
-
-Load modes:
-- `subagent-first` (default): orchestrator does availability preflight only and
-  delegates skill loading/use to subagents via briefs.
-- `principal-first` (legacy): orchestrator loads required skills before dispatch.
-
 Skill gate (mandatory when `skills.enabled=true`):
 1. Run availability preflight and write:
    - `.spec-workflow/specs/<spec-name>/_generated/SKILLS-CHECKPOINT.md`
-2. If `load_mode=subagent-first`, avoid loading full skill content in main context.
+2. Avoid loading full skill content in main context (subagent-first).
 3. If `[execution].tdd_default=true`, treat `test-driven-development` as required for this phase (effective required set).
 4. Require each subagent `status.json` to include `skills_used`/`skills_missing`.
 5. If any required skill is missing/not used where required:
@@ -145,7 +134,7 @@ Rules:
 </implementation_log_gate>
 
 <workflow>
-1. Run implementation skills preflight (availability + load mode) and write `SKILLS-CHECKPOINT.md`.
+1. Run implementation skills preflight (availability) and write `SKILLS-CHECKPOINT.md`.
 2. Resolve current wave ID (`wave-<NN>`) and create canonical wave directory:
    - `.spec-workflow/specs/<spec-name>/_agent-comms/waves/wave-<NN>/`
 3. Inspect existing checkpoint run dirs for the current wave and apply `<resume_policy>` decision gate.

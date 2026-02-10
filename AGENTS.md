@@ -42,7 +42,7 @@ Observação:
    - `--max-wave-size` sobrescreve `[planning].max_wave_size`; sem argumento, usar config
 8. Em `spw:exec`, execução é via subagentes por tarefa (inclusive waves sequenciais de 1 tarefa); orquestrador não implementa código direto.
 9. Se `execution.require_user_approval_between_waves=true`, não avançar wave sem autorização explícita do usuário.
-10. Se `execution.commit_per_task=true`, exigir commit atômico por tarefa; respeitar gate de worktree limpo quando habilitado.
+10. Se `execution.commit_per_task="auto"` ou `"manual"`, exigir commit atômico por tarefa; se `"manual"`, parar com comandos git explícitos; se `"none"`, pular enforcement de commit por tarefa. Respeitar gate de worktree limpo quando habilitado.
 11. `spw update` deve atualizar primeiro o próprio binário (`spw`) e, em seguida, limpar cache local do kit antes de atualizar, para evitar templates/comandos stale.
 12. Em comandos longos com subagentes (`spw:prd`, `spw:design-research`, `spw:tasks-plan`, `spw:tasks-check`, `spw:checkpoint`, `spw:post-mortem`, `spw:qa`, `spw:qa-check`, `spw:qa-exec`), se existir run incompleto, é obrigatório AskUserQuestion (`continue-unfinished` ou `delete-and-restart`); o agente não pode escolher reiniciar sozinho.
 13. Compatibilidade com dashboard (`spec-workflow-mcp`) em `tasks.md` é obrigatória:
@@ -65,7 +65,7 @@ Observação:
 21. Em `spw:exec` (normal e teams), antes de leitura ampla o orquestrador deve despachar `execution-state-scout` (modelo implementation/sonnet por padrão) para consolidar checkpoint, tarefa `[-]` em progresso, próxima(s) executável(eis) e ação de retomada; o principal deve consumir apenas o resumo compacto e então ler contexto por tarefa.
 22. Em `spw:qa`, quando o foco não for informado, perguntar explicitamente ao usuário o alvo de validação e escolher `playwright|bruno|hybrid` com justificativa de risco/escopo. O plano deve incluir seletores/endpoints concretos por cenário (CSS, `data-testid`, rotas, métodos HTTP).
 23. Em validações com Playwright no `spw:qa`/`spw:qa-exec`, utilizar tools do servidor Playwright MCP pré-configurado; nunca invocar npx ou scripts Node diretamente para automação de browser.
-24. Cobertura de Agent Teams para comandos subagent-first usa symlinks em `workflows/spw/overlays/active/` (apontando para `../noop.md` quando desabilitado ou `../teams/<cmd>.md` quando habilitado); defaults de `[agent_teams].use_for_phases` incluem `prd`, `plan`, `design-research`, `design-draft`, `tasks-plan`, `tasks-check`, `exec`, `checkpoint`, `post-mortem`, `qa`, `qa-check`, `qa-exec`, `status`.
+24. Cobertura de Agent Teams para comandos subagent-first usa symlinks em `workflows/spw/overlays/active/` (apontando para `../noop.md` quando desabilitado ou `../teams/<cmd>.md` quando habilitado); por padrão todas as fases são elegíveis (`[agent_teams].exclude_phases = []`); fases podem ser excluídas adicionando-as a `exclude_phases`.
 25. Em `spw:qa-check`, validar seletores/endpoints do plano contra código fonte real (único comando QA que lê arquivos de implementação); produzir mapa verificado em `QA-CHECK.md`.
 26. Em `spw:qa-exec`, nunca ler arquivos fonte de implementação; usar apenas seletores verificados de `QA-CHECK.md`. Se seletor falhar em runtime, registrar como defeito "selector drift" e recomendar `spw:qa-check`.
 

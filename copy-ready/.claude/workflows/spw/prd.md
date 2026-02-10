@@ -36,12 +36,11 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 Resolve from `.spec-workflow/spw-config.toml` `[post_mortem_memory]`:
 - `enabled` (default `true`)
 - `max_entries_for_design` (default `5`)
-- `prefer_same_spec` (default `true`)
 
 If enabled and index exists:
 1. Read `.spec-workflow/post-mortems/INDEX.md`.
 2. Select up to `max_entries_for_design` relevant entries:
-   - same `<spec-name>` first when `prefer_same_spec=true`
+   - same `<spec-name>` first
    - then by tag/topic similarity and recency
 3. Load selected reports and extract reusable guardrails for PRD quality.
 
@@ -141,7 +140,7 @@ Protocol (mandatory):
    - ambiguous/conflicting feedback
    - out-of-scope suggestions
    - if resuming, redispatch only when output is missing/blocked
-5. Dispatch `codebase-impact-scanner` (if enabled in config `[reviews]`) with file handoff.
+5. Dispatch `codebase-impact-scanner` with file handoff.
    - if resuming, redispatch only when output is missing/blocked
 6. Dispatch `revision-planner` with file handoff to create:
    - `.spec-workflow/specs/<spec-name>/_generated/PRD-REVISION-PLAN.md`

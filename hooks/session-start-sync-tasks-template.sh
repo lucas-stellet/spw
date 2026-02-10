@@ -109,44 +109,6 @@ to_bool() {
   esac
 }
 
-to_non_negative_int() {
-  local raw="${1:-0}"
-  if [[ "$raw" =~ ^[0-9]+$ ]]; then
-    printf '%s' "$raw"
-  else
-    printf '0'
-  fi
-}
-
-cleanup_template_backups() {
-  local target_path="$1"
-  local keep_count="$2"
-  local target_dir target_base
-  local backups=()
-  local idx
-
-  target_dir="$(dirname "$target_path")"
-  target_base="$(basename "$target_path")"
-
-  while IFS= read -r file; do
-    backups+=("$file")
-  done < <(find "$target_dir" -maxdepth 1 -type f -name "${target_base}.bak-*" 2>/dev/null | sort -r)
-
-  if [ "${#backups[@]}" -eq 0 ]; then
-    return
-  fi
-
-  idx=0
-  for file in "${backups[@]}"; do
-    idx=$((idx + 1))
-    if [ "$idx" -le "$keep_count" ]; then
-      continue
-    fi
-    rm -f -- "$file"
-    log "Removed old backup: ${file}"
-  done
-}
-
 SYNC_ENABLED="$(to_bool "$(get_toml_value templates sync_tasks_template_on_session_start true)")"
 if [ "$SYNC_ENABLED" != "true" ]; then
   log "Sync disabled by configuration."
@@ -155,15 +117,12 @@ fi
 
 TDD_DEFAULT="$(to_bool "$(get_toml_value execution tdd_default false)")"
 TEMPLATE_MODE="$(get_toml_value templates tasks_template_mode auto)"
-VARIANTS_DIR_REL="$(get_toml_value templates variants_dir .spec-workflow/user-templates/variants)"
-TARGET_REL="$(get_toml_value templates active_tasks_template_path .spec-workflow/user-templates/tasks-template.md)"
-FILE_ON="$(get_toml_value templates tasks_template_tdd_on_file tasks-template.tdd-on.md)"
-FILE_OFF="$(get_toml_value templates tasks_template_tdd_off_file tasks-template.tdd-off.md)"
+VARIANTS_DIR_REL=".spec-workflow/user-templates/variants"
+TARGET_REL=".spec-workflow/user-templates/tasks-template.md"
+FILE_ON="tasks-template.tdd-on.md"
+FILE_OFF="tasks-template.tdd-off.md"
 BACKUP_ENABLED="$(to_bool "$(get_toml_value safety backup_before_overwrite true)")"
-DRY_RUN="$(to_bool "$(get_toml_value safety dry_run false)")"
-FAIL_HARD="$(to_bool "$(get_toml_value safety fail_hard_on_missing_template false)")"
-CLEANUP_BACKUPS="$(to_bool "$(get_toml_value safety cleanup_backups_after_sync false)")"
-BACKUP_RETENTION_COUNT="$(to_non_negative_int "$(get_toml_value safety backup_retention_count 5)")"
+DRY_RUN="$(to_bool "${SPW_DRY_RUN:-false}")"
 
 MODE_NORMALIZED="$(printf '%s' "$TEMPLATE_MODE" | tr '[:upper:]' '[:lower:]')"
 if [ "$MODE_NORMALIZED" = "auto" ]; then
@@ -178,9 +137,6 @@ case "$MODE_NORMALIZED" in
   on|off) ;;
   *)
     log "Invalid tasks_template_mode: '${TEMPLATE_MODE}'. Use auto|on|off."
-    if [ "$FAIL_HARD" = "true" ]; then
-      log "fail_hard_on_missing_template=true is ignored in hook mode (fail-open)."
-    fi
     safe_exit
     ;;
 esac
@@ -196,9 +152,6 @@ fi
 
 if [ ! -f "$SOURCE_PATH" ]; then
   log "Source template not found: ${SOURCE_PATH}"
-  if [ "$FAIL_HARD" = "true" ]; then
-    log "fail_hard_on_missing_template=true is ignored in hook mode (fail-open)."
-  fi
   safe_exit
 fi
 
@@ -206,9 +159,6 @@ mkdir -p "$(dirname "$TARGET_PATH")"
 
 if [ -f "$TARGET_PATH" ] && cmp -s "$SOURCE_PATH" "$TARGET_PATH"; then
   log "Template is already synchronized (${MODE_NORMALIZED})."
-  if [ "$CLEANUP_BACKUPS" = "true" ]; then
-    cleanup_template_backups "$TARGET_PATH" "$BACKUP_RETENTION_COUNT"
-  fi
   safe_exit
 fi
 
@@ -218,16 +168,11 @@ if [ "$DRY_RUN" = "true" ]; then
 fi
 
 if [ "$BACKUP_ENABLED" = "true" ] && [ -f "$TARGET_PATH" ]; then
-  ts="$(date +%Y%m%d%H%M%S)"
-  cp "$TARGET_PATH" "${TARGET_PATH}.bak-${ts}"
-  log "Backup created: ${TARGET_PATH}.bak-${ts}"
+  cp "$TARGET_PATH" "${TARGET_PATH}.bak"
+  log "Backup created: ${TARGET_PATH}.bak"
 fi
 
 cp "$SOURCE_PATH" "$TARGET_PATH"
 log "Template synchronized (${MODE_NORMALIZED}): ${TARGET_PATH}"
-
-if [ "$CLEANUP_BACKUPS" = "true" ]; then
-  cleanup_template_backups "$TARGET_PATH" "$BACKUP_RETENTION_COUNT"
-fi
 
 safe_exit

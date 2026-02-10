@@ -7,9 +7,9 @@ Resolve Agent Teams config from `.spec-workflow/spw-config.toml` (fallback legad
 - `enabled` (default `false`)
 - `teammate_mode` (default `"in-process"`)
 - `max_teammates`
-- `use_for_phases`
+- `exclude_phases` (default `[]`)
 
-When `enabled=true` and `status` is included in `use_for_phases`:
+When `enabled=true` and `status` is NOT listed in `exclude_phases`:
 - create a team and set `teammate_mode`
 - map status roles to teammates (`state-inspector`, `approval-auditor`, `next-step-planner`) (do not exceed `max_teammates`)
 </agent_teams_policy>

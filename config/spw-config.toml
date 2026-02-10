@@ -50,17 +50,6 @@ implementation = "sonnet"
 # Recommended starting value for your setup: false.
 tdd_default = false
 
-# If true, the executor requires minimum RED->GREEN evidence
-# for tasks with active TDD (for example: test fails first, then passes).
-# This avoids "tests written after the fact" without discipline.
-tdd_require_red_green_evidence = true
-
-# If true, the executor blocks batch/wave progression when it finds:
-# - missing requirements traceability
-# - missing per-task verification
-# - critical checkpoint failures
-strict_gates = true
-
 # If true, `spw:exec` must pause after each wave/checkpoint PASS and ask the user
 # whether to continue to the next wave. No automatic wave progression is allowed.
 #
@@ -70,13 +59,12 @@ strict_gates = true
 # Recommended default: true (human-in-the-loop control).
 require_user_approval_between_waves = true
 
-# If true, each completed implementation task must produce an atomic git commit
-# before moving to another task/wave.
-commit_per_task = true
-
-# If true and commit_per_task=true, SPW attempts to stage/commit automatically.
-# If false, SPW stops with explicit git commands for the user.
-auto_commit_on_task_completion = true
+# Controls per-task commit behavior during execution.
+#
+# "auto"   = automatic commit per task (stage + commit without stopping)
+# "manual" = commit per task required, but SPW stops with explicit git commands
+# "none"   = no per-task commit enforcement
+commit_per_task = "auto"
 
 # If true, checkpoint/wave PASS requires a clean git worktree.
 # This prevents finishing a wave with uncommitted implementation changes.
@@ -111,18 +99,6 @@ enabled = true
 # Typical recommendation: 3-8.
 max_entries_for_design = 5
 
-# If true, prioritize reports from the same spec before broader tag/topic matches.
-prefer_same_spec = true
-
-[subagents]
-# Max number of parallel subagents for web scouting tasks.
-# Keep this moderate to avoid noisy/duplicated findings.
-max_parallel_web_scouts = 3
-
-# If true, complex/critical tasks in `spw:exec` route spec-compliance review
-# to complex_reasoning model. If false, always use implementation model.
-use_opus_for_complex_task_review = true
-
 [agent_teams]
 # Experimental Claude Code Agent Teams integration.
 #
@@ -144,22 +120,8 @@ require_delegate_mode = true
 # Upper bound for number of teammates created per team.
 max_teammates = 4
 
-# Phases allowed to use teams when enabled.
-use_for_phases = [
-  "prd",
-  "plan",
-  "design-research",
-  "design-draft",
-  "tasks-plan",
-  "tasks-check",
-  "exec",
-  "checkpoint",
-  "post-mortem",
-  "qa",
-  "qa-check",
-  "qa-exec",
-  "status"
-]
+# Deny-list: phases to exclude from Agent Teams. Default empty = all phases eligible.
+exclude_phases = []
 
 [skills]
 # Enables skill-aware behavior in SPW commands.
@@ -167,31 +129,6 @@ use_for_phases = [
 # true  -> commands try to load skills listed below before key phases
 # false -> commands skip skill loading behavior
 enabled = true
-
-# Skill load strategy:
-#
-# - "subagent-first" (recommended):
-#   main orchestrator does only availability preflight and delegates actual
-#   skill loading/use to subagents. This keeps main-context smaller.
-# - "principal-first" (legacy):
-#   main orchestrator loads required skills before dispatching subagents.
-#
-# If missing, commands should default to "subagent-first".
-load_mode = "subagent-first"
-
-# Legacy global enforcement mode (kept for backward compatibility):
-#
-# - "advisory": missing required skills warn and continue
-# - "strict":   missing required skills block
-#
-# New behavior should prefer per-stage booleans:
-# - [skills.design].enforce_required
-# - [skills.implementation].enforce_required
-#
-# Mapping fallback when per-stage key is absent:
-# - enforcement="strict"   -> enforce_required=true
-# - enforcement="advisory" -> enforce_required=false
-enforcement = "strict"
 
 # If true, `spw` will try to copy default skills into
 # `.claude/skills/` from local/global skill directories when available.
@@ -259,22 +196,6 @@ optional = [
   "test-driven-development"
 ]
 
-[reviews]
-# Requirements revision protocol controls (used by `spw:prd` when approval is
-# returned as changes-requested/rejected).
-
-# If true, requirements revisions must be subagent-driven (no direct one-pass
-# inline edits in main context).
-requirements_revision_requires_subagents = true
-
-# If true, revision flow must include a codebase impact scan before applying
-# requirement edits.
-requirements_revision_require_codebase_scan = true
-
-# Minimum number of targeted clarification questions when feedback is ambiguous
-# or conflicts with existing requirements/design context.
-requirements_revision_min_clarifying_questions = 1
-
 [templates]
 # Controls whether the hook syncs tasks-template on SessionStart.
 #
@@ -292,22 +213,6 @@ sync_tasks_template_on_session_start = true
 # "auto" is recommended to keep a single source of truth
 # in execution.tdd_default.
 tasks_template_mode = "auto"
-
-# Path to the directory containing template variants.
-# This path is relative to the project root.
-# Expected example:
-# .spec-workflow/user-templates/variants/
-variants_dir = ".spec-workflow/user-templates/variants"
-
-# Path to the active template used by spec-workflow.
-# The hook writes here after selecting a variant.
-active_tasks_template_path = ".spec-workflow/user-templates/tasks-template.md"
-
-# Variant file name when TDD is ON.
-tasks_template_tdd_on_file = "tasks-template.tdd-on.md"
-
-# Variant file name when TDD is OFF.
-tasks_template_tdd_off_file = "tasks-template.tdd-off.md"
 
 [statusline]
 # Controls SPW statusline spec detection and caching.
@@ -332,29 +237,8 @@ base_branches = ["main", "master", "staging", "develop"]
 sticky_spec = true
 
 [safety]
-# If true, the hook creates a backup of active template before overwrite.
-# Format: tasks-template.md.bak-YYYYMMDDHHMMSS
+# If true, the hook creates a .bak backup of active template before overwrite.
 backup_before_overwrite = true
-
-# If true, the hook cleans up existing backup files after synchronization
-# (or when already synchronized). This is useful to avoid backup accumulation.
-cleanup_backups_after_sync = false
-
-# Number of backup files to keep when cleanup is enabled.
-#
-# Examples:
-# - 0 -> delete all backups (including the one created in the current sync)
-# - 1 -> keep only the most recent backup
-# - 5 -> keep the 5 most recent backups
-backup_retention_count = 5
-
-# If true, the hook runs in dry-run mode (does not write files).
-# Useful for validating behavior without changing anything.
-dry_run = false
-
-# If true, hook exits with code 1 when variant/config is missing.
-# If false, it logs a warning and exits without breaking the session.
-fail_hard_on_missing_template = false
 
 [hooks]
 # Enables SPW runtime guard hooks (PreToolUse/UserPromptSubmit/Stop).

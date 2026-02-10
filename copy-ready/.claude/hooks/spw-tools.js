@@ -311,7 +311,7 @@ function cmdSkillsEffectiveSet(cwd, args, raw) {
 
   let enforceRequired = cfg?.[`skills.${stage}`]?.enforce_required;
   if (typeof enforceRequired !== 'boolean') {
-    enforceRequired = String(cfg?.skills?.enforcement || '').toLowerCase() === 'strict';
+    enforceRequired = true;
   }
 
   const tddDefault = !!cfg?.execution?.tdd_default;

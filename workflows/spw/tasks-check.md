@@ -81,12 +81,11 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 Resolve from `.spec-workflow/spw-config.toml` `[post_mortem_memory]`:
 - `enabled` (default `true`)
 - `max_entries_for_design` (default `5`)
-- `prefer_same_spec` (default `true`)
 
 If enabled and index exists:
 1. Read `.spec-workflow/post-mortems/INDEX.md`.
 2. Select up to `max_entries_for_design` relevant entries:
-   - same `<spec-name>` first when `prefer_same_spec=true`
+   - same `<spec-name>` first
    - then by tag/topic similarity and recency
 3. Load selected reports and expand audit checks for previously missed issues.
 
@@ -96,25 +95,14 @@ If index/report files are missing, continue with warning (non-blocking).
 <skills_policy>
 Resolve skill policy from `.spec-workflow/spw-config.toml`:
 - `[skills].enabled`
-- `[skills].load_mode` (`subagent-first|principal-first`)
 - `[skills.design].required`
 - `[skills.design].optional`
 - `[skills.design].enforce_required` (boolean)
 
-Backward compatibility:
-- if `[skills.design].enforce_required` is absent, map `[skills].enforcement`:
-  - `"strict"` -> `true`
-  - any other value -> `false`
-
-Load modes:
-- `subagent-first` (default): orchestrator does availability preflight only and
-  delegates skill loading/use to subagents via briefs.
-- `principal-first` (legacy): orchestrator loads required skills before dispatch.
-
 Skill gate (mandatory when `skills.enabled=true`):
 1. Run availability preflight and write:
    - `.spec-workflow/specs/<spec-name>/_generated/SKILLS-TASKS-CHECK.md`
-2. If `load_mode=subagent-first`, avoid loading full skill content in main context.
+2. Avoid loading full skill content in main context (subagent-first).
 3. Require each subagent `status.json` to include `skills_used`/`skills_missing`.
 4. If any required skill is missing/not used where required:
    - `enforce_required=true` -> BLOCKED
@@ -129,7 +117,7 @@ Skill gate (mandatory when `skills.enabled=true`):
 </subagents>
 
 <workflow>
-1. Run design skills preflight (availability + load mode) and write `SKILLS-TASKS-CHECK.md`.
+1. Run design skills preflight (availability) and write `SKILLS-TASKS-CHECK.md`.
 2. Inspect existing tasks-check run dirs and apply `<resume_policy>` decision gate.
 3. Determine active run directory:
    - `continue-unfinished` -> reuse latest unfinished run dir

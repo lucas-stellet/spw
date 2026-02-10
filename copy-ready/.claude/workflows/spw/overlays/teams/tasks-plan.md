@@ -7,9 +7,9 @@ Resolve Agent Teams config from `.spec-workflow/spw-config.toml` (fallback legad
 - `enabled` (default `false`)
 - `teammate_mode` (default `"in-process"`)
 - `max_teammates`
-- `use_for_phases`
+- `exclude_phases` (default `[]`)
 
-When `enabled=true` and `tasks-plan` is included in `use_for_phases`:
+When `enabled=true` and `tasks-plan` is NOT listed in `exclude_phases`:
 - create a team and set `teammate_mode`
 - map planning roles to teammates (`task-decomposer`, `dependency-graph-builder`, `parallel-conflict-checker`, `test-policy-enforcer`, `tasks-writer`) (do not exceed `max_teammates`)
 - each teammate must still write `brief.md`, `report.md`, `status.json` in the run dir

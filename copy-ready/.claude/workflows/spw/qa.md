@@ -80,9 +80,9 @@ Resolve Agent Teams config from `.spec-workflow/spw-config.toml` `[agent_teams]`
 - `enabled` (default `false`)
 - `teammate_mode` (default `"in-process"`)
 - `max_teammates`
-- `use_for_phases`
+- `exclude_phases` (default `[]`)
 
-When `enabled=true` and `qa` is included in `use_for_phases`:
+When `enabled=true` and `qa` is NOT listed in `exclude_phases`:
 - create a team and set `teammate_mode`
 - map QA roles to teammates (scope analyst, browser/API designers, synthesizer)
 - assign only active designer roles based on selected tool (`playwright|bruno|hybrid`)

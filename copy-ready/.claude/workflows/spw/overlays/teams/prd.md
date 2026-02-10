@@ -7,9 +7,9 @@ Resolve Agent Teams config from `.spec-workflow/spw-config.toml` (fallback legad
 - `enabled` (default `false`)
 - `teammate_mode` (default `"in-process"`)
 - `max_teammates`
-- `use_for_phases`
+- `exclude_phases` (default `[]`)
 
-When `enabled=true` and `prd` is included in `use_for_phases`:
+When `enabled=true` and `prd` is NOT listed in `exclude_phases`:
 - create a team and set `teammate_mode`
 - map PRD roles (`source-reader-web`, `source-reader-mcp`, `codebase-impact-scanner`, `requirements-structurer`, `prd-editor`, `prd-critic`) to teammates (do not exceed `max_teammates`)
 - apply the same mapping in revision protocol roles

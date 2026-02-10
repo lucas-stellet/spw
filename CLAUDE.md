@@ -80,7 +80,7 @@ The `spw` CLI is a bash wrapper that caches the kit from GitHub and delegates to
 
 ### Runtime Config
 
-Canonical path: `.spec-workflow/spw-config.toml` (legacy fallback: `.spw/spw-config.toml`). This TOML controls model routing, execution gates (TDD, strict gates, wave approval, commit-per-task, clean worktree), planning strategy (rolling-wave vs all-at-once), skill enforcement, hook behavior, and Agent Teams.
+Canonical path: `.spec-workflow/spw-config.toml` (legacy fallback: `.spw/spw-config.toml`). This TOML controls model routing, execution gates (TDD, wave approval, commit-per-task tri-state, clean worktree), planning strategy (rolling-wave vs all-at-once), per-stage skill enforcement, hook behavior, and Agent Teams (with `exclude_phases` deny-list).
 
 ### SPW Command Entry Points
 
