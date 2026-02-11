@@ -1,0 +1,18 @@
+---
+name: spw:{{.Name}}
+description: {{.Description}}
+argument-hint: "{{.ArgumentHint}}"
+---
+
+<objective>
+{{.Description}}
+</objective>
+
+<execution_context>
+@.claude/workflows/spw/{{.Name}}.md
+</execution_context>
+
+<process>
+Follow the workflow from `@.claude/workflows/spw/{{.Name}}.md` end-to-end.
+Preserve existing guardrails, gates, and output contracts.
+</process>

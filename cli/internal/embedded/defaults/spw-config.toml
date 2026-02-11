@@ -1,0 +1,280 @@
+# ===============================================================
+# SPW Configuration
+# ===============================================================
+# This file centralizes behavior for the hybrid workflow
+# (spec-workflow + SPW commands + subagent execution).
+#
+# How to use:
+# 1) Copy this file into your real project at:
+#    .spec-workflow/spw-config.toml
+# 2) Register the SessionStart hook to run the sync script.
+# 3) On every Claude session start, the active tasks template
+#    will be automatically aligned with this configuration.
+#
+# Important note:
+# - This file does NOT replace requirements/design/tasks artifacts.
+# - It controls runtime behavior for commands and hooks, including
+#   model routing policy for subagents.
+# ===============================================================
+
+[models]
+# Model routing policy used by SPW commands.
+#
+# web_research:
+# - Use for lightweight web search/lookup/scouting only.
+# - Recommended default: "haiku"
+web_research = "haiku"
+
+# complex_reasoning:
+# - Use for architecture synthesis, validation gates, and high-risk decisions.
+# - Recommended default: "opus"
+complex_reasoning = "opus"
+
+# implementation:
+# - Use for code-oriented implementation and standard drafting/writing tasks.
+# - Recommended default: "sonnet"
+implementation = "sonnet"
+
+[execution]
+# tdd_default defines the default TDD behavior for the project.
+#
+# false:
+# - TDD is off by default (opt-in model).
+# - TDD is used only when a task explicitly sets `TDD: required`
+#   or when you change this config to true.
+#
+# true:
+# - TDD is on by default.
+# - Tasks using `TDD: inherit` will require a RED->GREEN cycle.
+#
+# Recommended starting value for your setup: false.
+tdd_default = false
+
+# If true, `spw:exec` must pause after each wave/checkpoint PASS and ask the user
+# whether to continue to the next wave. No automatic wave progression is allowed.
+#
+# true  -> explicit user authorization required between waves
+# false -> command may auto-continue based on workflow policy
+#
+# Recommended default: true (human-in-the-loop control).
+require_user_approval_between_waves = true
+
+# Controls per-task commit behavior during execution.
+#
+# "auto"   = automatic commit per task (stage + commit without stopping)
+# "manual" = commit per task required, but SPW stops with explicit git commands
+# "none"   = no per-task commit enforcement
+commit_per_task = "auto"
+
+# If true, checkpoint/wave PASS requires a clean git worktree.
+# This prevents finishing a wave with uncommitted implementation changes.
+require_clean_worktree_for_wave_pass = true
+
+# If true, tasks that require human/manual external actions are never auto-marked
+# as in-progress by the orchestrator. SPW stops and hands off to the user instead.
+manual_tasks_require_human_handoff = true
+
+[planning]
+# Controls how `spw:tasks-plan` creates executable waves when `--mode` is omitted.
+#
+# Supported values:
+# - "rolling-wave" (default): create a single executable wave per planning cycle.
+#   Typical loop: plan tasks -> execute -> checkpoint -> plan next wave.
+# - "all-at-once": generate all executable waves in one planning pass.
+tasks_generation_strategy = "rolling-wave"
+
+# Default wave size limit used by planning commands when `--max-wave-size` is omitted.
+# CLI argument `--max-wave-size` always overrides this value.
+max_wave_size = 3
+
+[qa]
+# Controls wave-based execution for `spw:qa-exec`.
+#
+# max_scenarios_per_wave:
+# - Maximum number of test scenarios per execution wave.
+# - Larger waves execute faster but risk broader failures.
+max_scenarios_per_wave = 5
+
+[post_mortem_memory]
+# Controls how planning/design commands consume previous post-mortems.
+#
+# enabled:
+# - true (default): load indexed post-mortems when available.
+# - false: skip post-mortem memory enrichment in design/planning stages.
+enabled = true
+
+# Maximum number of indexed post-mortems loaded per design/planning command.
+# Typical recommendation: 3-8.
+max_entries_for_design = 5
+
+[agent_teams]
+# Experimental Claude Code Agent Teams integration.
+#
+# enabled:
+# - false (default) keeps SPW on subagent-first orchestration only.
+# - true enables team creation in selected phases when supported by the client.
+enabled = false
+
+# teammate_mode:
+# - "in-process" (default) works in all terminals.
+# - "tmux" requires tmux/iTerm2 split panes.
+# Adjust manually if you want tmux layouts.
+teammate_mode = "in-process"
+
+# If true, `spw:exec` must run with delegate mode when teams are enabled,
+# so the lead agent only orchestrates and never edits code directly.
+require_delegate_mode = true
+
+# Upper bound for number of teammates created per team.
+max_teammates = 4
+
+# Deny-list: phases to exclude from Agent Teams. Default empty = all phases eligible.
+exclude_phases = []
+
+[skills]
+# Enables skill-aware behavior in SPW commands.
+#
+# true  -> commands try to load skills listed below before key phases
+# false -> commands skip skill loading behavior
+enabled = true
+
+# If true, `spw` will try to copy default skills into
+# `.claude/skills/` from local/global skill directories when available.
+# Missing skills do not fail installation.
+auto_install_defaults_on_spw_install = true
+
+[skills.design]
+# Skills used by design/planning phases
+# (`spw:design-research`, `spw:design-draft`, `spw:tasks-plan`, `spw:tasks-check`).
+#
+# If true, every required skill must be explicitly loaded/invoked before the
+# stage continues. If any required skill is missing, the stage is BLOCKED.
+#
+# If false, missing required skills produce warnings and execution continues.
+enforce_required = true
+
+#
+# Core Elixir defaults:
+# - using-elixir-skills: routes to relevant Elixir-thinking skills
+# - elixir-thinking: idiomatic architecture/refactoring guidance
+# - elixir-anti-patterns: smell detection and safer alternatives
+# - phoenix-thinking: LiveView/controller/socket guidance
+# - ecto-thinking: schema/query/context/migration guidance
+# - otp-thinking: process/state/supervision guidance
+# - oban-thinking: queue/background-job guidance
+required = [
+  "using-elixir-skills",
+  "elixir-thinking",
+  "elixir-anti-patterns",
+  "phoenix-thinking",
+  "ecto-thinking",
+  "otp-thinking",
+  "oban-thinking"
+]
+
+# Optional skills: if present, SPW can use them to increase rigor.
+# - mermaid-architecture: architecture diagrams/patterns for design docs
+# - qa-validation-planning: risk-based QA planning + Playwright MCP server / Bruno CLI strategy
+optional = [
+  "mermaid-architecture",
+  "qa-validation-planning"
+]
+
+[skills.implementation]
+# Skills used by execution phases (`spw:exec`, `spw:checkpoint`).
+#
+# If true, every required skill must be explicitly loaded/invoked before the
+# stage continues. If any required skill is missing, the stage is BLOCKED.
+#
+# If false, missing required skills produce warnings and execution continues.
+enforce_required = true
+
+required = [
+  "using-elixir-skills",
+  "elixir-thinking",
+  "elixir-anti-patterns",
+  "conventional-commits"
+]
+
+# Optional implementation skills:
+# - test-driven-development: strict RED/GREEN/REFACTOR flow
+#   - when `[execution].tdd_default=true`, treat this skill as effectively
+#     required during implementation phases (`spw:exec` and `spw:checkpoint`).
+optional = [
+  "test-driven-development"
+]
+
+[templates]
+# Controls whether the hook syncs tasks-template on SessionStart.
+#
+# true  -> hook active: choose variant and update tasks-template.md
+# false -> hook inactive: do not auto-change the template
+sync_tasks_template_on_session_start = true
+
+# Defines how to choose tasks template variant.
+#
+# Supported values:
+# - "auto": decide from [execution].tdd_default
+# - "on":   force TDD ON variant
+# - "off":  force TDD OFF variant
+#
+# "auto" is recommended to keep a single source of truth
+# in execution.tdd_default.
+tasks_template_mode = "auto"
+
+[statusline]
+# Controls SPW statusline spec detection and caching.
+#
+# cache_ttl_seconds:
+# - Keeps statusline fast by caching the detected spec.
+# - Lower values refresh more often but increase git calls.
+# - Default used by the hook: 10 seconds.
+cache_ttl_seconds = 10
+#
+# base_branches:
+# - Used to discover the base branch for git diff spec detection.
+# - If the current branch has an upstream (e.g. origin/main), that is used first.
+# - Otherwise, these are checked in order.
+base_branches = ["main", "master", "staging", "develop"]
+
+# sticky_spec:
+# - If true, statusline uses the cached spec until a new SPW command runs
+#   with a different <spec-name> (cache is refreshed by the prompt hook).
+# - Avoids frequent git calls and keeps spec stable during a workflow.
+# - If false, cache respects cache_ttl_seconds and falls back to git/mtime.
+sticky_spec = true
+
+[safety]
+# If true, the hook creates a .bak backup of active template before overwrite.
+backup_before_overwrite = true
+
+[hooks]
+# Enables SPW runtime guard hooks (PreToolUse/UserPromptSubmit/Stop).
+#
+# true  -> hook scripts run and enforce/warn according to `enforcement_mode`
+# false -> hook scripts exit immediately (no-op)
+enabled = true
+
+# Hook enforcement mode:
+#
+# - "warn": emit warnings but do not block execution
+# - "block": deny violating actions (hook exits with blocking status)
+#
+# Recommended rollout:
+# 1) start with "warn"
+# 2) move to "block" after team validation
+enforcement_mode = "warn"
+
+# If true, hooks print explicit diagnostics when a rule is triggered.
+# If false, hooks stay quieter (still enforce).
+verbose = true
+
+# Window (in minutes) used by Stop hook to evaluate "recent" run folders for
+# file-first handoff completeness. Older runs are ignored by the guard.
+recent_run_window_minutes = 30
+
+# Per-guard toggles
+guard_prompt_require_spec = true
+guard_paths = true
+guard_wave_layout = true
+guard_stop_handoff = true

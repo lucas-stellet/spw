@@ -1,0 +1,45 @@
+version: 2
+
+project_name: spw
+
+builds:
+  - main: ./cmd/spw/
+    binary: spw
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.ShortCommit}}
+      - -X main.date={{.Date}}
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - format: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+
+brews:
+  - repository:
+      owner: lucas-stellet
+      name: homebrew-tap
+    homepage: "https://github.com/lucas-stellet/spw"
+    description: "SPW — spec-workflow command kit for Claude Code"
+    license: "MIT"
+    install: |
+      bin.install "spw"
