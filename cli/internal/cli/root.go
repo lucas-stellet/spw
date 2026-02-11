@@ -27,6 +27,9 @@ func NewRootCmd(version, commit, date string) *cobra.Command {
 	cmd.AddCommand(newDoctorCmd())
 	cmd.AddCommand(newStatusCmd())
 	cmd.AddCommand(newSkillsCmd())
+	cmd.AddCommand(newTasksCmd())
+	cmd.AddCommand(newWaveCmd())
+	cmd.AddCommand(newSpecCmd())
 
 	return cmd
 }
