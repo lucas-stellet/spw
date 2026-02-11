@@ -39,19 +39,20 @@ changelog:
       - '^test:'
       - '^chore:'
 
-brews:
-  - name: spw
-    description: "SPW — spec-workflow command kit for Claude Code"
-    homepage: "https://github.com/lucas-stellet/spw"
-    license: "MIT"
-    repository:
-      owner: lucas-stellet
-      name: homebrew-tap
-    directory: Formula
-    commit_author:
-      name: lucas-stellet
-      email: lustepe@gmail.com
-    install: |
-      bin.install "spw"
-    test: |
-      system "#{bin}/spw", "version"
+# Uncomment after creating HOMEBREW_TAP_TOKEN secret and homebrew-tap repo:
+# brews:
+#   - name: spw
+#     description: "SPW — spec-workflow command kit for Claude Code"
+#     homepage: "https://github.com/lucas-stellet/spw"
+#     license: "MIT"
+#     repository:
+#       owner: lucas-stellet
+#       name: homebrew-tap
+#     directory: Formula
+#     commit_author:
+#       name: lucas-stellet
+#       email: lustepe@gmail.com
+#     install: |
+#       bin.install "spw"
+#     test: |
+#       system "#{bin}/spw", "version"
