@@ -43,27 +43,20 @@ Each command handles subagent dispatch, file handoff, and quality gates automati
 
 ### 1. Install the CLI
 
-Pick one method to install the `spw` command on your machine:
-
-**Via GitHub CLI (recommended):**
+The bootstrap script downloads the compiled Go binary from the latest GitHub Release and installs it to `~/.local/bin/spw`. Requires `gh` (authenticated) and `tar`.
 
 ```bash
-gh api 'repos/lucas-stellet/spw/contents/scripts/bootstrap.sh?ref=main' -H 'Accept: application/vnd.github.raw' | bash
+gh api 'repos/lucas-stellet/spw/contents/scripts/bootstrap.sh?ref=main' \
+  -H 'Accept: application/vnd.github.raw' | bash
 ```
 
-**Via curl:**
+**From a local clone (build from source):**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/lucas-stellet/spw/main/scripts/bootstrap.sh | bash
+cd cli && go build -o ~/.local/bin/spw ./cmd/spw/
 ```
 
-**From a local clone:**
-
-```bash
-bash ./scripts/install-spw-bin.sh
-```
-
-The `spw` CLI caches the kit from GitHub and delegates to `copy-ready/install.sh`. Run `spw` with no arguments to see available commands.
+Run `spw` with no arguments to see available commands. Use `spw update` to self-update from the latest release.
 
 ### 2. Install in your project
 
