@@ -172,7 +172,13 @@ Write your output to these exact paths:
 
 status.json format:
 `+"```json"+`
-{"status": "pass" | "blocked", "summary": "one-line description"}
+{
+  "status": "pass | blocked",
+  "summary": "one-line description",
+  "skills_used": ["skill-name"],
+  "skills_missing": [],
+  "model_override_reason": null
+}
 `+"```"+`
 `, reportPath, statusPath)
 
@@ -192,6 +198,8 @@ status.json format:
 		"## Output Contract",
 		"report.md",
 		"status.json",
+		"skills_used",
+		"model_override_reason",
 	}
 	for _, section := range requiredSections {
 		if !contains(content, section) {

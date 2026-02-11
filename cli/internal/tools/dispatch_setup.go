@@ -59,7 +59,13 @@ Write your output to these exact paths:
 
 status.json format:
 `+"```json"+`
-{"status": "pass" | "blocked", "summary": "one-line description"}
+{
+  "status": "pass | blocked",
+  "summary": "one-line description",
+  "skills_used": ["skill-name"],
+  "skills_missing": [],
+  "model_override_reason": null
+}
 `+"```"+`
 `, subagentName, reportPath, statusPath)
 
