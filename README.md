@@ -107,19 +107,12 @@ Default SPW skills are copied into `.claude/skills/` during install (best effort
 
 ### Agent Teams (optional)
 
-Agent Teams is disabled by default. To enable it:
+Agent Teams is disabled by default. To enable it, set `[agent_teams].enabled = true` in `spw-config.toml`. The installer (`spw install`) reads this setting and switches symlinks in `.claude/workflows/spw/overlays/active/` from `../noop.md` to `../teams/<cmd>.md` accordingly.
 
-```bash
-spw install --enable-teams
-```
-
-This switches symlinks in `.claude/workflows/spw/overlays/active/` from `../noop.md` to `../teams/<cmd>.md`. To disable, run `spw install` without `--enable-teams` (symlinks reset to `../noop.md`).
-
-Manual setup (without the installer):
-- Set `[agent_teams].enabled = true` in `spw-config.toml`
-- Add `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1"` in `.claude/settings.json`
-- Set `teammateMode = "in-process"` (change to `"tmux"` manually if desired)
-- Switch symlinks: `cd .claude/workflows/spw/overlays/active && ln -sf ../teams/<cmd>.md <cmd>.md`
+Additional setup (done automatically by the installer):
+- `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1"` in `.claude/settings.json`
+- `teammateMode = "in-process"` (change to `"tmux"` manually if desired)
+- Overlay symlinks: `cd .claude/workflows/spw/overlays/active && ln -sf ../teams/<cmd>.md <cmd>.md`
 
 When enabled, SPW creates a team for any phase not listed in `[agent_teams].exclude_phases` (all phases are eligible by default). `spw:exec` enforces delegate mode when `[agent_teams].require_delegate_mode = true`. Team overlays are available for all subagent-first entrypoints: `spw:prd`, `spw:plan`, `spw:design-research`, `spw:design-draft`, `spw:tasks-plan`, `spw:tasks-check`, `spw:exec`, `spw:checkpoint`, `spw:post-mortem`, `spw:qa`, `spw:qa-check`, `spw:qa-exec`, `spw:status`.
 
@@ -315,7 +308,7 @@ Hook enforcement:
 
 ## Glossary
 
-- **Agent Teams**: Optional mode where SPW spawns multiple Claude Code agents to work in parallel on a phase. Enabled via `spw install --enable-teams`; controlled by `[agent_teams]` in `spw-config.toml`.
+- **Agent Teams**: Optional mode where SPW spawns multiple Claude Code agents to work in parallel on a phase. Controlled by `[agent_teams].enabled` in `spw-config.toml`.
 
 - **Checkpoint**: Quality gate run after each execution wave via `spw:checkpoint`. Produces a PASS/BLOCKED report that determines whether the next wave can proceed.
 
