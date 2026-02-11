@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"archive/tar"
+	"compress/gzip"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -105,10 +107,57 @@ func runUpdate() error {
 	}
 	tmp.Close()
 
-	// Extract and replace
-	fmt.Printf("[spw] Downloaded to %s\n", tmp.Name())
-	fmt.Printf("[spw] To complete update, extract and replace: %s\n", self)
-	fmt.Printf("[spw] Run: tar -xzf %s -C $(dirname %s) spw\n", tmp.Name(), self)
+	// Extract binary from tarball and replace self
+	if err := extractAndReplace(tmp.Name(), self); err != nil {
+		return fmt.Errorf("extracting update: %w", err)
+	}
 
+	fmt.Printf("[spw] Updated: %s\n", self)
 	return nil
+}
+
+func extractAndReplace(tarPath, destPath string) error {
+	f, err := os.Open(tarPath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	gz, err := gzip.NewReader(f)
+	if err != nil {
+		return err
+	}
+	defer gz.Close()
+
+	tr := tar.NewReader(gz)
+	for {
+		hdr, err := tr.Next()
+		if err == io.EOF {
+			return fmt.Errorf("spw binary not found in tarball")
+		}
+		if err != nil {
+			return err
+		}
+		if hdr.Name == "spw" {
+			tmp, err := os.CreateTemp("", "spw-bin-*")
+			if err != nil {
+				return err
+			}
+			if _, err := io.Copy(tmp, tr); err != nil {
+				tmp.Close()
+				os.Remove(tmp.Name())
+				return err
+			}
+			tmp.Close()
+			if err := os.Chmod(tmp.Name(), 0755); err != nil {
+				os.Remove(tmp.Name())
+				return err
+			}
+			if err := os.Rename(tmp.Name(), destPath); err != nil {
+				os.Remove(tmp.Name())
+				return err
+			}
+			return nil
+		}
+	}
 }

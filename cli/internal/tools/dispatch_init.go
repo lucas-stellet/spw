@@ -42,9 +42,8 @@ func DispatchInit(cwd, command, specName, wave string, raw bool) {
 
 	specRel := filepath.Join(".spec-workflow", "specs", specName)
 	specDir := filepath.Join(cwd, specRel)
-	info, err := os.Stat(specDir)
-	if err != nil || !info.IsDir() {
-		Fail("spec directory not found: "+specRel, raw)
+	if err := os.MkdirAll(specDir, 0755); err != nil {
+		Fail("failed to create spec directory: "+err.Error(), raw)
 	}
 
 	meta, ok := commandRegistry[command]
