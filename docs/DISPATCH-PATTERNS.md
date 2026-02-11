@@ -7,9 +7,10 @@ SPW commands follow a **thin-dispatch** model: the orchestrator (main agent) nev
 1. **Status-only reads.** After dispatching a subagent, the orchestrator reads only `<subagent>/status.json`. It never reads `report.md` in the normal flow.
 2. **Report reads on failure only.** When `status.json` reports `status=blocked`, the orchestrator reads `report.md` to decide the next action (log and continue, or stop BLOCKED).
 3. **Paths, not content.** When subagent-B depends on the output of subagent-A, the orchestrator writes the *path* to `subagent-A/report.md` in `subagent-B/brief.md`. It never relays report content.
-4. **Synthesizers read from filesystem.** The final subagent in any command (synthesizer, aggregator, writer) receives a brief listing all relevant report paths and reads them directly from disk.
-5. **File-first handoff contract unchanged.** Every subagent writes `brief.md` (by orchestrator), `report.md`, and `status.json`. Every run writes `_handoff.md`.
-6. **CLI-enforced dispatch.** Use `spw tools dispatch-init`, `dispatch-setup`, `dispatch-read-status`, and `dispatch-handoff` to create directories and validate structure. Never create run dirs or subagent dirs manually.
+4. **No codebase assertions.** Briefs instruct subagents to verify codebase facts rather than asserting them. Orchestrator findings go to `_orchestrator-context/`.
+5. **Synthesizers read from filesystem.** The final subagent in any command (synthesizer, aggregator, writer) receives a brief listing all relevant report paths and reads them directly from disk.
+6. **File-first handoff contract unchanged.** Every subagent writes `brief.md` (by orchestrator), `report.md`, and `status.json`. Every run writes `_handoff.md`.
+7. **CLI-enforced dispatch.** Use `spw tools dispatch-init`, `dispatch-setup`, `dispatch-read-status`, and `dispatch-handoff` to create directories and validate structure. Never create run dirs or subagent dirs manually.
 
 ---
 

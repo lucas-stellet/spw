@@ -48,12 +48,26 @@ Briefs then reference these files by path, same as subagent reports:
 
 Never embed orchestrator-generated content directly in a brief's ## Task section.
 
-### 4. Synthesizer Reads From Filesystem
+### 4. No Codebase Assertions in Briefs
+
+Briefs must never assert codebase facts (e.g., "project has no test framework",
+"no existing API endpoints"). Such claims must be verified by the subagent reading
+actual code. Instead of stating facts, instruct the subagent to verify:
+
+- BAD: "No Jest setup in project → needs TDD skip justification"
+- GOOD: "Verify whether Jest or other JS test frameworks are configured before
+  deciding TDD policy for JS modules"
+
+If the orchestrator has already verified a codebase fact (via a prior subagent or
+MCP tool), persist findings to `<run-dir>/_orchestrator-context/codebase-facts.md`
+and reference by path — never restate inline.
+
+### 5. Synthesizer Reads From Filesystem
 
 The last subagent (synthesizer/writer) receives a brief listing ALL previous report paths.
 It reads them directly from disk — the orchestrator does not relay content.
 
-### 5. Run Structure
+### 6. Run Structure
 
 ```
 <phase>/_comms/<command>/run-NNN/
@@ -63,14 +77,14 @@ It reads them directly from disk — the orchestrator does not relay content.
   _handoff.md
 ```
 
-### 6. Resume Policy
+### 7. Resume Policy
 
 On `continue-unfinished`:
 - Skip subagents where `status.json` exists with `status=pass`.
 - Redispatch missing or blocked subagents.
 - Always rerun synthesizer.
 
-### 7. Subagent Failure Policy
+### 8. Subagent Failure Policy
 
 When a dispatched subagent fails (error, killed, timeout) without writing `status.json`:
 
@@ -80,7 +94,7 @@ When a dispatched subagent fails (error, killed, timeout) without writing `statu
 2. Never complete a subagent's work inline. If the subagent's task requires writing output artifacts (beyond report.md/status.json), the orchestrator must redispatch — not write those artifacts itself.
 3. Maximum 1 retry per subagent. If the retry also fails, stop with BLOCKED and report the failure.
 
-### 8. Artifact Save
+### 9. Artifact Save
 
 When the pipeline's final subagent (synthesizer/writer) writes the command's output artifact to its `report.md`, the orchestrator saves it to the canonical path using filesystem copy — never by reading content into its own context.
 
@@ -90,7 +104,7 @@ cp <run-dir>/<writer>/report.md <canonical-output-path>
 
 If the command requires post-save validation (Mermaid syntax, dashboard markdown profile, MDX compilation), run validation tools/scripts on the saved file — do not Read the file into orchestrator context. If validation fails, re-dispatch the writer with fix instructions in a new brief iteration, or apply the Surgical Fix Policy below.
 
-### 9. Surgical Fix Policy
+### 10. Surgical Fix Policy
 
 When a critic/reviewer returns BLOCKED with a specific, mechanical fix (e.g., arithmetic correction, typo, missing escape character):
 

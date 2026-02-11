@@ -140,6 +140,7 @@ If resuming, always rerun `prd-critic` before final approval flow.
    - product mirror: `.spec-workflow/specs/<spec-name>/prd/PRD.md`
 2. Write `<run-dir>/_handoff.md` referencing source/structure/editor/critic outputs.
 3. Handle approval via MCP only:
+   - If MCP tools are unavailable or fail: log WARNING to `_handoff.md` per `<approval_reconciliation>` § MCP Unavailability, stop `WAITING_FOR_APPROVAL`.
    - call `spec-status`, resolve via `<approval_reconciliation>`
    - if approved: continue
    - if `needs-revision`/`changes-requested`/`rejected`: run `<revision_protocol>` (subagent-driven)

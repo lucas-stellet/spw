@@ -96,6 +96,7 @@ If critic returns BLOCKED:
 4. Save via filesystem copy: `cp <run-dir>/design-writer/report.md <SPEC_DIR>/design.md`.
 5. Write `<run-dir>/_handoff.md` via `dispatch-handoff`.
 6. Handle approval via MCP only:
+   - If MCP tools are unavailable or fail: log WARNING to `_handoff.md` per `<approval_reconciliation>` § MCP Unavailability, stop `WAITING_FOR_APPROVAL`.
    - call `spec-status`, resolve via `<approval_reconciliation>`
    - if approved: continue
    - if `needs-revision`/`changes-requested`/`rejected`: stop BLOCKED

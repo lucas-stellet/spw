@@ -44,6 +44,7 @@ spw tools dispatch-setup <name> --run-dir <RUN_DIR> --model-alias <alias>
 Returns: subagent_dir, brief_path, report_path, status_path, resolved model.
 
 b) Edit brief.md: fill ## Inputs (file PATHS only, never content) and ## Task.
+   Never assert codebase facts in ## Task — instruct the subagent to verify instead.
 
 c) Dispatch Task tool with:
    - model: from dispatch-setup output

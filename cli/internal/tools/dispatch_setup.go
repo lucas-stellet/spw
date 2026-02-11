@@ -8,6 +8,13 @@ import (
 	"github.com/lucas-stellet/spw/internal/config"
 )
 
+func boolToOnOff(b bool) string {
+	if b {
+		return "on"
+	}
+	return "off"
+}
+
 // DispatchSetup creates a subagent directory with a brief.md skeleton.
 func DispatchSetup(cwd, subagentName, runDir, modelAlias string, raw bool) {
 	if subagentName == "" || runDir == "" {
@@ -49,6 +56,13 @@ func DispatchSetup(cwd, subagentName, runDir, modelAlias string, raw bool) {
 ## Inputs
 <!-- Fill file paths here — PATHS ONLY, never paste content -->
 
+## Config Context
+<!-- Auto-resolved from spw-config.toml by dispatch-setup -->
+- tdd_default: %s
+- max_wave_size: %d
+- require_test_per_task: true
+- allow_no_test_exception: true
+
 ## Task
 <!-- Describe what this subagent must do -->
 
@@ -67,7 +81,10 @@ status.json format:
   "model_override_reason": null
 }
 `+"```"+`
-`, subagentName, reportPath, statusPath)
+`, subagentName,
+		boolToOnOff(cfg.Execution.TDDDefault),
+		cfg.Planning.MaxWaveSize,
+		reportPath, statusPath)
 
 	briefFullPath := filepath.Join(subagentDir, "brief.md")
 	if err := os.WriteFile(briefFullPath, []byte(brief), 0644); err != nil {

@@ -101,6 +101,17 @@ func DispatchInit(cwd, command, specName, wave string, raw bool) {
 		"implementation":    cfg.Models.Implementation,
 	}
 
+	execution := map[string]any{
+		"tdd_default":                          cfg.Execution.TDDDefault,
+		"require_user_approval_between_waves":  cfg.Execution.RequireUserApprovalBetweenWaves,
+		"commit_per_task":                      cfg.Execution.CommitPerTask,
+		"require_clean_worktree_for_wave_pass": cfg.Execution.RequireCleanWorktreeForWavePass,
+	}
+	planning := map[string]any{
+		"tasks_generation_strategy": cfg.Planning.TasksGenerationStrategy,
+		"max_wave_size":             cfg.Planning.MaxWaveSize,
+	}
+
 	runDirRel, _ := filepath.Rel(cwd, runDir)
 	result := map[string]any{
 		"ok":              true,
@@ -113,6 +124,8 @@ func DispatchInit(cwd, command, specName, wave string, raw bool) {
 		"subcategory":     meta.Subcategory,
 		"dispatch_policy": "dispatch-" + meta.Category,
 		"models":          models,
+		"execution":       execution,
+		"planning":        planning,
 	}
 	Output(result, runDirRel, raw)
 }

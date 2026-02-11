@@ -30,6 +30,8 @@ The 5 core thin-dispatch rules apply on top of this contract:
 1. Orchestrator reads only `status.json` after dispatch (never `report.md` on pass).
 2. Briefs contain filesystem paths to prior reports (never content).
    **Corollary to rule 2**: Orchestrator-generated context (prototype observations, user clarifications, MCP extraction notes) must also be persisted to `<run-dir>/_orchestrator-context/` files and referenced by path — never embedded inline in briefs.
+   **Rule 2b**: Briefs must not assert codebase facts. Instruct subagents to verify
+   (e.g., "check if test framework exists") instead of stating (e.g., "no test framework").
 3. Synthesizers/aggregators read from disk directly.
 4. Run structure follows category layout.
 5. Resume skips completed subagents, always reruns final stage.

@@ -84,7 +84,13 @@ comms:
 5. Read templates:
    - `.spec-workflow/user-templates/tasks-template.md` (preferred)
    - fallback: `.spec-workflow/templates/tasks-template.md`
-6. Inspect existing tasks-plan run dirs and apply resume decision gate.
+6. Use config values from dispatch-init output:
+   - `execution.tdd_default` is the source of truth for TDD policy.
+   - If template contains `tdd_default: managed-by-config`, resolve to
+     the dispatch-init value when writing the final artifact.
+   - dispatch-setup already injects Config Context into each brief —
+     do not override or restate these values in ## Task sections.
+7. Inspect existing tasks-plan run dirs and apply resume decision gate.
 </pre_pipeline>
 
 <!-- post_pipeline: dashboard compatibility + approval ............. -->
@@ -92,6 +98,7 @@ comms:
 1. Verify `tasks.md` satisfies `<dashboard_markdown_profile>`.
 2. Write `<run-dir>/_handoff.md` with mode decisions, DAG rationale, conflict/test policy outcomes.
 3. Handle approval via MCP only:
+   - If MCP tools are unavailable or fail: log WARNING to `_handoff.md` per `<approval_reconciliation>` § MCP Unavailability, stop `WAITING_FOR_APPROVAL`.
    - call `spec-status`, resolve via `<approval_reconciliation>`
    - if approved: continue
    - if `needs-revision`/`changes-requested`/`rejected`: stop BLOCKED

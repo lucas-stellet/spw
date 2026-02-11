@@ -22,7 +22,7 @@ spw:
 - max_tasks_per_wave: 3
 - require_test_per_task: true
 - allow_no_test_exception: true
-- tdd_default: off
+- tdd_default: managed-by-config
 
 ## Wave Plan
 - Wave 1:
