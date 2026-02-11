@@ -38,33 +38,12 @@ Example brief content:
 - Requirements: .spec-workflow/specs/<spec-name>/requirements.md
 ```
 
-### 3. Orchestrator Context Files
-
-When the orchestrator generates context that is NOT a subagent report (e.g., MCP-extracted data, user clarification decisions, prototype observations), it MUST write that context to a file in the run directory BEFORE referencing it in any brief.
-
-Convention:
-- `<run-dir>/_orchestrator-context/<topic>.md`
-
-Examples:
-- `_orchestrator-context/prototype-observations.md` — screenshots, SPA content
-- `_orchestrator-context/user-clarifications.md` — resolved CLARIFY items
-- `_orchestrator-context/mcp-source-context.md` — inline MCP extraction notes
-
-Briefs then reference these files by path, same as subagent reports:
-```
-## Inputs
-- Prototype observations: <run-dir>/_orchestrator-context/prototype-observations.md
-- User clarifications: <run-dir>/_orchestrator-context/user-clarifications.md
-```
-
-Never embed orchestrator-generated content directly in a brief's ## Task section.
-
-### 4. Synthesizer Reads From Filesystem
+### 3. Synthesizer Reads From Filesystem
 
 The last subagent (synthesizer/writer) receives a brief listing ALL previous report paths.
 It reads them directly from disk — the orchestrator does not relay content.
 
-### 5. Run Structure
+### 4. Run Structure
 
 ```
 <phase>/_comms/<command>/run-NNN/
@@ -74,22 +53,33 @@ It reads them directly from disk — the orchestrator does not relay content.
   _handoff.md
 ```
 
-### 6. Resume Policy
+### 5. Resume Policy
 
 On `continue-unfinished`:
 - Skip subagents where `status.json` exists with `status=pass`.
 - Redispatch missing or blocked subagents.
 - Always rerun synthesizer.
 
-### 7. Subagent Failure Policy
+### 6. Artifact Save
 
-When a dispatched subagent fails (error, killed, timeout) without writing `status.json`:
+When the pipeline's final subagent (synthesizer/writer) writes the command's output artifact to its `report.md`, the orchestrator saves it to the canonical path using filesystem copy — never by reading content into its own context.
 
-1. Check if `report.md` exists and is non-empty:
-   - If yes AND content is substantial: write `status.json` with `{"status": "pass", "summary": "..."}` and proceed.
-   - If no or content is partial/empty: redispatch the subagent (same brief, same model).
-2. Never complete a subagent's work inline. If the subagent's task requires writing output artifacts (beyond report.md/status.json), the orchestrator must redispatch — not write those artifacts itself.
-3. Maximum 1 retry per subagent. If the retry also fails, stop with BLOCKED and report the failure.
+```
+cp <run-dir>/<writer>/report.md <canonical-output-path>
+```
+
+If the command requires post-save validation (Mermaid syntax, dashboard markdown profile, MDX compilation), run validation tools/scripts on the saved file — do not Read the file into orchestrator context. If validation fails, re-dispatch the writer with fix instructions in a new brief iteration, or apply the Surgical Fix Policy below.
+
+### 7. Surgical Fix Policy
+
+When a critic/reviewer returns BLOCKED with a specific, mechanical fix (e.g., arithmetic correction, typo, missing escape character):
+
+- **Threshold:** fix touches ≤ 3 lines in the writer's `report.md` AND requires no design judgment (pure factual/syntactic correction).
+- **Allowed:** orchestrator applies the fix directly to the writer's `report.md`.
+- **Required:** log every inline fix in `<run-dir>/_handoff.md` under a `## Inline Fixes` section with: line(s) changed, reason, original value → new value.
+- **Re-run critic:** always re-dispatch the critic after an inline fix.
+
+If the fix exceeds the threshold (> 3 lines or requires design judgment), re-dispatch the writer subagent with the critic's feedback in a new brief.
 
 ## Extension Points
 
@@ -141,7 +131,6 @@ This contract defines the **file structure**. The category-level dispatch polici
 The 5 core thin-dispatch rules apply on top of this contract:
 1. Orchestrator reads only `status.json` after dispatch (never `report.md` on pass).
 2. Briefs contain filesystem paths to prior reports (never content).
-   **Corollary to rule 2**: Orchestrator-generated context (prototype observations, user clarifications, MCP extraction notes) must also be persisted to `<run-dir>/_orchestrator-context/` files and referenced by path — never embedded inline in briefs.
 3. Synthesizers/aggregators read from disk directly.
 4. Run structure follows category layout.
 5. Resume skips completed subagents, always reruns final stage.
@@ -405,6 +394,7 @@ Never directly edit requirements immediately after reading review comments.
 - Keep emphasis/underscore delimiters balanced (no dangling `_` or `**`).
 - Avoid task-style checkboxes in requirements content (`- [ ]`, `- [-]`, `- [x]`).
 - Keep requirement IDs canonical and unique (`REQ-001`, `REQ-002`, ...).
+- Escape angle brackets that are NOT inside fenced code blocks: `<ComponentName>` → wrap in inline code backticks or escape as `\<ComponentName\>`. The Spec Workflow UI compiles markdown as MDX — unescaped `<...>` outside code fences causes compilation errors.
 </ui_approval_markdown_profile>
 
 <approval_reconciliation>

@@ -60,6 +60,27 @@ On `continue-unfinished`:
 - Redispatch missing or blocked subagents.
 - Always rerun synthesizer.
 
+### 6. Artifact Save
+
+When the pipeline's final subagent (synthesizer/writer) writes the command's output artifact to its `report.md`, the orchestrator saves it to the canonical path using filesystem copy — never by reading content into its own context.
+
+```
+cp <run-dir>/<writer>/report.md <canonical-output-path>
+```
+
+If the command requires post-save validation (Mermaid syntax, dashboard markdown profile, MDX compilation), run validation tools/scripts on the saved file — do not Read the file into orchestrator context. If validation fails, re-dispatch the writer with fix instructions in a new brief iteration, or apply the Surgical Fix Policy below.
+
+### 7. Surgical Fix Policy
+
+When a critic/reviewer returns BLOCKED with a specific, mechanical fix (e.g., arithmetic correction, typo, missing escape character):
+
+- **Threshold:** fix touches ≤ 3 lines in the writer's `report.md` AND requires no design judgment (pure factual/syntactic correction).
+- **Allowed:** orchestrator applies the fix directly to the writer's `report.md`.
+- **Required:** log every inline fix in `<run-dir>/_handoff.md` under a `## Inline Fixes` section with: line(s) changed, reason, original value → new value.
+- **Re-run critic:** always re-dispatch the critic after an inline fix.
+
+If the fix exceeds the threshold (> 3 lines or requires design judgment), re-dispatch the writer subagent with the critic's feedback in a new brief.
+
 ## Extension Points
 
 Pipeline commands may inject logic at these points:
@@ -151,7 +172,6 @@ inputs:
 
 output:
 - `.spec-workflow/specs/<spec-name>/design/DESIGN-RESEARCH.md`
-- `.spec-workflow/specs/<spec-name>/research/*` (optional supporting notes)
 
 comms:
 - `.spec-workflow/specs/<spec-name>/design/_comms/design-research/run-NNN/`
@@ -170,6 +190,7 @@ Forbidden output locations for generated research:
 <subagents>
 - `codebase-pattern-scanner` (model: implementation)
   - Finds reusable patterns, boundaries, integration points.
+  - Investigates cross-boundary integrations: verify whether framework features (e.g., LiveView navigation, event handlers) work inside third-party-managed DOM (e.g., Leaflet popups, phx-update="ignore" zones). Factual questions must be resolved here, not deferred to design-draft.
 - `web-pattern-scout-*` (model: web_research, parallel)
   - Performs external web/library/pattern scans.
 - `risk-analyst` (model: complex_reasoning)
@@ -191,8 +212,7 @@ Forbidden output locations for generated research:
 2. Apply skills policy: run design skills preflight and write `SKILLS-DESIGN-RESEARCH.md`.
 3. Verify preconditions: `requirements.md` exists and is approved (MCP `spec-status`).
 4. Load post-mortem memory inputs via `<post_mortem_memory>`.
-5. Ensure research directory exists: `.spec-workflow/specs/<spec-name>/research/`.
-6. Inspect existing design-research run dirs and apply resume decision gate.
+5. Inspect existing design-research run dirs and apply resume decision gate.
 </pre_pipeline>
 
 <!-- pre_dispatch: Playwright MCP fallback for SPA scouts ......... -->
@@ -208,7 +228,6 @@ Apply `<prototype_url_policy>`: if scout target is an SPA or known prototype dom
    - alternatives and trade-offs
    - references/patterns to adopt
    - technical risks and mitigations
-3. If any generated research file is outside the spec directory, move it into `research/` and report relocation.
 </post_pipeline>
 
 </extensions>
@@ -228,6 +247,8 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 - web_research -> default `haiku`
 - complex_reasoning -> default `opus`
 - implementation -> default `sonnet`
+
+Multimodal override: when a `web-pattern-scout-*` must analyze images (screenshots, prototype visuals), use `implementation` instead of `web_research`. Record the override reason in `status.json` `model_override_reason` field.
 </model_policy>
 
 <post_mortem_memory>
@@ -291,7 +312,7 @@ Skill gate (mandatory when `skills.enabled=true`):
 - [ ] Every relevant functional requirement has at least one technical recommendation.
 - [ ] Existing-code reuse section is included.
 - [ ] Risks and recommended decisions section is included.
-- [ ] Web-only findings came from web_research model.
+- [ ] Web-only findings came from web_research model (or implementation with multimodal override documented in status.json).
 - [ ] File-based handoff exists under `design/_comms/design-research/run-NNN/`.
 - [ ] If unfinished run exists, explicit user decision (`continue-unfinished` or `delete-and-restart`) was respected.
 - [ ] Orchestrator never read report.md from any subagent (thin-dispatch).
@@ -300,7 +321,6 @@ Skill gate (mandatory when `skills.enabled=true`):
 <completion_guidance>
 On success:
 - Confirm output path: `.spec-workflow/specs/<spec-name>/design/DESIGN-RESEARCH.md`.
-- Confirm supporting artifacts path: `.spec-workflow/specs/<spec-name>/research/`.
 - Recommend next command: `spw:design-draft <spec-name>`.
 
 If blocked:

@@ -267,6 +267,7 @@ Never directly edit requirements immediately after reading review comments.
 - Keep emphasis/underscore delimiters balanced (no dangling `_` or `**`).
 - Avoid task-style checkboxes in requirements content (`- [ ]`, `- [-]`, `- [x]`).
 - Keep requirement IDs canonical and unique (`REQ-001`, `REQ-002`, ...).
+- Escape angle brackets that are NOT inside fenced code blocks: `<ComponentName>` → wrap in inline code backticks or escape as `\<ComponentName\>`. The Spec Workflow UI compiles markdown as MDX — unescaped `<...>` outside code fences causes compilation errors.
 </ui_approval_markdown_profile>
 
 <approval_reconciliation>

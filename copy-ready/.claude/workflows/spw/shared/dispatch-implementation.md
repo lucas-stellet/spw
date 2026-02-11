@@ -53,6 +53,8 @@ d) Read status:
 ```
 spw tools dispatch-read-status <name> --run-dir <RUN_DIR>
 ```
+**CRITICAL:** Always use `dispatch-read-status` to read subagent status. Never infer status from TaskOutput text, task-notification content, or any other source. `dispatch-read-status` is the single source of truth — it reads and validates `status.json` from the filesystem.
+
 If pass → proceed to next subagent. Do NOT read report.md.
 If blocked → read report.md for decision (this is the ONLY case you read it).
 If status.json missing (subagent failed/killed) → apply Subagent Failure Policy (see dispatch-pipeline.md).

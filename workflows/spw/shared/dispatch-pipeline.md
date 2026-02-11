@@ -80,6 +80,27 @@ When a dispatched subagent fails (error, killed, timeout) without writing `statu
 2. Never complete a subagent's work inline. If the subagent's task requires writing output artifacts (beyond report.md/status.json), the orchestrator must redispatch — not write those artifacts itself.
 3. Maximum 1 retry per subagent. If the retry also fails, stop with BLOCKED and report the failure.
 
+### 8. Artifact Save
+
+When the pipeline's final subagent (synthesizer/writer) writes the command's output artifact to its `report.md`, the orchestrator saves it to the canonical path using filesystem copy — never by reading content into its own context.
+
+```
+cp <run-dir>/<writer>/report.md <canonical-output-path>
+```
+
+If the command requires post-save validation (Mermaid syntax, dashboard markdown profile, MDX compilation), run validation tools/scripts on the saved file — do not Read the file into orchestrator context. If validation fails, re-dispatch the writer with fix instructions in a new brief iteration, or apply the Surgical Fix Policy below.
+
+### 9. Surgical Fix Policy
+
+When a critic/reviewer returns BLOCKED with a specific, mechanical fix (e.g., arithmetic correction, typo, missing escape character):
+
+- **Threshold:** fix touches ≤ 3 lines in the writer's `report.md` AND requires no design judgment (pure factual/syntactic correction).
+- **Allowed:** orchestrator applies the fix directly to the writer's `report.md`.
+- **Required:** log every inline fix in `<run-dir>/_handoff.md` under a `## Inline Fixes` section with: line(s) changed, reason, original value → new value.
+- **Re-run critic:** always re-dispatch the critic after an inline fix.
+
+If the fix exceeds the threshold (> 3 lines or requires design judgment), re-dispatch the writer subagent with the critic's feedback in a new brief.
+
 ## Extension Points
 
 Pipeline commands may inject logic at these points:
