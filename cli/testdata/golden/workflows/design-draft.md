@@ -7,6 +7,8 @@ argument-hint: "<spec-name>"
 <dispatch_pattern>
 category: pipeline
 subcategory: synthesis
+phase: design
+comms_path: design/_comms/design-draft
 policy: (inlined below)
 
 # Pipeline Dispatch Pattern

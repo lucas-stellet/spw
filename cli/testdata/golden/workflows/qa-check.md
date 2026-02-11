@@ -7,6 +7,8 @@ argument-hint: "<spec-name>"
 <dispatch_pattern>
 category: audit
 subcategory: code
+phase: qa
+comms_path: qa/_comms/qa-check
 policy: (inlined below)
 
 # Audit Dispatch Pattern

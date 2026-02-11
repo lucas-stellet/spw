@@ -7,6 +7,8 @@ argument-hint: "<spec-name> [--focus <topic>] [--web-depth low|medium|high]"
 <dispatch_pattern>
 category: pipeline
 subcategory: research
+phase: design
+comms_path: design/_comms/design-research
 policy: @.claude/workflows/spw/shared/dispatch-pipeline.md
 </dispatch_pattern>
 

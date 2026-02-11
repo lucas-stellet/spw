@@ -7,6 +7,8 @@ argument-hint: "<spec-name>"
 <dispatch_pattern>
 category: audit
 subcategory: artifact
+phase: planning
+comms_path: planning/_comms/tasks-check
 policy: (inlined below)
 
 # Audit Dispatch Pattern

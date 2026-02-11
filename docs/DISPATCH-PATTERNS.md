@@ -206,3 +206,24 @@ The thin-dispatch rules are codified in three category-specific policies referen
 
 Step-by-step CLI implementation procedure: `workflows/spw/shared/dispatch-implementation.md`.
 The `spw tools dispatch-init` command enforces these category mappings deterministically.
+
+---
+
+## Frontmatter-Driven Dispatch Registry
+
+Dispatch metadata (`phase`, `category`, `subcategory`, `comms_path`, `artifacts`) is declared directly in each workflow's `<dispatch_pattern>` section. The CLI parses it at startup from embedded workflow files — **no hardcoded Go map required**.
+
+Adding a new dispatch-capable command only requires creating the workflow `.md` file with a valid `<dispatch_pattern>` section. The registry (`cli/internal/registry/`) loads automatically.
+
+### `<dispatch_pattern>` keys
+
+| Key | Required | Description |
+|-----|----------|-------------|
+| `category` | yes | Dispatch category: `pipeline`, `audit`, `wave-execution` |
+| `subcategory` | yes | Subcategory: `research`, `synthesis`, `artifact`, `code`, `implementation`, `validation` |
+| `phase` | yes | Spec directory phase: `prd`, `design`, `planning`, `execution`, `qa`, `post-mortem` |
+| `comms_path` | yes | Template path for comms dir. Use `{wave}` placeholder for wave-aware commands |
+| `artifacts` | no | Comma-separated list of artifact dirs to create under spec dir (e.g. `execution/_implementation-logs`) |
+| `policy` | yes | `@`-reference to the shared dispatch policy |
+
+Wave-awareness is **derived**: if `comms_path` contains `{wave}`, the command is wave-aware (requires `--wave` argument at dispatch time).

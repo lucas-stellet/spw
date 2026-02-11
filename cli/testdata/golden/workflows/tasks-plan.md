@@ -7,6 +7,8 @@ argument-hint: "<spec-name> [--mode initial|next-wave] [--max-wave-size <N>] [--
 <dispatch_pattern>
 category: pipeline
 subcategory: synthesis
+phase: planning
+comms_path: planning/_comms/tasks-plan
 policy: (inlined below)
 
 # Pipeline Dispatch Pattern

@@ -7,6 +7,8 @@ argument-hint: "<spec-name> [--focus <what-to-validate>] [--tool auto|playwright
 <dispatch_pattern>
 category: pipeline
 subcategory: synthesis
+phase: qa
+comms_path: qa/_comms/qa
 policy: (inlined below)
 
 # Pipeline Dispatch Pattern

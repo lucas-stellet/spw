@@ -7,6 +7,8 @@ argument-hint: "<spec-name> [--scope batch|wave|phase]"
 <dispatch_pattern>
 category: audit
 subcategory: code
+phase: execution
+comms_path: execution/waves/wave-{wave}/checkpoint
 policy: (inlined below)
 
 # Audit Dispatch Pattern

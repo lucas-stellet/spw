@@ -6,33 +6,30 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/lucas-stellet/spw/internal/config"
+	"github.com/lucas-stellet/spw/internal/embedded"
+	"github.com/lucas-stellet/spw/internal/registry"
 )
 
-type commandMeta struct {
-	Phase       string
-	Category    string
-	Subcategory string
-	CommsPath   string // template, %s for wave-NN in wave-aware
-	WaveAware   bool
-}
-
-var commandRegistry = map[string]commandMeta{
-	"prd":             {Phase: "prd", Category: "pipeline", Subcategory: "research", CommsPath: "prd/_comms"},
-	"design-research": {Phase: "design", Category: "pipeline", Subcategory: "research", CommsPath: "design/_comms/design-research"},
-	"design-draft":    {Phase: "design", Category: "pipeline", Subcategory: "synthesis", CommsPath: "design/_comms/design-draft"},
-	"tasks-plan":      {Phase: "planning", Category: "pipeline", Subcategory: "synthesis", CommsPath: "planning/_comms/tasks-plan"},
-	"qa":              {Phase: "qa", Category: "pipeline", Subcategory: "synthesis", CommsPath: "qa/_comms/qa"},
-	"post-mortem":     {Phase: "post-mortem", Category: "pipeline", Subcategory: "synthesis", CommsPath: "post-mortem/_comms"},
-	"tasks-check":     {Phase: "planning", Category: "audit", Subcategory: "artifact", CommsPath: "planning/_comms/tasks-check"},
-	"qa-check":        {Phase: "qa", Category: "audit", Subcategory: "code", CommsPath: "qa/_comms/qa-check"},
-	"checkpoint":      {Phase: "execution", Category: "audit", Subcategory: "code", CommsPath: "execution/waves/wave-%s/checkpoint", WaveAware: true},
-	"exec":            {Phase: "execution", Category: "wave", Subcategory: "implementation", CommsPath: "execution/waves/wave-%s/execution", WaveAware: true},
-	"qa-exec":         {Phase: "qa", Category: "wave", Subcategory: "validation", CommsPath: "qa/_comms/qa-exec/waves/wave-%s", WaveAware: true},
-}
-
 var runNumRe = regexp.MustCompile(`^run-(\d+)$`)
+
+// loadedRegistry is the lazily-loaded command registry from embedded workflow files.
+var loadedRegistry map[string]registry.CommandMeta
+
+// getRegistry returns the command registry, loading it once from embedded files.
+func getRegistry() map[string]registry.CommandMeta {
+	if loadedRegistry == nil {
+		reg, err := registry.Load(embedded.Workflows)
+		if err != nil {
+			// Should not happen with valid embedded files.
+			panic("failed to load command registry: " + err.Error())
+		}
+		loadedRegistry = reg
+	}
+	return loadedRegistry
+}
 
 // DispatchInit creates a run-NNN directory for a command dispatch.
 func DispatchInit(cwd, command, specName, wave string, raw bool) {
@@ -46,7 +43,8 @@ func DispatchInit(cwd, command, specName, wave string, raw bool) {
 		Fail("failed to create spec directory: "+err.Error(), raw)
 	}
 
-	meta, ok := commandRegistry[command]
+	reg := getRegistry()
+	meta, ok := reg[command]
 	if !ok {
 		Fail("unknown command: "+command, raw)
 	}
@@ -60,7 +58,7 @@ func DispatchInit(cwd, command, specName, wave string, raw bool) {
 		if err != nil {
 			Fail("wave must be a number: "+wave, raw)
 		}
-		commsPath = fmt.Sprintf(commsPath, fmt.Sprintf("%02d", n))
+		commsPath = strings.Replace(commsPath, "{wave}", fmt.Sprintf("%02d", n), 1)
 	} else {
 		if wave != "" {
 			Fail("command "+command+" does not accept --wave", raw)
@@ -94,6 +92,14 @@ func DispatchInit(cwd, command, specName, wave string, raw bool) {
 		Fail("failed to create run dir: "+err.Error(), raw)
 	}
 
+	// Create artifact directories declared in dispatch_pattern.
+	for _, artifact := range meta.Artifacts {
+		artifactDir := filepath.Join(specDir, artifact)
+		if err := os.MkdirAll(artifactDir, 0755); err != nil {
+			Fail("failed to create artifact dir: "+err.Error(), raw)
+		}
+	}
+
 	cfg, _ := config.Load(cwd)
 	models := map[string]string{
 		"web_research":      cfg.Models.WebResearch,
@@ -122,7 +128,7 @@ func DispatchInit(cwd, command, specName, wave string, raw bool) {
 		"command":         command,
 		"category":        meta.Category,
 		"subcategory":     meta.Subcategory,
-		"dispatch_policy": "dispatch-" + meta.Category,
+		"dispatch_policy": meta.DispatchPolicy(),
 		"models":          models,
 		"execution":       execution,
 		"planning":        planning,

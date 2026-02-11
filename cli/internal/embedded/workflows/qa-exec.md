@@ -7,6 +7,8 @@ argument-hint: "<spec-name> [--scope smoke|regression|full] [--rerun-failed true
 <dispatch_pattern>
 category: wave-execution
 subcategory: validation
+phase: qa
+comms_path: qa/_comms/qa-exec/waves/wave-{wave}
 policy: @.claude/workflows/spw/shared/dispatch-wave.md
 </dispatch_pattern>
 

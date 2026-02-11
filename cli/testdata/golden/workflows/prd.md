@@ -7,6 +7,8 @@ argument-hint: "<spec-name> [--source <url-or-file.md>]"
 <dispatch_pattern>
 category: pipeline
 subcategory: research
+phase: prd
+comms_path: prd/_comms
 policy: (inlined below)
 
 # Pipeline Dispatch Pattern

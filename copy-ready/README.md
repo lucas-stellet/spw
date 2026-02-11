@@ -132,7 +132,7 @@ SPW uses thin orchestrators with a dispatch pattern system:
 
 ### Dispatch Categories
 
-Every workflow declares a `<dispatch_pattern>` referencing one of three shared policies:
+Every workflow declares a `<dispatch_pattern>` section that serves as the **single source of truth** for dispatch metadata (`category`, `phase`, `comms_path`, `artifacts`). The CLI parses this section from embedded workflow files at startup — adding a new command only requires creating the workflow `.md` file with a valid `<dispatch_pattern>`.
 
 | Category | Policy | Commands |
 |----------|--------|----------|

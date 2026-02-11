@@ -7,6 +7,8 @@ argument-hint: "<spec-name> [--since-commit <sha>] [--until-ref <ref>] [--tags <
 <dispatch_pattern>
 category: pipeline
 subcategory: synthesis
+phase: post-mortem
+comms_path: post-mortem/_comms
 policy: (inlined below)
 
 # Pipeline Dispatch Pattern

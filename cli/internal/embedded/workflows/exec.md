@@ -7,6 +7,9 @@ argument-hint: "<spec-name> [--batch-size 3] [--strict true|false]"
 <dispatch_pattern>
 category: wave-execution
 subcategory: implementation
+phase: execution
+comms_path: execution/waves/wave-{wave}/execution
+artifacts: execution/_implementation-logs
 policy: @.claude/workflows/spw/shared/dispatch-wave.md
 </dispatch_pattern>
 

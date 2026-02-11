@@ -6,10 +6,13 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"testing"
 )
 
 func TestCommandRegistry(t *testing.T) {
+	reg := getRegistry()
+
 	expected := map[string]struct {
 		phase       string
 		category    string
@@ -24,18 +27,18 @@ func TestCommandRegistry(t *testing.T) {
 		"tasks-check":     {"planning", "audit", "artifact"},
 		"qa-check":        {"qa", "audit", "code"},
 		"checkpoint":      {"execution", "audit", "code"},
-		"exec":            {"execution", "wave", "implementation"},
-		"qa-exec":         {"qa", "wave", "validation"},
+		"exec":            {"execution", "wave-execution", "implementation"},
+		"qa-exec":         {"qa", "wave-execution", "validation"},
 	}
 
-	if len(commandRegistry) != len(expected) {
-		t.Errorf("commandRegistry has %d entries, want %d", len(commandRegistry), len(expected))
+	if len(reg) != len(expected) {
+		t.Errorf("registry has %d entries, want %d", len(reg), len(expected))
 	}
 
 	for name, want := range expected {
-		got, ok := commandRegistry[name]
+		got, ok := reg[name]
 		if !ok {
-			t.Errorf("commandRegistry missing %q", name)
+			t.Errorf("registry missing %q", name)
 			continue
 		}
 		if got.Phase != want.phase {
@@ -51,15 +54,17 @@ func TestCommandRegistry(t *testing.T) {
 }
 
 func TestCommandRegistryWaveAware(t *testing.T) {
+	reg := getRegistry()
+
 	waveAware := map[string]bool{
 		"exec":       true,
 		"checkpoint": true,
 		"qa-exec":    true,
 	}
 
-	for name, meta := range commandRegistry {
+	for name, meta := range reg {
 		if waveAware[name] && !meta.WaveAware {
-			t.Errorf("%s should be WaveAware", name)
+			t.Errorf("%s should be WaveAware (comms_path should contain {wave})", name)
 		}
 		if !waveAware[name] && meta.WaveAware {
 			t.Errorf("%s should NOT be WaveAware", name)
@@ -68,6 +73,8 @@ func TestCommandRegistryWaveAware(t *testing.T) {
 }
 
 func TestCommsPathGeneration(t *testing.T) {
+	reg := getRegistry()
+
 	tests := []struct {
 		command string
 		wave    string
@@ -87,11 +94,11 @@ func TestCommsPathGeneration(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		meta := commandRegistry[tt.command]
+		meta := reg[tt.command]
 		path := meta.CommsPath
 		if meta.WaveAware && tt.wave != "" {
 			n, _ := strconv.Atoi(tt.wave)
-			path = fmt.Sprintf(path, fmt.Sprintf("%02d", n))
+			path = strings.Replace(path, "{wave}", fmt.Sprintf("%02d", n), 1)
 		}
 		if path != tt.want {
 			t.Errorf("%s (wave=%q): comms path = %q, want %q", tt.command, tt.wave, path, tt.want)

@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/lucas-stellet/spw/internal/registry"
 )
 
 type subagentStatus struct {
@@ -93,8 +95,8 @@ func DispatchHandoff(cwd, runDir, command string, raw bool) {
 	}
 
 	if command != "" {
-		if meta, ok := commandRegistry[command]; ok {
-			result["category"] = meta.Category
+		if cat := registry.Category(getRegistry(), command); cat != "" {
+			result["category"] = cat
 		}
 	}
 
