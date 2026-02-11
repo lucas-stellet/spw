@@ -16,6 +16,7 @@ policy: @.claude/workflows/spw/shared/dispatch-wave.md
 - @.claude/workflows/spw/shared/resume-policy.md
 - @.claude/workflows/spw/shared/skills-policy.md
 - @.claude/workflows/spw/shared/approval-reconciliation.md
+- @.claude/workflows/spw/shared/dispatch-implementation.md
 </shared_policies>
 
 <objective>
@@ -51,6 +52,15 @@ comms:
 - `code-quality-reviewer` (model: implementation)
   - Reviews maintainability, safety, and regression risk.
 </subagents>
+
+<subagent_artifact_map>
+| Subagent | Artifact | Dispatch | Model |
+|----------|----------|----------|-------|
+| execution-state-scout | (report.md only) | task | implementation |
+| task-implementer | code changes + commits | task | implementation |
+| spec-compliance-reviewer | (report.md only) | task | complex_reasoning |
+| code-quality-reviewer | (report.md only) | task | implementation |
+</subagent_artifact_map>
 
 <!-- ============================================================
      EXTENSION POINTS — command-specific logic injected into

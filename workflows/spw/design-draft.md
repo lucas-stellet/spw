@@ -16,6 +16,7 @@ policy: @.claude/workflows/spw/shared/dispatch-pipeline.md
 - @.claude/workflows/spw/shared/resume-policy.md
 - @.claude/workflows/spw/shared/skills-policy.md
 - @.claude/workflows/spw/shared/approval-reconciliation.md
+- @.claude/workflows/spw/shared/dispatch-implementation.md
 </shared_policies>
 
 <objective>
@@ -50,6 +51,14 @@ Do not consume generated research from generic locations (for example `docs/*`).
 - `design-critic` (model: complex_reasoning)
   - Runs consistency and completeness gate.
 </subagents>
+
+<subagent_artifact_map>
+| Subagent | Artifact | Dispatch | Model |
+|----------|----------|----------|-------|
+| traceability-mapper | (report.md only) | task | complex_reasoning |
+| design-writer | design.md | task | implementation |
+| design-critic | (report.md only) | task | complex_reasoning |
+</subagent_artifact_map>
 
 <!-- ============================================================
      EXTENSION POINTS — command-specific logic injected into

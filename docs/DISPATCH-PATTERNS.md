@@ -9,6 +9,7 @@ SPW commands follow a **thin-dispatch** model: the orchestrator (main agent) nev
 3. **Paths, not content.** When subagent-B depends on the output of subagent-A, the orchestrator writes the *path* to `subagent-A/report.md` in `subagent-B/brief.md`. It never relays report content.
 4. **Synthesizers read from filesystem.** The final subagent in any command (synthesizer, aggregator, writer) receives a brief listing all relevant report paths and reads them directly from disk.
 5. **File-first handoff contract unchanged.** Every subagent writes `brief.md` (by orchestrator), `report.md`, and `status.json`. Every run writes `_handoff.md`.
+6. **CLI-enforced dispatch.** Use `spw tools dispatch-init`, `dispatch-setup`, `dispatch-read-status`, and `dispatch-handoff` to create directories and validate structure. Never create run dirs or subagent dirs manually.
 
 ---
 
@@ -43,6 +44,7 @@ Gathers information, potentially from external sources (URLs, web search, Playwr
 - May dispatch multiple scouts for different sources (web URLs, code, prototypes).
 - May include user interaction gates mid-pipeline (e.g., `prd` revision loop).
 - External source reads (WebFetch, Playwright MCP) happen inside subagents, not in orchestrator.
+- **MCP inline exception:** When a subagent needs session-scoped MCP tools (Linear, Playwright), the orchestrator runs dispatch-setup as normal but executes the work inline — still writing report.md and status.json to the subagent directory.
 
 ### Subcategory 1b: Synthesis Pipeline
 
@@ -196,4 +198,10 @@ Execute tests or checks without modifying code. Lighter gates between waves.
 
 ## Shared Policy Reference
 
-The thin-dispatch rules are codified in `workflows/spw/shared/thin-dispatch.md` and referenced by all command workflows via `<shared_policies>`. Category-specific behavior (pipeline sequencing, audit parallelism, wave iteration) is defined in each command's workflow — the shared policy covers only the universal rules that cross all categories.
+The thin-dispatch rules are codified in three category-specific policies referenced by all command workflows via `<shared_policies>`:
+- `workflows/spw/shared/dispatch-pipeline.md` — pipeline sequencing (sequential chain → synthesizer)
+- `workflows/spw/shared/dispatch-audit.md` — audit parallelism (auditors → aggregator)
+- `workflows/spw/shared/dispatch-wave.md` — wave iteration (scout → waves → synthesizer)
+
+Step-by-step CLI implementation procedure: `workflows/spw/shared/dispatch-implementation.md`.
+The `spw tools dispatch-init` command enforces these category mappings deterministically.

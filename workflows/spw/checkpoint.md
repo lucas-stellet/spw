@@ -16,6 +16,7 @@ policy: @.claude/workflows/spw/shared/dispatch-audit.md
 - @.claude/workflows/spw/shared/resume-policy.md
 - @.claude/workflows/spw/shared/skills-policy.md
 - @.claude/workflows/spw/shared/approval-reconciliation.md
+- @.claude/workflows/spw/shared/dispatch-implementation.md
 </shared_policies>
 
 <objective>
@@ -54,6 +55,14 @@ Wave container:
 - `release-gate-decider` (model: complex_reasoning)
   - Produces final PASS/BLOCKED decision and corrective actions.
 </subagents>
+
+<subagent_artifact_map>
+| Subagent | Artifact | Dispatch | Model |
+|----------|----------|----------|-------|
+| evidence-collector | (report.md only) | task | implementation |
+| traceability-judge | (report.md only) | task | complex_reasoning |
+| release-gate-decider | CHECKPOINT-REPORT.md | task | complex_reasoning |
+</subagent_artifact_map>
 
 <!-- ============================================================
      EXTENSION POINTS — command-specific logic injected into

@@ -229,6 +229,30 @@ status_default_skills() {
   fi
 }
 
+inject_snippet() {
+  local target_file="$1"
+  local snippet_file="$2"
+  local marker_start="<!-- SPW-KIT-START"
+  local marker_end="<!-- SPW-KIT-END -->"
+
+  [ -f "$snippet_file" ] || return 0
+
+  if [ -f "$target_file" ] && grep -qF "$marker_start" "$target_file"; then
+    # Replace existing block (idempotent reinstall)
+    local tmp; tmp="$(mktemp)"
+    awk -v start="$marker_start" -v end="$marker_end" -v snippet="$snippet_file" '
+      $0 ~ start { skip=1; while((getline line < snippet) > 0) print line; next }
+      $0 ~ end { skip=0; next }
+      !skip { print }
+    ' "$target_file" > "$tmp"
+    mv "$tmp" "$target_file"
+  else
+    # Append (first install or file doesn't exist)
+    echo "" >> "$target_file"
+    cat "$snippet_file" >> "$target_file"
+  fi
+}
+
 cmd_install() {
   if [ "$#" -gt 0 ]; then
     echo "[spw-kit] Unexpected arguments for install: $*" >&2
@@ -251,6 +275,11 @@ cmd_install() {
 
   # PR review optimization: collapse spec-workflow files in GitHub diffs
   setup_gitattributes
+
+  # Inject SPW dispatch instructions into project CLAUDE.md and AGENTS.md
+  inject_snippet "${TARGET_ROOT}/CLAUDE.md" "${SCRIPT_DIR}/.claude.md.snippet"
+  inject_snippet "${TARGET_ROOT}/AGENTS.md" "${SCRIPT_DIR}/.agents.md.snippet"
+  echo "[spw-kit] Updated CLAUDE.md and AGENTS.md with SPW dispatch instructions."
 
   # Smart merge: preserve user config values with new template structure
   if [ -n "$config_backup" ]; then

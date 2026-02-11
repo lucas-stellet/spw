@@ -57,3 +57,8 @@ Pipeline commands may inject logic at these points:
 - **`pre_dispatch(<subagent>)`**: Before writing a specific subagent's brief. Use for conditional dispatch (e.g., selecting which designer to run based on a gate decision).
 - **`post_dispatch(<subagent>)`**: After reading a subagent's status.json. Use for mid-pipeline decisions that affect subsequent dispatches.
 - **`post_pipeline`**: After synthesizer completes, before writing _handoff.md. Use for artifact generation, approval reconciliation, completion guidance.
+
+## Implementation Procedure
+
+For step-by-step CLI commands to execute this pattern, see `dispatch-implementation.md`.
+The CLI handles directory creation, brief skeleton generation, status validation, and handoff generation.

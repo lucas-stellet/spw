@@ -78,4 +78,19 @@ for link in "$active_overlay_dir"/*.md; do
   [ "$src_target" = "$dst_target" ] || fail "Symlink target mismatch: $link ($src_target) vs $mirror_link ($dst_target)"
 done
 
+# Snippet template → copy-ready mirror checks
+for pair in \
+  "templates/claude-md-snippet.md copy-ready/.claude.md.snippet" \
+  "templates/agents-md-snippet.md copy-ready/.agents.md.snippet"; do
+  src="${pair%% *}"
+  dst="${pair##* }"
+  [ -f "$src" ] || fail "Missing snippet source: $src"
+  [ -f "$dst" ] || fail "Missing snippet mirror: $dst"
+  diff -q "$src" "$dst" >/dev/null || fail "Snippet mirror mismatch: $src <-> $dst"
+done
+
+# Verify dispatch-implementation.md exists in both locations
+[ -f "workflows/spw/shared/dispatch-implementation.md" ] || fail "Missing: workflows/spw/shared/dispatch-implementation.md"
+[ -f "copy-ready/.claude/workflows/spw/shared/dispatch-implementation.md" ] || fail "Missing: copy-ready/.claude/workflows/spw/shared/dispatch-implementation.md"
+
 echo "[thin-orchestrator] OK"

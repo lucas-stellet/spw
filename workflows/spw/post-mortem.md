@@ -16,6 +16,7 @@ policy: @.claude/workflows/spw/shared/dispatch-pipeline.md
 - @.claude/workflows/spw/shared/resume-policy.md
 - @.claude/workflows/spw/shared/skills-policy.md
 - @.claude/workflows/spw/shared/approval-reconciliation.md
+- @.claude/workflows/spw/shared/dispatch-implementation.md
 </shared_policies>
 
 <objective>
@@ -55,6 +56,16 @@ comms:
 - `memory-indexer` (model: implementation)
   - Writes report metadata + updates shared post-mortem index.
 </subagents>
+
+<subagent_artifact_map>
+| Subagent | Artifact | Dispatch | Model |
+|----------|----------|----------|-------|
+| commit-diff-analyzer | (report.md only) | task | implementation |
+| artifact-gap-analyzer | (report.md only) | task | complex_reasoning |
+| review-test-failure-analyzer | (report.md only) | task | complex_reasoning |
+| lessons-synthesizer | post-mortem report | task | complex_reasoning |
+| memory-indexer | INDEX.md update | task | implementation |
+</subagent_artifact_map>
 
 <!-- ============================================================
      EXTENSION POINTS — command-specific logic injected into

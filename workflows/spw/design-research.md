@@ -16,6 +16,7 @@ policy: @.claude/workflows/spw/shared/dispatch-pipeline.md
 - @.claude/workflows/spw/shared/resume-policy.md
 - @.claude/workflows/spw/shared/skills-policy.md
 - @.claude/workflows/spw/shared/approval-reconciliation.md
+- @.claude/workflows/spw/shared/dispatch-implementation.md
 </shared_policies>
 
 <objective>
@@ -57,6 +58,15 @@ Forbidden output locations for generated research:
 - `research-synthesizer` (model: complex_reasoning)
   - Produces final consolidated recommendation set.
 </subagents>
+
+<subagent_artifact_map>
+| Subagent | Artifact | Dispatch | Model |
+|----------|----------|----------|-------|
+| codebase-pattern-scanner | (report.md only) | task | implementation |
+| web-pattern-scout-* | (report.md only) | task | web_research |
+| risk-analyst | (report.md only) | task | complex_reasoning |
+| research-synthesizer | DESIGN-RESEARCH.md | task | complex_reasoning |
+</subagent_artifact_map>
 
 <!-- ============================================================
      EXTENSION POINTS — command-specific logic injected into

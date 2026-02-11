@@ -16,6 +16,7 @@ policy: @.claude/workflows/spw/shared/dispatch-pipeline.md
 - @.claude/workflows/spw/shared/resume-policy.md
 - @.claude/workflows/spw/shared/skills-policy.md
 - @.claude/workflows/spw/shared/approval-reconciliation.md
+- @.claude/workflows/spw/shared/dispatch-implementation.md
 </shared_policies>
 
 <objective>
@@ -53,6 +54,16 @@ comms:
 - `tasks-writer` (model: implementation)
   - Writes final markdown in template format.
 </subagents>
+
+<subagent_artifact_map>
+| Subagent | Artifact | Dispatch | Model |
+|----------|----------|----------|-------|
+| task-decomposer | (report.md only) | task | complex_reasoning |
+| dependency-graph-builder | (report.md only) | task | complex_reasoning |
+| parallel-conflict-checker | (report.md only) | task | implementation |
+| test-policy-enforcer | (report.md only) | task | complex_reasoning |
+| tasks-writer | tasks.md | task | implementation |
+</subagent_artifact_map>
 
 <!-- ============================================================
      EXTENSION POINTS — command-specific logic injected into

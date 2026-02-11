@@ -69,3 +69,8 @@ Wave execution commands may inject logic at these points:
 - **`inter_wave`**: Between waves, after wave summary is written. Use for quality gates (checkpoint), user authorization, re-authentication.
 - **`per_task`**: Within a wave, around each task/scenario dispatch. Use for git hygiene, commit policy, per-item gates.
 - **`post_pipeline`**: After all waves complete and synthesizer runs, before final _handoff.md. Use for artifact generation, drift reporting, next-step guidance.
+
+## Implementation Procedure
+
+For step-by-step CLI commands to execute this pattern, see `dispatch-implementation.md`.
+The CLI handles directory creation, brief skeleton generation, status validation, and handoff generation.

@@ -16,6 +16,7 @@ policy: @.claude/workflows/spw/shared/dispatch-pipeline.md
 - @.claude/workflows/spw/shared/resume-policy.md
 - @.claude/workflows/spw/shared/skills-policy.md
 - @.claude/workflows/spw/shared/approval-reconciliation.md
+- @.claude/workflows/spw/shared/dispatch-implementation.md
 </shared_policies>
 
 <objective>
@@ -66,6 +67,19 @@ comms:
 - `prd-critic` (model: complex_reasoning)
   - Performs strict quality gate before approval request.
 </subagents>
+
+<subagent_artifact_map>
+| Subagent | Artifact | Dispatch | Model |
+|----------|----------|----------|-------|
+| source-reader-web | PRD-SOURCE-NOTES.md (web) | task | web_research |
+| source-reader-mcp | PRD-SOURCE-NOTES.md (mcp) | inline-mcp | implementation |
+| feedback-analyzer | PRD-REVISION-NOTES.md | task | complex_reasoning |
+| codebase-impact-scanner | (report.md only) | task | implementation |
+| revision-planner | PRD-REVISION-PLAN.md | task | complex_reasoning |
+| requirements-structurer | PRD-STRUCTURE.md | task | complex_reasoning |
+| prd-editor | PRD.md, requirements.md | task | implementation |
+| prd-critic | (report.md only) | task | complex_reasoning |
+</subagent_artifact_map>
 
 <!-- ============================================================
      EXTENSION POINTS — command-specific logic injected into

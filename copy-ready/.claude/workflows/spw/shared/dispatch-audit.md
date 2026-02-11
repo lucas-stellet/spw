@@ -55,3 +55,8 @@ Audit commands may inject logic at these points:
 - **`pre_dispatch(<auditor>)`**: Before writing a specific auditor's brief. Use for conditional skip logic.
 - **`post_dispatch(<auditor>)`**: After reading an auditor's status.json. Use for early-exit decisions.
 - **`post_pipeline`**: After aggregator completes, before writing _handoff.md. Use for artifact generation, next-step guidance.
+
+## Implementation Procedure
+
+For step-by-step CLI commands to execute this pattern, see `dispatch-implementation.md`.
+The CLI handles directory creation, brief skeleton generation, status validation, and handoff generation.

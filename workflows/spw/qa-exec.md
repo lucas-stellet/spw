@@ -16,6 +16,7 @@ policy: @.claude/workflows/spw/shared/dispatch-wave.md
 - @.claude/workflows/spw/shared/resume-policy.md
 - @.claude/workflows/spw/shared/skills-policy.md
 - @.claude/workflows/spw/shared/approval-reconciliation.md
+- @.claude/workflows/spw/shared/dispatch-implementation.md
 </shared_policies>
 
 <objective>
@@ -60,6 +61,15 @@ comms:
   - Fills QA-EXECUTION-REPORT.md and QA-DEFECT-REPORT.md.
   - Produces GO/NO-GO decision with pass/fail counts and risk assessment.
 </subagents>
+
+<subagent_artifact_map>
+| Subagent | Artifact | Dispatch | Model |
+|----------|----------|----------|-------|
+| qa-state-scout | (report.md only) | task | implementation |
+| qa-test-runner | (report.md only) | inline-mcp | implementation |
+| qa-evidence-collector | (report.md only) | task | implementation |
+| qa-exec-synthesizer | QA-EXECUTION-REPORT.md, QA-DEFECT-REPORT.md | task | complex_reasoning |
+</subagent_artifact_map>
 
 <!-- ============================================================
      EXTENSION POINTS — command-specific logic injected into

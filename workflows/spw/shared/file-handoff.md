@@ -8,6 +8,11 @@ Required files for each dispatched subagent:
 
 If any required handoff file is missing, return `BLOCKED`.
 
+**status.json schema:**
+```json
+{"status": "pass"|"blocked", "summary": "one-line description"}
+```
+
 **CRITICAL — Run-id format**: MUST be `run-NNN` (zero-padded 3-digit sequential).
 Examples: `run-001`, `run-002`, `run-003`.
 NEVER use dates, timestamps, or any other format (e.g. `run-20260209-1` is WRONG).

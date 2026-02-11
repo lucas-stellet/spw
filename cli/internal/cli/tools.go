@@ -11,7 +11,7 @@ func newToolsCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "tools",
 		Short: "Workflow tools for subagent use",
-		Long:  "Provides config-get, spec-resolve, wave-resolve, runs, handoff, skills, and approval subcommands.",
+		Long:  "Provides config-get, spec-resolve, wave-resolve, runs, handoff, skills, approval, dispatch, and resolve-model subcommands.",
 	}
 
 	cmd.AddCommand(newToolsConfigGetCmd())
@@ -21,6 +21,11 @@ func newToolsCmd() *cobra.Command {
 	cmd.AddCommand(newToolsHandoffCmd())
 	cmd.AddCommand(newToolsSkillsCmd())
 	cmd.AddCommand(newToolsApprovalCmd())
+	cmd.AddCommand(newToolsDispatchInitCmd())
+	cmd.AddCommand(newToolsDispatchSetupCmd())
+	cmd.AddCommand(newToolsDispatchReadStatusCmd())
+	cmd.AddCommand(newToolsDispatchHandoffCmd())
+	cmd.AddCommand(newToolsResolveModelCmd())
 
 	return cmd
 }
@@ -127,6 +132,91 @@ func newToolsApprovalCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			raw, _ := cmd.Flags().GetBool("raw")
 			tools.ApprovalFallbackID(getCwd(), args[0], args[1], raw)
+		},
+	}
+	cmd.Flags().Bool("raw", false, "Output raw value without JSON wrapping")
+	return cmd
+}
+
+func newToolsDispatchInitCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "dispatch-init <command> <spec-name>",
+		Short: "Initialize a dispatch run directory",
+		Args:  cobra.ExactArgs(2),
+		Run: func(cmd *cobra.Command, args []string) {
+			raw, _ := cmd.Flags().GetBool("raw")
+			wave, _ := cmd.Flags().GetString("wave")
+			tools.DispatchInit(getCwd(), args[0], args[1], wave, raw)
+		},
+	}
+	cmd.Flags().String("wave", "", "Wave number (required for wave-aware commands)")
+	cmd.Flags().Bool("raw", false, "Output raw value without JSON wrapping")
+	return cmd
+}
+
+func newToolsDispatchSetupCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "dispatch-setup <subagent-name>",
+		Short: "Create subagent directory with brief.md skeleton",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			raw, _ := cmd.Flags().GetBool("raw")
+			runDir, _ := cmd.Flags().GetString("run-dir")
+			modelAlias, _ := cmd.Flags().GetString("model-alias")
+			tools.DispatchSetup(getCwd(), args[0], runDir, modelAlias, raw)
+		},
+	}
+	cmd.Flags().String("run-dir", "", "Run directory path")
+	cmd.Flags().String("model-alias", "", "Model alias (web_research, complex_reasoning, implementation)")
+	cmd.Flags().Bool("raw", false, "Output raw value without JSON wrapping")
+	_ = cmd.MarkFlagRequired("run-dir")
+	return cmd
+}
+
+func newToolsDispatchReadStatusCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "dispatch-read-status <subagent-name>",
+		Short: "Read and validate subagent status.json",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			raw, _ := cmd.Flags().GetBool("raw")
+			runDir, _ := cmd.Flags().GetString("run-dir")
+			tools.DispatchReadStatus(getCwd(), args[0], runDir, raw)
+		},
+	}
+	cmd.Flags().String("run-dir", "", "Run directory path")
+	cmd.Flags().Bool("raw", false, "Output raw value without JSON wrapping")
+	_ = cmd.MarkFlagRequired("run-dir")
+	return cmd
+}
+
+func newToolsDispatchHandoffCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "dispatch-handoff",
+		Short: "Generate _handoff.md from subagent status files",
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			raw, _ := cmd.Flags().GetBool("raw")
+			runDir, _ := cmd.Flags().GetString("run-dir")
+			command, _ := cmd.Flags().GetString("command")
+			tools.DispatchHandoff(getCwd(), runDir, command, raw)
+		},
+	}
+	cmd.Flags().String("run-dir", "", "Run directory path")
+	cmd.Flags().String("command", "", "SPW command name (for category lookup)")
+	cmd.Flags().Bool("raw", false, "Output raw value without JSON wrapping")
+	_ = cmd.MarkFlagRequired("run-dir")
+	return cmd
+}
+
+func newToolsResolveModelCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "resolve-model <alias>",
+		Short: "Resolve model alias to configured model name",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			raw, _ := cmd.Flags().GetBool("raw")
+			tools.ResolveModel(getCwd(), args[0], raw)
 		},
 	}
 	cmd.Flags().Bool("raw", false, "Output raw value without JSON wrapping")

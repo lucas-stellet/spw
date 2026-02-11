@@ -16,6 +16,7 @@ policy: @.claude/workflows/spw/shared/dispatch-pipeline.md
 - @.claude/workflows/spw/shared/resume-policy.md
 - @.claude/workflows/spw/shared/skills-policy.md
 - @.claude/workflows/spw/shared/approval-reconciliation.md
+- @.claude/workflows/spw/shared/dispatch-implementation.md
 </shared_policies>
 
 <objective>
@@ -64,6 +65,15 @@ comms:
   Generates final QA-TEST-PLAN.md with Coverage Matrix including Selector/Endpoint column.
   Inputs: all previous report paths. Reads from filesystem.
 </subagents>
+
+<subagent_artifact_map>
+| Subagent | Artifact | Dispatch | Model |
+|----------|----------|----------|-------|
+| qa-scope-analyst | (report.md only) | task | complex_reasoning |
+| browser-test-designer | (report.md only) | task | implementation |
+| api-test-designer | (report.md only) | task | implementation |
+| qa-plan-synthesizer | QA-TEST-PLAN.md | task | complex_reasoning |
+</subagent_artifact_map>
 
 <!-- ============================================================
      EXTENSION POINTS — command-specific logic injected into

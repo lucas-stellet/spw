@@ -16,6 +16,7 @@ policy: @.claude/workflows/spw/shared/dispatch-audit.md
 - @.claude/workflows/spw/shared/resume-policy.md
 - @.claude/workflows/spw/shared/skills-policy.md
 - @.claude/workflows/spw/shared/approval-reconciliation.md
+- @.claude/workflows/spw/shared/dispatch-implementation.md
 </shared_policies>
 
 <objective>
@@ -45,6 +46,15 @@ comms:
 - `test-policy-auditor` (model: complex_reasoning)
 - `decision-aggregator` (model: complex_reasoning)
 </subagents>
+
+<subagent_artifact_map>
+| Subagent | Artifact | Dispatch | Model |
+|----------|----------|----------|-------|
+| traceability-auditor | (report.md only) | task | complex_reasoning |
+| dag-validator | (report.md only) | task | implementation |
+| test-policy-auditor | (report.md only) | task | complex_reasoning |
+| decision-aggregator | TASKS-CHECK.md | task | complex_reasoning |
+</subagent_artifact_map>
 
 <!-- ============================================================
      EXTENSION POINTS — command-specific logic injected into
