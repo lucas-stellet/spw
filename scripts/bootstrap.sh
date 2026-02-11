@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Install the SPW Go binary from the latest GitHub Release.
+# Usage:
+#   gh api repos/lucas-stellet/spw/contents/scripts/bootstrap.sh?ref=main -H 'Accept: application/vnd.github.raw' | bash
+#   curl -fsSL https://raw.githubusercontent.com/lucas-stellet/spw/main/scripts/bootstrap.sh | bash
+
 SPW_REPO="${SPW_REPO:-lucas-stellet/spw}"
 INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
 TARGET_BIN="${INSTALL_DIR}/spw"
-RAW_URL="https://raw.githubusercontent.com/${SPW_REPO}/main/bin/spw"
-GH_API_PATH="repos/${SPW_REPO}/contents/bin/spw?ref=main"
 
 require_cmd() {
   local cmd="$1"
@@ -15,31 +18,63 @@ require_cmd() {
   fi
 }
 
-require_cmd curl
+require_cmd gh
+require_cmd tar
 
-download_with_gh() {
-  gh api "$GH_API_PATH" -H 'Accept: application/vnd.github.raw'
+detect_platform() {
+  local os arch
+  os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  arch="$(uname -m)"
+
+  case "$arch" in
+    x86_64|amd64) arch="amd64" ;;
+    arm64|aarch64) arch="arm64" ;;
+    *) echo "[spw-bootstrap] Unsupported architecture: $arch" >&2; exit 1 ;;
+  esac
+
+  case "$os" in
+    darwin|linux) ;;
+    *) echo "[spw-bootstrap] Unsupported OS: $os" >&2; exit 1 ;;
+  esac
+
+  printf '%s_%s' "$os" "$arch"
 }
 
-download_with_curl() {
-  curl -fsSL "$RAW_URL"
-}
+platform="$(detect_platform)"
 
-mkdir -p "$INSTALL_DIR"
-tmp_bin="$(mktemp)"
-trap 'rm -f "$tmp_bin"' EXIT
-
-if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
-  download_with_gh > "$tmp_bin"
-else
-  download_with_curl > "$tmp_bin"
+# Fetch latest release tag
+echo "[spw-bootstrap] Fetching latest release from ${SPW_REPO}..."
+tag_name="$(gh api "repos/${SPW_REPO}/releases/latest" --jq '.tag_name')"
+if [ -z "$tag_name" ]; then
+  echo "[spw-bootstrap] Could not determine latest release tag." >&2
+  exit 1
 fi
 
-chmod +x "$tmp_bin"
-mv "$tmp_bin" "$TARGET_BIN"
+version="${tag_name#v}"
+asset_pattern="spw_${version}_${platform}.tar.gz"
 
-echo "[spw-bootstrap] Installed spw to ${TARGET_BIN}"
-echo "[spw-bootstrap] Source repo: ${SPW_REPO} (main)"
+# Download and extract
+echo "[spw-bootstrap] Downloading ${asset_pattern} (${tag_name})..."
+tmp_dir="$(mktemp -d)"
+trap 'rm -rf "$tmp_dir"' EXIT
+
+gh release download "$tag_name" \
+  --repo "$SPW_REPO" \
+  --pattern "$asset_pattern" \
+  --dir "$tmp_dir"
+
+tar -xzf "${tmp_dir}/${asset_pattern}" -C "$tmp_dir"
+
+if [ ! -f "$tmp_dir/spw" ]; then
+  echo "[spw-bootstrap] Binary 'spw' not found in tarball." >&2
+  exit 1
+fi
+
+mkdir -p "$INSTALL_DIR"
+mv "$tmp_dir/spw" "$TARGET_BIN"
+chmod +x "$TARGET_BIN"
+
+echo "[spw-bootstrap] Installed spw ${tag_name} to ${TARGET_BIN}"
 
 if ! echo "$PATH" | tr ':' '\n' | grep -Fx "$INSTALL_DIR" >/dev/null 2>&1; then
   echo "[spw-bootstrap] Add ${INSTALL_DIR} to your PATH to run 'spw'."
