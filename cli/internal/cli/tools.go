@@ -27,6 +27,7 @@ func newToolsCmd() *cobra.Command {
 	cmd.AddCommand(newToolsDispatchHandoffCmd())
 	cmd.AddCommand(newToolsResolveModelCmd())
 	cmd.AddCommand(newToolsMergeConfigCmd())
+	cmd.AddCommand(newToolsMergeSettingsCmd())
 
 	return cmd
 }
@@ -231,6 +232,17 @@ func newToolsMergeConfigCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(3),
 		Run: func(cmd *cobra.Command, args []string) {
 			tools.MergeConfig(args[0], args[1], args[2])
+		},
+	}
+}
+
+func newToolsMergeSettingsCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "merge-settings",
+		Short: "Merge SPW hooks into .claude/settings.json, preserving non-SPW entries",
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			tools.MergeSettings(getCwd())
 		},
 	}
 }

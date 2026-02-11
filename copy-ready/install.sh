@@ -10,7 +10,7 @@ set -euo pipefail
 # - install: copies kit files into current project (preserves user config across upgrades)
 # - skills: installs default SPW skills into .claude/skills (best effort)
 # - status: prints a quick summary of kit presence + default skills
-# - Does not overwrite .claude/settings.json (prints merge instruction instead)
+# - Merges SPW hooks into .claude/settings.json (preserves non-SPW entries)
 # - Agent Teams activation is driven by [agent_teams].enabled in spw-config.toml
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -72,7 +72,7 @@ Behavior:
 - status: prints a quick summary of kit presence + default skills.
 
 Notes:
-- If .claude/settings.json already exists, it is not overwritten (manual merge required).
+- SPW hooks are auto-merged into .claude/settings.json (non-SPW entries preserved).
 - User config (.spec-workflow/spw-config.toml) is preserved across installs via smart merge.
 - Agent Teams activation is driven by [agent_teams].enabled in spw-config.toml.
 USAGE
@@ -295,15 +295,16 @@ cmd_install() {
     rm -f "$config_backup"
   fi
 
-  local created_settings="false"
   if [ ! -f "${TARGET_ROOT}/.claude/settings.json" ]; then
     mkdir -p "${TARGET_ROOT}/.claude"
     cp "${SCRIPT_DIR}/.claude/settings.json.example" "${TARGET_ROOT}/.claude/settings.json"
-    echo "[spw-kit] Created .claude/settings.json with SessionStart hook."
-    created_settings="true"
+    echo "[spw-kit] Created .claude/settings.json with SPW hooks."
   else
-    echo "[spw-kit] .claude/settings.json already exists."
-    echo "[spw-kit] Manually merge hook block from ${SCRIPT_DIR}/.claude/settings.json.example"
+    if command -v spw >/dev/null 2>&1 && spw tools merge-settings >/dev/null 2>&1; then
+      echo "[spw-kit] Hooks merged into .claude/settings.json."
+    else
+      echo "[spw-kit] spw Go binary not available; manually merge hooks from ${SCRIPT_DIR}/.claude/settings.json.example"
+    fi
   fi
 
   resolve_config_path
@@ -319,29 +320,21 @@ cmd_install() {
   teams_enabled="$(toml_bool_value agent_teams enabled false)"
   if [ "$teams_enabled" = "true" ]; then
     activate_teams_overlay_symlinks
-    if [ "$created_settings" = "true" ]; then
-      # Inject Agent Teams env into freshly created settings.json
-      # TODO: replace with `spw tools settings-inject-teams` when available
-      if command -v node >/dev/null 2>&1; then
-        node -e '
-          const fs = require("fs");
-          const path = process.argv[1];
-          const data = JSON.parse(fs.readFileSync(path, "utf8"));
-          data.env = data.env || {};
-          data.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
-          data.teammateMode = "in-process";
-          fs.writeFileSync(path, JSON.stringify(data, null, 2));
-        ' "${TARGET_ROOT}/.claude/settings.json"
-        echo "[spw-kit] Enabled Agent Teams in settings.json (teammateMode=in-process)."
-      else
-        echo "[spw-kit] Agent Teams enabled in config but cannot inject settings."
-        echo "[spw-kit] Add to .claude/settings.json manually:"
-        echo "[spw-kit] - env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = \"1\""
-        echo "[spw-kit] - teammateMode = \"in-process\" (or \"tmux\")"
-      fi
+    # Inject Agent Teams env into settings.json
+    if command -v node >/dev/null 2>&1; then
+      node -e '
+        const fs = require("fs");
+        const path = process.argv[1];
+        const data = JSON.parse(fs.readFileSync(path, "utf8"));
+        data.env = data.env || {};
+        data.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
+        data.teammateMode = "in-process";
+        fs.writeFileSync(path, JSON.stringify(data, null, 2));
+      ' "${TARGET_ROOT}/.claude/settings.json"
+      echo "[spw-kit] Enabled Agent Teams in settings.json (teammateMode=in-process)."
     else
-      echo "[spw-kit] Agent Teams enabled in config."
-      echo "[spw-kit] Ensure .claude/settings.json has:"
+      echo "[spw-kit] Agent Teams enabled in config but cannot inject settings."
+      echo "[spw-kit] Add to .claude/settings.json manually:"
       echo "[spw-kit] - env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = \"1\""
       echo "[spw-kit] - teammateMode = \"in-process\" (or \"tmux\")"
     fi
