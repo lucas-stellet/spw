@@ -22,17 +22,18 @@ bash -n bin/spw
 bash -n scripts/bootstrap.sh
 bash -n scripts/install-spw-bin.sh
 bash -n scripts/validate-thin-orchestrator.sh
-bash -n hooks/session-start-sync-tasks-template.sh
 bash -n copy-ready/install.sh
 
 # Validate thin-orchestrator contract (wrapper sizes, workflow refs, mirror sync)
 scripts/validate-thin-orchestrator.sh
 
-# Smoke-test Node.js hooks (each reads JSON from stdin)
-node hooks/spw-statusline.js <<< '{"workspace":{"current_dir":"'"$(pwd)"'"}}'
-node hooks/spw-guard-user-prompt.js <<< '{"prompt":"/spw:plan"}'
-node hooks/spw-guard-paths.js <<< '{"cwd":"'"$(pwd)"'","tool_input":{"file_path":"README.md"}}'
-node hooks/spw-guard-stop.js <<< '{}'
+# Build and smoke-test Go hooks (each reads JSON from stdin)
+go build -o /tmp/spw ./cli/cmd/spw && PATH="/tmp:$PATH"
+echo '{"workspace":{"current_dir":"'"$(pwd)"'"}}' | spw hook statusline
+echo '{"prompt":"/spw:plan"}' | spw hook guard-prompt
+echo '{"cwd":"'"$(pwd)"'","tool_input":{"file_path":"README.md"}}' | spw hook guard-paths
+echo '{}' | spw hook guard-stop
+echo '{}' | spw hook session-start
 ```
 
 ## Architecture
@@ -58,19 +59,18 @@ Source files in this repo must stay in sync with their `copy-ready/` counterpart
 | `workflows/spw/overlays/active/*.md` | `copy-ready/.claude/workflows/spw/overlays/active/*.md` (symlinks) |
 | `templates/user-templates/` | `copy-ready/.spec-workflow/user-templates/` |
 | `config/spw-config.toml` | `copy-ready/.spec-workflow/spw-config.toml` |
-| `hooks/*.js\|*.sh` | `copy-ready/.claude/hooks/` |
 
 `scripts/validate-thin-orchestrator.sh` enforces mirror integrity via `diff -rq`. Always update both sides in the same patch.
 
-### Hooks (Node.js + Bash)
+### Hooks (Go CLI)
 
-All hooks read JSON from stdin and use `hooks/spw-hook-lib.js` as shared library for TOML config reading, workspace detection, and violation reporting.
+All hooks are implemented in Go at `cli/internal/hook/` and invoked via `spw hook <event>`. Each reads JSON from stdin and follows the same exit-code contract: 0 = ok, 2 = block.
 
-- **`spw-statusline.js`** — StatusLine hook: detects active spec from git diff/cache
-- **`spw-guard-user-prompt.js`** — UserPromptSubmit: validates spec arg presence in SPW commands
-- **`spw-guard-paths.js`** — PreToolUse (Write/Edit): prevents writes outside spec-workflow paths
-- **`spw-guard-stop.js`** — Stop: checks file-first handoff completeness in recent runs
-- **`session-start-sync-tasks-template.sh`** — SessionStart: syncs active tasks template variant based on TDD config
+- **`spw hook statusline`** — StatusLine: detects active spec from git diff/cache
+- **`spw hook guard-prompt`** — UserPromptSubmit: validates spec arg presence in SPW commands
+- **`spw hook guard-paths`** — PreToolUse (Write/Edit): prevents writes outside spec-workflow paths
+- **`spw hook guard-stop`** — Stop: checks file-first handoff completeness in recent runs
+- **`spw hook session-start`** — SessionStart: syncs active tasks template variant based on TDD config
 
 Hook enforcement mode is configured in `config/spw-config.toml` under `[hooks]`: `warn` (diagnostics only) or `block` (deny violating actions).
 

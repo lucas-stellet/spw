@@ -1,7 +1,7 @@
 {
   "statusLine": {
     "type": "command",
-    "command": "node $PROJECT_ROOT/spw/hooks/spw-statusline.js"
+    "command": "spw hook statusline"
   },
   "hooks": {
     "SessionStart": [
@@ -10,7 +10,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$PROJECT_ROOT/spw/hooks/session-start-sync-tasks-template.sh"
+            "command": "spw hook session-start"
           }
         ]
       }
@@ -21,7 +21,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node $PROJECT_ROOT/spw/hooks/spw-guard-user-prompt.js"
+            "command": "spw hook guard-prompt"
           }
         ]
       }
@@ -32,7 +32,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node $PROJECT_ROOT/spw/hooks/spw-guard-paths.js"
+            "command": "spw hook guard-paths"
           }
         ]
       }
@@ -43,7 +43,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node $PROJECT_ROOT/spw/hooks/spw-guard-stop.js"
+            "command": "spw hook guard-stop"
           }
         ]
       }

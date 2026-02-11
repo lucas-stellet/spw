@@ -94,7 +94,7 @@ Transitional compatibility:
 When shell logic is required, prefer:
 - `spw tools config-get <section.key> --default <value> [--raw]`
 
-This keeps workflow behavior stable during migration and avoids hardcoded path drift.
+This keeps workflow behavior stable and avoids hardcoded path drift.
 
 # File-First Handoff Contract
 

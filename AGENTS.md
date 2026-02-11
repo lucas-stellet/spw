@@ -118,12 +118,12 @@ Absence of these files must result in `BLOCKED`.
 - `bash -n scripts/install-spw-bin.sh`
 - `bash -n scripts/validate-thin-orchestrator.sh`
 - `scripts/validate-thin-orchestrator.sh`
-- `bash -n hooks/session-start-sync-tasks-template.sh`
 - `bash -n copy-ready/install.sh`
-- `node hooks/spw-statusline.js <<< '{"workspace":{"current_dir":"'"$(pwd)"'"}}'`
-- `node hooks/spw-guard-user-prompt.js <<< '{"prompt":"/spw:plan"}'`
-- `node hooks/spw-guard-paths.js <<< '{"cwd":"'"$(pwd)"'","tool_input":{"file_path":"README.md"}}'`
-- `node hooks/spw-guard-stop.js <<< '{}'`
+- `echo '{"workspace":{"current_dir":"'"$(pwd)"'"}}' | spw hook statusline`
+- `echo '{"prompt":"/spw:plan"}' | spw hook guard-prompt`
+- `echo '{"cwd":"'"$(pwd)"'","tool_input":{"file_path":"README.md"}}' | spw hook guard-paths`
+- `echo '{}' | spw hook guard-stop`
+- `echo '{}' | spw hook session-start`
 
 ## Documentation sync
 

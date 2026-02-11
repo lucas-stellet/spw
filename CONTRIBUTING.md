@@ -20,17 +20,17 @@ bash -n bin/spw
 bash -n scripts/bootstrap.sh
 bash -n scripts/install-spw-bin.sh
 bash -n scripts/validate-thin-orchestrator.sh
-bash -n hooks/session-start-sync-tasks-template.sh
 bash -n copy-ready/install.sh
 
 # Validate thin-orchestrator contract (wrapper sizes, workflow refs, mirror sync)
 scripts/validate-thin-orchestrator.sh
 
-# Smoke-test Node.js hooks
-node hooks/spw-statusline.js <<< '{"workspace":{"current_dir":"'"$(pwd)"'"}}'
-node hooks/spw-guard-user-prompt.js <<< '{"prompt":"/spw:plan"}'
-node hooks/spw-guard-paths.js <<< '{"cwd":"'"$(pwd)"'","tool_input":{"file_path":"README.md"}}'
-node hooks/spw-guard-stop.js <<< '{}'
+# Smoke-test Go hooks (build first: cd cli && go build -o /tmp/spw ./cmd/spw && PATH="/tmp:$PATH")
+echo '{"workspace":{"current_dir":"'"$(pwd)"'"}}' | spw hook statusline
+echo '{"prompt":"/spw:plan"}' | spw hook guard-prompt
+echo '{"cwd":"'"$(pwd)"'","tool_input":{"file_path":"README.md"}}' | spw hook guard-paths
+echo '{}' | spw hook guard-stop
+echo '{}' | spw hook session-start
 ```
 
 ## Mirror system
@@ -56,7 +56,7 @@ When modifying behavior, defaults, or guardrails, update these files in the same
 ## Code style
 
 - Shell scripts: validate with `bash -n` before committing.
-- Node.js hooks: use the shared library `hooks/spw-hook-lib.js` for config reading and workspace detection.
+- Go hooks: implemented in `cli/internal/hook/`, invoked via `spw hook <event>`.
 - Workflows/commands: follow the thin-orchestrator pattern (max 60 lines for command wrappers).
 
 ## Submitting changes

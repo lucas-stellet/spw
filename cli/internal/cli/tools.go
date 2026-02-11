@@ -26,6 +26,7 @@ func newToolsCmd() *cobra.Command {
 	cmd.AddCommand(newToolsDispatchReadStatusCmd())
 	cmd.AddCommand(newToolsDispatchHandoffCmd())
 	cmd.AddCommand(newToolsResolveModelCmd())
+	cmd.AddCommand(newToolsMergeConfigCmd())
 
 	return cmd
 }
@@ -221,4 +222,15 @@ func newToolsResolveModelCmd() *cobra.Command {
 	}
 	cmd.Flags().Bool("raw", false, "Output raw value without JSON wrapping")
 	return cmd
+}
+
+func newToolsMergeConfigCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "merge-config <template> <user> <output>",
+		Short: "Merge template TOML with user TOML, preserving user values",
+		Args:  cobra.ExactArgs(3),
+		Run: func(cmd *cobra.Command, args []string) {
+			tools.MergeConfig(args[0], args[1], args[2])
+		},
+	}
 }

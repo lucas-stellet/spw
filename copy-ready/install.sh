@@ -283,19 +283,13 @@ cmd_install() {
 
   # Smart merge: preserve user config values with new template structure
   if [ -n "$config_backup" ]; then
-    local merge_script="${SCRIPT_DIR}/../scripts/merge-config.js"
-    # Fallback: try repo root location used during development
-    if [ ! -f "$merge_script" ]; then
-      merge_script="${SPW_REPO_ROOT}/scripts/merge-config.js"
-    fi
-
-    if command -v node >/dev/null 2>&1 && [ -f "$merge_script" ]; then
-      node "$merge_script" "$CONFIG_PATH" "$config_backup" "$CONFIG_PATH"
+    if command -v spw >/dev/null 2>&1; then
+      spw tools merge-config "$CONFIG_PATH" "$config_backup" "$CONFIG_PATH"
       echo "[spw-kit] Config merged: user values preserved, new keys added."
     else
       # Fallback: restore user backup as-is (keeps values, misses new keys)
       cp "$config_backup" "$CONFIG_PATH"
-      echo "[spw-kit] Node unavailable; restored user config as-is (new template keys may be missing)."
+      echo "[spw-kit] spw binary not found; restored user config as-is (new template keys may be missing)."
     fi
     rm -f "$config_backup"
   fi
@@ -310,9 +304,6 @@ cmd_install() {
     echo "[spw-kit] .claude/settings.json already exists."
     echo "[spw-kit] Manually merge hook block from ${SCRIPT_DIR}/.claude/settings.json.example"
   fi
-
-  chmod +x "${TARGET_ROOT}/.claude/hooks/session-start-sync-tasks-template.sh" || true
-  chmod +x "${TARGET_ROOT}/.claude/hooks/spw-statusline.js" || true
 
   resolve_config_path
   AUTO_INSTALL_SKILLS="$(toml_bool_value skills auto_install_defaults_on_spw_install true)"
@@ -329,6 +320,7 @@ cmd_install() {
     activate_teams_overlay_symlinks
     if [ "$created_settings" = "true" ]; then
       # Inject Agent Teams env into freshly created settings.json
+      # TODO: replace with `spw tools settings-inject-teams` when available
       if command -v node >/dev/null 2>&1; then
         node -e '
           const fs = require("fs");
@@ -341,7 +333,7 @@ cmd_install() {
         ' "${TARGET_ROOT}/.claude/settings.json"
         echo "[spw-kit] Enabled Agent Teams in settings.json (teammateMode=in-process)."
       else
-        echo "[spw-kit] Agent Teams enabled in config but Node unavailable."
+        echo "[spw-kit] Agent Teams enabled in config but cannot inject settings."
         echo "[spw-kit] Add to .claude/settings.json manually:"
         echo "[spw-kit] - env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = \"1\""
         echo "[spw-kit] - teammateMode = \"in-process\" (or \"tmux\")"
@@ -409,16 +401,10 @@ cmd_status() {
     echo "[spw-kit] .claude/settings.json: missing"
   fi
 
-  if [ -x "${TARGET_ROOT}/.claude/hooks/session-start-sync-tasks-template.sh" ]; then
-    echo "[spw-kit] hook session-start-sync-tasks-template.sh: present"
+  if command -v spw >/dev/null 2>&1; then
+    echo "[spw-kit] spw binary: present ($(spw --version 2>/dev/null || echo 'unknown version'))"
   else
-    echo "[spw-kit] hook session-start-sync-tasks-template.sh: missing"
-  fi
-
-  if [ -x "${TARGET_ROOT}/.claude/hooks/spw-statusline.js" ]; then
-    echo "[spw-kit] hook spw-statusline.js: present"
-  else
-    echo "[spw-kit] hook spw-statusline.js: missing"
+    echo "[spw-kit] spw binary: missing (hooks require spw in PATH)"
   fi
 
   status_default_skills
