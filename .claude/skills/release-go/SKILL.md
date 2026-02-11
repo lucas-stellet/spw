@@ -33,12 +33,17 @@ Ask the user which type of release:
 
 ### 3. Create Release
 
+IMPORTANT: Never delete or move existing tags. Always create a new tag and mark it as latest.
+
 ```bash
 # Create annotated tag
 git tag -a v{VERSION} -m "Release v{VERSION}"
 
 # Push tag to remote
-git push origin main --tags
+git push origin v{VERSION}
+
+# Create GitHub Release and mark as latest
+gh release create v{VERSION} --title "v{VERSION}" --generate-notes --latest
 ```
 
 ### 4. Verify Release
@@ -46,6 +51,9 @@ git push origin main --tags
 ```bash
 # Confirm tag was pushed
 git ls-remote --tags origin | grep v{VERSION}
+
+# Confirm release is marked as latest
+gh release view v{VERSION} --json isLatest --jq '.isLatest'
 
 # Show install command
 echo "Install with: go install {MODULE_PATH}@v{VERSION}"
@@ -66,6 +74,13 @@ Before releasing, verify:
 3. Code builds successfully: `go build ./...`
 4. On correct branch (main/master)
 
+## Rules
+
+- **Never delete existing tags** — tags are immutable references; create a new version instead
+- **Never move tags** to point to a different commit
+- **Always use `gh release create --latest`** to mark the new release as the latest
+- If a previous release failed (e.g., CI broke), fix the issue, then create the next patch version
+
 ## Example Output
 
 ```
@@ -75,6 +90,7 @@ New version: v0.2.0
 
 ✓ Created tag v0.2.0
 ✓ Pushed to origin
+✓ Marked as latest release
 
 Install with:
   go install github.com/user/project@v0.2.0
