@@ -283,13 +283,14 @@ cmd_install() {
 
   # Smart merge: preserve user config values with new template structure
   if [ -n "$config_backup" ]; then
-    if command -v spw >/dev/null 2>&1; then
-      spw tools merge-config "$CONFIG_PATH" "$config_backup" "$CONFIG_PATH"
+    # Try Go binary's merge-config (suppress output in case the bash wrapper is
+    # the only `spw` in PATH — it doesn't support `tools` and would abort).
+    if command -v spw >/dev/null 2>&1 && spw tools merge-config "$CONFIG_PATH" "$config_backup" "$CONFIG_PATH" >/dev/null 2>&1; then
       echo "[spw-kit] Config merged: user values preserved, new keys added."
     else
       # Fallback: restore user backup as-is (keeps values, misses new keys)
       cp "$config_backup" "$CONFIG_PATH"
-      echo "[spw-kit] spw binary not found; restored user config as-is (new template keys may be missing)."
+      echo "[spw-kit] spw Go binary not available; restored user config as-is (new template keys may be missing)."
     fi
     rm -f "$config_backup"
   fi
