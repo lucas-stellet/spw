@@ -20,7 +20,22 @@ The `dispatch_policy` field tells you which shared policy governs this run:
 
 Follow the rules in the corresponding `shared/<dispatch_policy>.md`.
 
-### 2. For each subagent
+### 2a. Write orchestrator context files (if needed)
+
+Before filling any brief, persist orchestrator-generated context to files:
+
+```
+mkdir -p <RUN_DIR>/_orchestrator-context/
+```
+
+Write context files as needed:
+- Prototype observations from Playwright/WebFetch sessions
+- User clarification decisions from AskUserQuestion interactions
+- Inline MCP extraction summaries
+
+These files become inputs in subsequent briefs (referenced by path).
+
+### 2b. For each subagent
 
 a) Setup:
 ```
@@ -40,6 +55,7 @@ spw tools dispatch-read-status <name> --run-dir <RUN_DIR>
 ```
 If pass → proceed to next subagent. Do NOT read report.md.
 If blocked → read report.md for decision (this is the ONLY case you read it).
+If status.json missing (subagent failed/killed) → apply Subagent Failure Policy (see dispatch-pipeline.md).
 
 ### 3. MCP Inline Exception
 

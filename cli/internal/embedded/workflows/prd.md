@@ -57,6 +57,8 @@ comms:
   - Converts approval comments into concrete requirement deltas and open questions.
 - `codebase-impact-scanner` (model: implementation)
   - Checks feasibility/impact against existing code patterns and boundaries.
+  - Scope: file paths, component names, architectural boundaries, current behavior.
+  - NOT in scope: implementation recommendations, alternative approaches, effort estimates, code snippets for proposed changes. Those belong to later subagents.
 - `revision-planner` (model: complex_reasoning)
   - Produces an explicit revision plan before any document edits.
 - `requirements-structurer` (model: complex_reasoning)
@@ -98,6 +100,18 @@ Dispatch only when user selected an MCP-based source in `<source_handling>`.
 <!-- post_dispatch: mid-pipeline user interaction .................. -->
 <post_dispatch subagent="requirements-structurer">
 Run one-question-at-a-time discovery with user before proceeding to prd-editor.
+
+Procedure:
+1. Read `status.json` only (thin-dispatch). Extract `summary` for clarification count.
+2. For each [NEEDS_CLARIFICATION] or CLARIFY item flagged by the structurer,
+   ask ONE AskUserQuestion call with that single question.
+   - Include a recommendation and trade-off context in the question options.
+   - Wait for user answer before asking the next question.
+3. After all clarifications are resolved, write decisions to:
+   `<run-dir>/_orchestrator-context/user-clarifications.md`
+4. Reference that file in the prd-editor brief.
+
+Exception: if the structurer flagged 4+ items AND they are independent (no dependencies between them), batch up to 4 in a single AskUserQuestion call. Document the batching reason in user-clarifications.md.
 </post_dispatch>
 
 <post_dispatch subagent="prd-critic">
@@ -154,6 +168,8 @@ If index/report files are missing, continue with warning (non-blocking).
 </post_mortem_memory>
 
 <source_handling>
+**Shortcut:** If the user's command includes `use <mcp-name>` (e.g., `use linear-server`, `use github`), skip the AskUserQuestion flow and treat it as if the user selected that MCP directly. Proceed to the matching MCP dispatch.
+
 If `--source` is provided and looks like a URL (`http://` or `https://`) or markdown (`.md`), run a source-reading gate:
 
 1. Ask with AskUserQuestion:
@@ -183,8 +199,11 @@ If `--source` is provided and looks like a URL (`http://` or `https://`) or mark
 When fetching a URL provided in a source (issue, brief, user input):
 
 1. If `WebFetch` returns an SPA shell (minimal HTML with only JS bundle references, no meaningful text content), or the URL matches a known prototype/deploy-preview domain (`*.lovable.app`, `*.vercel.app`, `*.netlify.app`, `*.framer.app`, `*.webflow.io`, `*.stackblitz.com`):
-   - Use Playwright MCP to navigate the URL, take screenshots, and extract visible content.
-   - Playwright MCP is a pre-configured MCP server; discover its tools at runtime. Never invoke `npx` or Node scripts directly for browser automation.
+   - **Discover Playwright MCP tools first**: check if Playwright MCP tools are available in the current session before declaring them absent. Look for tool names containing "playwright" or browser automation capabilities.
+   - If available: use Playwright MCP to navigate the URL, take screenshots, and extract visible content. Never invoke `npx` or Node scripts directly.
+   - Write all prototype observations (screenshot descriptions, UI patterns, interaction findings) to:
+     `<run-dir>/_orchestrator-context/prototype-observations.md`
+   - Reference that file in subsequent briefs (source-reader, requirements-structurer).
 2. If Playwright MCP tools are not available in the current session:
    - Warn the user: "Playwright MCP is not configured — prototype content may be incomplete. Run `claude mcp add playwright -- npx @playwright/mcp@latest --headless --isolated` to enable."
    - Continue with whatever `WebFetch` returned.

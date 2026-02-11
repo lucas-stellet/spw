@@ -38,12 +38,33 @@ Example brief content:
 - Requirements: .spec-workflow/specs/<spec-name>/requirements.md
 ```
 
-### 3. Synthesizer Reads From Filesystem
+### 3. Orchestrator Context Files
+
+When the orchestrator generates context that is NOT a subagent report (e.g., MCP-extracted data, user clarification decisions, prototype observations), it MUST write that context to a file in the run directory BEFORE referencing it in any brief.
+
+Convention:
+- `<run-dir>/_orchestrator-context/<topic>.md`
+
+Examples:
+- `_orchestrator-context/prototype-observations.md` — screenshots, SPA content
+- `_orchestrator-context/user-clarifications.md` — resolved CLARIFY items
+- `_orchestrator-context/mcp-source-context.md` — inline MCP extraction notes
+
+Briefs then reference these files by path, same as subagent reports:
+```
+## Inputs
+- Prototype observations: <run-dir>/_orchestrator-context/prototype-observations.md
+- User clarifications: <run-dir>/_orchestrator-context/user-clarifications.md
+```
+
+Never embed orchestrator-generated content directly in a brief's ## Task section.
+
+### 4. Synthesizer Reads From Filesystem
 
 The last subagent (synthesizer/writer) receives a brief listing ALL previous report paths.
 It reads them directly from disk — the orchestrator does not relay content.
 
-### 4. Run Structure
+### 5. Run Structure
 
 ```
 <phase>/_comms/<command>/run-NNN/
@@ -53,12 +74,22 @@ It reads them directly from disk — the orchestrator does not relay content.
   _handoff.md
 ```
 
-### 5. Resume Policy
+### 6. Resume Policy
 
 On `continue-unfinished`:
 - Skip subagents where `status.json` exists with `status=pass`.
 - Redispatch missing or blocked subagents.
 - Always rerun synthesizer.
+
+### 7. Subagent Failure Policy
+
+When a dispatched subagent fails (error, killed, timeout) without writing `status.json`:
+
+1. Check if `report.md` exists and is non-empty:
+   - If yes AND content is substantial: write `status.json` with `{"status": "pass", "summary": "..."}` and proceed.
+   - If no or content is partial/empty: redispatch the subagent (same brief, same model).
+2. Never complete a subagent's work inline. If the subagent's task requires writing output artifacts (beyond report.md/status.json), the orchestrator must redispatch — not write those artifacts itself.
+3. Maximum 1 retry per subagent. If the retry also fails, stop with BLOCKED and report the failure.
 
 ## Extension Points
 
@@ -110,6 +141,7 @@ This contract defines the **file structure**. The category-level dispatch polici
 The 5 core thin-dispatch rules apply on top of this contract:
 1. Orchestrator reads only `status.json` after dispatch (never `report.md` on pass).
 2. Briefs contain filesystem paths to prior reports (never content).
+   **Corollary to rule 2**: Orchestrator-generated context (prototype observations, user clarifications, MCP extraction notes) must also be persisted to `<run-dir>/_orchestrator-context/` files and referenced by path — never embedded inline in briefs.
 3. Synthesizers/aggregators read from disk directly.
 4. Run structure follows category layout.
 5. Resume skips completed subagents, always reruns final stage.
@@ -177,6 +209,8 @@ comms:
   - Converts approval comments into concrete requirement deltas and open questions.
 - `codebase-impact-scanner` (model: implementation)
   - Checks feasibility/impact against existing code patterns and boundaries.
+  - Scope: file paths, component names, architectural boundaries, current behavior.
+  - NOT in scope: implementation recommendations, alternative approaches, effort estimates, code snippets for proposed changes. Those belong to later subagents.
 - `revision-planner` (model: complex_reasoning)
   - Produces an explicit revision plan before any document edits.
 - `requirements-structurer` (model: complex_reasoning)
@@ -218,6 +252,18 @@ Dispatch only when user selected an MCP-based source in `<source_handling>`.
 <!-- post_dispatch: mid-pipeline user interaction .................. -->
 <post_dispatch subagent="requirements-structurer">
 Run one-question-at-a-time discovery with user before proceeding to prd-editor.
+
+Procedure:
+1. Read `status.json` only (thin-dispatch). Extract `summary` for clarification count.
+2. For each [NEEDS_CLARIFICATION] or CLARIFY item flagged by the structurer,
+   ask ONE AskUserQuestion call with that single question.
+   - Include a recommendation and trade-off context in the question options.
+   - Wait for user answer before asking the next question.
+3. After all clarifications are resolved, write decisions to:
+   `<run-dir>/_orchestrator-context/user-clarifications.md`
+4. Reference that file in the prd-editor brief.
+
+Exception: if the structurer flagged 4+ items AND they are independent (no dependencies between them), batch up to 4 in a single AskUserQuestion call. Document the batching reason in user-clarifications.md.
 </post_dispatch>
 
 <post_dispatch subagent="prd-critic">
@@ -274,6 +320,8 @@ If index/report files are missing, continue with warning (non-blocking).
 </post_mortem_memory>
 
 <source_handling>
+**Shortcut:** If the user's command includes `use <mcp-name>` (e.g., `use linear-server`, `use github`), skip the AskUserQuestion flow and treat it as if the user selected that MCP directly. Proceed to the matching MCP dispatch.
+
 If `--source` is provided and looks like a URL (`http://` or `https://`) or markdown (`.md`), run a source-reading gate:
 
 1. Ask with AskUserQuestion:
@@ -303,8 +351,11 @@ If `--source` is provided and looks like a URL (`http://` or `https://`) or mark
 When fetching a URL provided in a source (issue, brief, user input):
 
 1. If `WebFetch` returns an SPA shell (minimal HTML with only JS bundle references, no meaningful text content), or the URL matches a known prototype/deploy-preview domain (`*.lovable.app`, `*.vercel.app`, `*.netlify.app`, `*.framer.app`, `*.webflow.io`, `*.stackblitz.com`):
-   - Use Playwright MCP to navigate the URL, take screenshots, and extract visible content.
-   - Playwright MCP is a pre-configured MCP server; discover its tools at runtime. Never invoke `npx` or Node scripts directly for browser automation.
+   - **Discover Playwright MCP tools first**: check if Playwright MCP tools are available in the current session before declaring them absent. Look for tool names containing "playwright" or browser automation capabilities.
+   - If available: use Playwright MCP to navigate the URL, take screenshots, and extract visible content. Never invoke `npx` or Node scripts directly.
+   - Write all prototype observations (screenshot descriptions, UI patterns, interaction findings) to:
+     `<run-dir>/_orchestrator-context/prototype-observations.md`
+   - Reference that file in subsequent briefs (source-reader, requirements-structurer).
 2. If Playwright MCP tools are not available in the current session:
    - Warn the user: "Playwright MCP is not configured — prototype content may be incomplete. Run `claude mcp add playwright -- npx @playwright/mcp@latest --headless --isolated` to enable."
    - Continue with whatever `WebFetch` returned.

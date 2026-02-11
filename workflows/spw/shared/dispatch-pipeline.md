@@ -27,12 +27,33 @@ Example brief content:
 - Requirements: .spec-workflow/specs/<spec-name>/requirements.md
 ```
 
-### 3. Synthesizer Reads From Filesystem
+### 3. Orchestrator Context Files
+
+When the orchestrator generates context that is NOT a subagent report (e.g., MCP-extracted data, user clarification decisions, prototype observations), it MUST write that context to a file in the run directory BEFORE referencing it in any brief.
+
+Convention:
+- `<run-dir>/_orchestrator-context/<topic>.md`
+
+Examples:
+- `_orchestrator-context/prototype-observations.md` — screenshots, SPA content
+- `_orchestrator-context/user-clarifications.md` — resolved CLARIFY items
+- `_orchestrator-context/mcp-source-context.md` — inline MCP extraction notes
+
+Briefs then reference these files by path, same as subagent reports:
+```
+## Inputs
+- Prototype observations: <run-dir>/_orchestrator-context/prototype-observations.md
+- User clarifications: <run-dir>/_orchestrator-context/user-clarifications.md
+```
+
+Never embed orchestrator-generated content directly in a brief's ## Task section.
+
+### 4. Synthesizer Reads From Filesystem
 
 The last subagent (synthesizer/writer) receives a brief listing ALL previous report paths.
 It reads them directly from disk — the orchestrator does not relay content.
 
-### 4. Run Structure
+### 5. Run Structure
 
 ```
 <phase>/_comms/<command>/run-NNN/
@@ -42,12 +63,22 @@ It reads them directly from disk — the orchestrator does not relay content.
   _handoff.md
 ```
 
-### 5. Resume Policy
+### 6. Resume Policy
 
 On `continue-unfinished`:
 - Skip subagents where `status.json` exists with `status=pass`.
 - Redispatch missing or blocked subagents.
 - Always rerun synthesizer.
+
+### 7. Subagent Failure Policy
+
+When a dispatched subagent fails (error, killed, timeout) without writing `status.json`:
+
+1. Check if `report.md` exists and is non-empty:
+   - If yes AND content is substantial: write `status.json` with `{"status": "pass", "summary": "..."}` and proceed.
+   - If no or content is partial/empty: redispatch the subagent (same brief, same model).
+2. Never complete a subagent's work inline. If the subagent's task requires writing output artifacts (beyond report.md/status.json), the orchestrator must redispatch — not write those artifacts itself.
+3. Maximum 1 retry per subagent. If the retry also fails, stop with BLOCKED and report the failure.
 
 ## Extension Points
 
