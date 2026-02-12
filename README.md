@@ -43,11 +43,10 @@ Each command handles subagent dispatch, file handoff, and quality gates automati
 
 ### 1. Install the CLI
 
-The bootstrap script downloads the compiled Go binary from the latest GitHub Release and installs it to `~/.local/bin/spw`. Requires `gh` (authenticated) and `tar`.
+The bootstrap script downloads the compiled Go binary from the latest GitHub Release and installs it to `~/.local/bin/spw`. Requires `curl` and `tar`.
 
 ```bash
-gh api 'repos/lucas-stellet/spw/contents/scripts/bootstrap.sh?ref=main' \
-  -H 'Accept: application/vnd.github.raw' | bash
+curl -fsSL https://raw.githubusercontent.com/lucas-stellet/spw/main/scripts/bootstrap.sh | bash
 ```
 
 **From a local clone (build from source):**
