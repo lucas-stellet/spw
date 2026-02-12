@@ -43,6 +43,11 @@ var Stubs embed.FS
 //go:embed all:defaults
 var Defaults embed.FS
 
+// Snippets contains the CLAUDE.md and AGENTS.md injection snippets.
+//
+//go:embed snippets/*.md
+var Snippets embed.FS
+
 // Assets returns a composite FS that mirrors the embedded directory layout.
 // It provides access via paths like "workflows/exec.md", "shared/config-resolution.md",
 // "overlays/exec.md", etc.
@@ -55,6 +60,7 @@ func Assets() *CompositeFS {
 			"overlays/":  Overlays,
 			"stubs/":     Stubs,
 			"defaults/":  Defaults,
+			"snippets/":  Snippets,
 		},
 	}
 }

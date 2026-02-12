@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/lucas-stellet/spw/internal/config"
 )
 
 // settingsJSON is the Claude Code settings structure.
@@ -74,24 +76,38 @@ func NewSettings() settingsJSON {
 }
 
 // WriteSettings creates .claude/settings.json if it doesn't exist, or merges
-// SPW hooks into the existing file.
-func WriteSettings(root string) error {
+// SPW hooks into the existing file. It also manages Agent Teams settings based
+// on the provided configuration.
+func WriteSettings(root string, agentTeams config.AgentTeamsConfig) error {
 	settingsPath := filepath.Join(root, ".claude", "settings.json")
 
 	if _, err := os.Stat(settingsPath); err == nil {
-		return MergeSettings(root)
+		return MergeSettings(root, agentTeams)
 	}
 
 	if err := os.MkdirAll(filepath.Dir(settingsPath), 0755); err != nil {
 		return err
 	}
 
-	data, err := json.MarshalIndent(NewSettings(), "", "  ")
+	spw := NewSettings()
+	data, err := json.MarshalIndent(spw, "", "  ")
 	if err != nil {
 		return err
 	}
 
-	if err := os.WriteFile(settingsPath, data, 0644); err != nil {
+	// Parse back to map so we can add Agent Teams fields.
+	var m map[string]any
+	if err := json.Unmarshal(data, &m); err != nil {
+		return err
+	}
+	mergeAgentTeams(m, agentTeams)
+
+	out, err := json.MarshalIndent(m, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	if err := os.WriteFile(settingsPath, append(out, '\n'), 0644); err != nil {
 		return err
 	}
 
@@ -100,8 +116,9 @@ func WriteSettings(root string) error {
 }
 
 // MergeSettings reads an existing .claude/settings.json, merges SPW hooks into
-// it (preserving all non-SPW hooks and other settings), and writes it back.
-func MergeSettings(root string) error {
+// it (preserving all non-SPW hooks and other settings), manages Agent Teams
+// settings, and writes it back.
+func MergeSettings(root string, agentTeams config.AgentTeamsConfig) error {
 	settingsPath := filepath.Join(root, ".claude", "settings.json")
 
 	data, err := os.ReadFile(settingsPath)
@@ -122,6 +139,9 @@ func MergeSettings(root string) error {
 	// Merge hooks: for each SPW event, remove old SPW entries, append new ones,
 	// preserve all non-SPW entries.
 	mergeHooks(existing, spw)
+
+	// Merge Agent Teams settings.
+	mergeAgentTeams(existing, agentTeams)
 
 	out, err := json.MarshalIndent(existing, "", "  ")
 	if err != nil {
@@ -270,4 +290,35 @@ func containsBytes(haystack, needle []byte) bool {
 		}
 	}
 	return false
+}
+
+// mergeAgentTeams adds or removes Agent Teams keys in settings.json.
+func mergeAgentTeams(existing map[string]any, agentTeams config.AgentTeamsConfig) {
+	if agentTeams.Enabled {
+		// Ensure env map exists and set the flag.
+		env, ok := existing["env"].(map[string]any)
+		if !ok {
+			env = map[string]any{}
+		}
+		env["CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS"] = "1"
+		existing["env"] = env
+
+		// Set teammateMode (default "in-process").
+		mode := agentTeams.TeammateMode
+		if mode == "" {
+			mode = "in-process"
+		}
+		existing["teammateMode"] = mode
+
+		fmt.Printf("[spw] Enabled Agent Teams in settings.json (teammateMode=%s).\n", mode)
+	} else {
+		// Remove Agent Teams keys if present.
+		if env, ok := existing["env"].(map[string]any); ok {
+			delete(env, "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS")
+			if len(env) == 0 {
+				delete(existing, "env")
+			}
+		}
+		delete(existing, "teammateMode")
+	}
 }

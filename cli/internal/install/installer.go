@@ -81,8 +81,13 @@ func Run(opts Options) error {
 		return fmt.Errorf("rendering workflows: %w", err)
 	}
 
+	// 5b. Inject SPW dispatch instructions into CLAUDE.md and AGENTS.md
+	if err := injectProjectSnippets(root); err != nil {
+		return fmt.Errorf("injecting snippets: %w", err)
+	}
+
 	// 6. Generate settings.json
-	if err := WriteSettings(root); err != nil {
+	if err := WriteSettings(root, cfg.AgentTeams); err != nil {
 		return fmt.Errorf("writing settings: %w", err)
 	}
 
