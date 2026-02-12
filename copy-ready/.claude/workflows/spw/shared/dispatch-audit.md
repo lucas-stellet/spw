@@ -43,6 +43,26 @@ On `continue-unfinished`:
 - Redispatch missing or blocked auditors.
 - Always rerun aggregator.
 
+### 6. Auditor Failure Policy
+
+When a dispatched auditor fails without writing `status.json`:
+1. If `report.md` exists and is substantial: write `status.json` with pass and proceed.
+2. If not: redispatch (same brief, same model). Maximum 1 retry.
+3. Never resolve a BLOCKED auditor by creating, modifying, or deleting artifacts outside the auditor's comms directory (implementation logs, source files, spec files, dashboard files).
+4. If an auditor returns `status=blocked`, the orchestrator MUST NOT take corrective action. Record the block and proceed to aggregator. Only a new run may resolve a previously blocked auditor.
+
+### 7. Handoff Consistency
+
+- If ANY auditor `status.json` reports `blocked`, the final verdict MUST be BLOCKED.
+- The aggregator may override only in a NEW run where the blocked auditor is re-dispatched.
+- `_handoff.md` MUST list every auditor's final status. If it shows any blocked but the artifact says PASS, the run is invalid.
+
+### 8. No Codebase Assertions in Briefs
+
+Briefs must never assert codebase facts. Instruct auditors to verify instead.
+- BAD: "task 5 may not have a log since it's CSS/i18n"
+- GOOD: "Verify whether task 5 has a corresponding implementation log"
+
 ## Dispatch Modes
 
 Auditors may be dispatched in **parallel** (when fully independent) or **sequentially** (when one auditor informs another). The command workflow specifies the mode.

@@ -18,6 +18,7 @@ policy: @.claude/workflows/spw/shared/dispatch-audit.md
 - @.claude/workflows/spw/shared/resume-policy.md
 - @.claude/workflows/spw/shared/skills-policy.md
 - @.claude/workflows/spw/shared/approval-reconciliation.md
+- @.claude/workflows/spw/shared/dispatch-implementation.md
 </shared_policies>
 
 <objective>
@@ -56,6 +57,14 @@ Wave container:
 - `release-gate-decider` (model: complex_reasoning)
   - Produces final PASS/BLOCKED decision and corrective actions.
 </subagents>
+
+<subagent_artifact_map>
+| Subagent | Artifact | Dispatch | Model |
+|----------|----------|----------|-------|
+| evidence-collector | (report.md only) | task | implementation |
+| traceability-judge | (report.md only) | task | complex_reasoning |
+| release-gate-decider | CHECKPOINT-REPORT.md | task | complex_reasoning |
+</subagent_artifact_map>
 
 <!-- ============================================================
      EXTENSION POINTS — command-specific logic injected into
@@ -139,6 +148,16 @@ Rules:
 - If one or more completed tasks are missing implementation logs, return BLOCKED.
 </implementation_log_gate>
 
+<orchestrator_boundary>
+The checkpoint orchestrator is a read-only observer. It MUST NOT:
+- Create/modify/delete implementation logs, source files, or spec artifacts to resolve a BLOCKED auditor.
+- Commit code or stage files on behalf of a blocked auditor.
+- Mark tasks as complete/in-progress in tasks.md.
+- Write files outside checkpoint comms (`execution/waves/wave-<NN>/checkpoint/<run-id>/`) and `CHECKPOINT-REPORT.md`.
+
+On BLOCKED auditor: record in _handoff.md, propagate BLOCKED, report corrective actions, stop.
+</orchestrator_boundary>
+
 <gate_rule>
 If status is BLOCKED, do not proceed to the next batch/wave.
 </gate_rule>
@@ -162,6 +181,8 @@ If status is BLOCKED, do not proceed to the next batch/wave.
 - [ ] Every completed task in scope has a corresponding implementation log entry.
 - [ ] If unfinished run exists, explicit user decision (`continue-unfinished` or `delete-and-restart`) was respected.
 - [ ] Orchestrator never read report.md from any auditor (thin-dispatch).
+- [ ] Orchestrator did not create/modify/delete any artifact outside checkpoint comms to resolve a BLOCKED auditor (anti-self-heal).
+- [ ] No brief asserts codebase facts (file-handoff rule 2b).
 </acceptance_criteria>
 
 <completion_guidance>

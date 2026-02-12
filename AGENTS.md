@@ -41,6 +41,7 @@ Note:
      - `all-at-once`: generates all executable waves in a single run
    - `--max-wave-size` overrides `[planning].max_wave_size`; without the argument, use config
 8. In `spw:exec`, execution is via per-task subagents (including sequential waves of 1 task); the orchestrator never implements code directly.
+8b. In `spw:checkpoint` (and all audit commands), the orchestrator MUST NOT create, modify, or delete artifacts outside the comms directory to resolve a BLOCKED auditor. If BLOCKED, propagate to final verdict and stop.
 9. If `execution.require_user_approval_between_waves=true`, do not advance to the next wave without explicit user authorization.
 10. If `execution.commit_per_task="auto"` or `"manual"`, require atomic commit per task; if `"manual"`, stop with explicit git commands; if `"none"`, skip per-task commit enforcement. Respect the clean worktree gate when enabled.
 11. `spw update` must first update the binary itself (`spw`) and then clear the local kit cache before updating, to avoid stale templates/commands.

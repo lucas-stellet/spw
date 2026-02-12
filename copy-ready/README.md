@@ -140,6 +140,12 @@ Every workflow declares a `<dispatch_pattern>` section that serves as the **sing
 | **Audit** | `dispatch-audit.md` | `tasks-check`, `qa-check`, `checkpoint` |
 | **Wave Execution** | `dispatch-wave.md` | `exec`, `qa-exec` |
 
+Checkpoint guardrails (audit commands):
+- Orchestrators are read-only observers — they MUST NOT create/modify/delete artifacts outside comms to resolve a BLOCKED auditor (anti-self-heal).
+- If ANY auditor returns `blocked`, the final verdict MUST be BLOCKED (handoff consistency).
+- Briefs must never assert codebase facts — instruct auditors to verify instead.
+- `spw:exec` must stop and instruct the user to run `spw:checkpoint` in a separate session (session isolation).
+
 All categories enforce the 5 core thin-dispatch rules:
 1. Orchestrator reads only `status.json` after dispatch (never `report.md` on pass).
 2. Briefs contain filesystem paths to prior reports (never content).

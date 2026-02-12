@@ -86,7 +86,9 @@ comms:
 
 <!-- inter_wave: checkpoint + user authorization .................. -->
 <inter_wave>
-1. At end of batch, run `spw:checkpoint <spec-name>`.
+1. At end of batch, **stop execution** and instruct the user:
+   "Wave complete. Run `/spw:checkpoint <spec-name>` in a new session (`/clear` first or new Claude Code session)."
+   Do NOT invoke checkpoint via Skill, inline, or any other method within the current exec session.
 2. If checkpoint BLOCKED, stop.
 3. If checkpoint PASS:
    - if `require_clean_worktree_for_wave_pass=true` and worktree is dirty: stop BLOCKED

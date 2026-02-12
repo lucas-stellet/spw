@@ -169,6 +169,7 @@ Rules:
 - Selectors come from QA-CHECK.md verified map; use them in MCP tool calls
 - Collect evidence: take screenshots after assertions, capture console messages for logs
 - If a selector fails via MCP tool, log as "selector drift" defect — do NOT search source files
+- **Sequential execution only**: When dispatching multiple `qa-test-runner` subagents (e.g., sub-batches within a wave), they MUST run sequentially — never in parallel. The Playwright MCP server exposes a single browser instance; concurrent runners will cause navigation conflicts and flaky results. This applies even when Agent Teams is enabled: map runners to sequential teammates, not parallel ones.
 </playwright_runtime_policy>
 
 <state_recon_policy>
@@ -217,6 +218,7 @@ Skill gate:
 - [ ] If unfinished run exists, explicit user decision was respected.
 - [ ] Selector drift defects (if any) recommend `spw:qa-check` rerun.
 - [ ] Orchestrator never read report.md from any subagent (thin-dispatch).
+- [ ] Playwright qa-test-runner subagents executed sequentially (no parallel browser contention).
 </acceptance_criteria>
 
 <completion_guidance>
