@@ -95,7 +95,8 @@ Default SPW skills are copied into `.claude/skills/` during install (best effort
 | `spw update` | Self-update the CLI, clear cache, fetch latest kit |
 | `spw doctor` | Show current repo/ref/cache configuration |
 | `spw status` | Print a quick kit and skills summary |
-| `spw skills` | Install default SPW skills only |
+| `spw skills` | Show installed/available/missing skills status |
+| `spw skills install [--elixir]` | Install general skills (or Elixir with flag) |
 
 ### Agent Teams (optional)
 

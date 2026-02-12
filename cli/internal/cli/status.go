@@ -21,20 +21,35 @@ func newStatusCmd() *cobra.Command {
 }
 
 func newSkillsCmd() *cobra.Command {
-	var elixirFlag, allFlag bool
-
 	cmd := &cobra.Command{
 		Use:   "skills",
-		Short: "Install skills (general by default, --elixir for Elixir, --all for everything)",
+		Short: "Show skills installation status (use 'skills install' to install)",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cwd, _ := os.Getwd()
 
-			switch {
-			case allFlag:
-				install.InstallDefaultSkills(cwd)
-			case elixirFlag:
+			fmt.Println("[spw] Skills diagnosis:")
+			printDiagnosis("General", install.DiagnoseGeneralSkills(cwd))
+			printDiagnosis("Elixir", install.DiagnoseElixirSkills(cwd))
+			return nil
+		},
+	}
+
+	cmd.AddCommand(newSkillsInstallCmd())
+	return cmd
+}
+
+func newSkillsInstallCmd() *cobra.Command {
+	var elixirFlag bool
+
+	cmd := &cobra.Command{
+		Use:   "install",
+		Short: "Install skills (general by default, --elixir for Elixir)",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cwd, _ := os.Getwd()
+
+			if elixirFlag {
 				install.InstallElixirSkills(cwd)
-			default:
+			} else {
 				install.InstallGeneralSkills(cwd)
 			}
 			return nil
@@ -42,9 +57,32 @@ func newSkillsCmd() *cobra.Command {
 	}
 
 	cmd.Flags().BoolVar(&elixirFlag, "elixir", false, "Install Elixir-specific skills and patch config")
-	cmd.Flags().BoolVar(&allFlag, "all", false, "Install all skills (general + Elixir)")
-
 	return cmd
+}
+
+func printDiagnosis(label string, skills []install.SkillStatus) {
+	var installed, available, missing int
+	for _, s := range skills {
+		switch {
+		case s.Installed:
+			installed++
+		case s.Available:
+			available++
+		default:
+			missing++
+		}
+	}
+	fmt.Printf("  %s: %d installed, %d available, %d missing\n", label, installed, available, missing)
+	for _, s := range skills {
+		switch {
+		case s.Installed:
+			fmt.Printf("    ✓ %s\n", s.Name)
+		case s.Available:
+			fmt.Printf("    ○ %s (available)\n", s.Name)
+		default:
+			fmt.Printf("    ✗ %s (no source found)\n", s.Name)
+		}
+	}
 }
 
 func runStatus() error {

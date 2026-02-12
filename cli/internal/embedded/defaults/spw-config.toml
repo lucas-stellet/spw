@@ -154,7 +154,7 @@ auto_install_defaults_on_spw_install = true
 enforce_required = true
 
 # Required skills for design phases.
-# Empty by default. Use `spw skills --elixir` to add Elixir skills
+# Empty by default. Use `spw skills install --elixir` to add Elixir skills
 # (using-elixir-skills + elixir-anti-patterns) automatically.
 required = []
 
@@ -176,7 +176,7 @@ optional = [
 enforce_required = true
 
 # Required skills for implementation phases.
-# Use `spw skills --elixir` to add Elixir skills automatically.
+# Use `spw skills install --elixir` to add Elixir skills automatically.
 required = [
   "conventional-commits"
 ]

@@ -40,6 +40,49 @@ var ElixirRequiredSkills = []string{
 	"elixir-anti-patterns",
 }
 
+// SkillStatus represents the installation state of a single skill.
+type SkillStatus struct {
+	Name      string
+	Installed bool // present in .claude/skills
+	Available bool // source found (can be installed)
+}
+
+// DiagnoseGeneralSkills checks installation status of general skills without modifying anything.
+func DiagnoseGeneralSkills(root string) []SkillStatus {
+	targetDir := filepath.Join(root, ".claude", "skills")
+	var result []SkillStatus
+
+	for _, skill := range GeneralSkills {
+		s := SkillStatus{Name: skill}
+		if _, err := os.Stat(filepath.Join(targetDir, skill)); err == nil {
+			s.Installed = true
+		}
+		if !s.Installed && findSkillSource(skill) != "" {
+			s.Available = true
+		}
+		result = append(result, s)
+	}
+	return result
+}
+
+// DiagnoseElixirSkills checks installation status of elixir skills without modifying anything.
+func DiagnoseElixirSkills(root string) []SkillStatus {
+	targetDir := filepath.Join(root, ".claude", "skills")
+	var result []SkillStatus
+
+	for _, skill := range ElixirSkills {
+		s := SkillStatus{Name: skill}
+		if _, err := os.Stat(filepath.Join(targetDir, skill)); err == nil {
+			s.Installed = true
+		}
+		if !s.Installed && findSkillSource(skill) != "" {
+			s.Available = true
+		}
+		result = append(result, s)
+	}
+	return result
+}
+
 // InstallDefaultSkills copies all default skills (general + elixir) from known source locations.
 func InstallDefaultSkills(root string) {
 	installSkillSet(root, DefaultSkills, "all")

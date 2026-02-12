@@ -19,6 +19,7 @@ Usage:
   spw
   spw install
   spw skills
+  spw skills install [--elixir]
   spw status
   spw update
   spw doctor

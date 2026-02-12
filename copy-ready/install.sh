@@ -68,15 +68,16 @@ spw - install or inspect the SPW kit in the current project
 Usage:
   spw
   spw install
-  spw skills [--elixir|--all]
+  spw skills
+  spw skills install [--elixir]
   spw status
 
 Behavior:
 - help (default): prints this help output.
 - install: copies commands, hooks, templates, and config into cwd.
-- skills: installs general skills into .claude/skills (best effort).
+- skills: shows installed/available/missing status for all skill sets.
+- skills install: installs general skills into .claude/skills (best effort).
   --elixir: installs Elixir-specific skills and patches config required lists.
-  --all: installs all skills (general + Elixir).
 - status: prints a quick summary of kit presence + default skills.
 
 Notes:
@@ -464,25 +465,68 @@ cmd_install() {
   echo "[spw-kit] Next step: adjust .spec-workflow/spw-config.toml"
 }
 
+diagnose_skill_set() {
+  local label="$1"
+  shift
+  local skills=("$@")
+  local target_skills_dir="${TARGET_ROOT}/.claude/skills"
+
+  local installed=0
+  local available=0
+  local missing=0
+
+  local skill
+  for skill in "${skills[@]}"; do
+    if [ -f "${target_skills_dir}/${skill}/SKILL.md" ]; then
+      echo "    ✓ ${skill}"
+      installed=$((installed + 1))
+    elif src_dir="$(find_skill_source_dir "$skill" 2>/dev/null)"; then
+      echo "    ○ ${skill} (available)"
+      available=$((available + 1))
+    else
+      echo "    ✗ ${skill} (no source found)"
+      missing=$((missing + 1))
+    fi
+  done
+
+  echo "  ${label}: ${installed} installed, ${available} available, ${missing} missing"
+}
+
 cmd_skills() {
+  local subcmd="${1:-}"
+
+  case "$subcmd" in
+    install)
+      shift
+      cmd_skills_install "$@"
+      ;;
+    "")
+      echo "[spw-kit] Skills diagnosis:"
+      diagnose_skill_set "General" "${GENERAL_SKILLS[@]}"
+      diagnose_skill_set "Elixir" "${ELIXIR_SKILLS[@]}"
+      ;;
+    *)
+      echo "[spw-kit] Unknown skills subcommand: $subcmd" >&2
+      echo "Usage: spw skills | spw skills install [--elixir]" >&2
+      exit 1
+      ;;
+  esac
+}
+
+cmd_skills_install() {
   local mode="general"
   while [ "$#" -gt 0 ]; do
     case "$1" in
       --elixir) mode="elixir"; shift ;;
-      --all)    mode="all";    shift ;;
       *)
-        echo "[spw-kit] Unknown flag for skills: $1" >&2
-        echo "Usage: spw skills [--elixir|--all]" >&2
+        echo "[spw-kit] Unknown flag for skills install: $1" >&2
+        echo "Usage: spw skills install [--elixir]" >&2
         exit 1
         ;;
     esac
   done
 
   case "$mode" in
-    all)
-      echo "[spw-kit] Installing all skills into: ${TARGET_ROOT}/.claude/skills"
-      install_skill_set "all" "${DEFAULT_SKILLS[@]}"
-      ;;
     elixir)
       echo "[spw-kit] Installing Elixir skills into: ${TARGET_ROOT}/.claude/skills"
       install_skill_set "elixir" "${ELIXIR_SKILLS[@]}"
