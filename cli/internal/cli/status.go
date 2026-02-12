@@ -21,15 +21,30 @@ func newStatusCmd() *cobra.Command {
 }
 
 func newSkillsCmd() *cobra.Command {
-	return &cobra.Command{
+	var elixirFlag, allFlag bool
+
+	cmd := &cobra.Command{
 		Use:   "skills",
-		Short: "Install default skills",
+		Short: "Install skills (general by default, --elixir for Elixir, --all for everything)",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cwd, _ := os.Getwd()
-			install.InstallDefaultSkills(cwd)
+
+			switch {
+			case allFlag:
+				install.InstallDefaultSkills(cwd)
+			case elixirFlag:
+				install.InstallElixirSkills(cwd)
+			default:
+				install.InstallGeneralSkills(cwd)
+			}
 			return nil
 		},
 	}
+
+	cmd.Flags().BoolVar(&elixirFlag, "elixir", false, "Install Elixir-specific skills and patch config")
+	cmd.Flags().BoolVar(&allFlag, "all", false, "Install all skills (general + Elixir)")
+
+	return cmd
 }
 
 func runStatus() error {

@@ -153,24 +153,10 @@ auto_install_defaults_on_spw_install = true
 # If false, missing required skills produce warnings and execution continues.
 enforce_required = true
 
-#
-# Core Elixir defaults:
-# - using-elixir-skills: routes to relevant Elixir-thinking skills
-# - elixir-thinking: idiomatic architecture/refactoring guidance
-# - elixir-anti-patterns: smell detection and safer alternatives
-# - phoenix-thinking: LiveView/controller/socket guidance
-# - ecto-thinking: schema/query/context/migration guidance
-# - otp-thinking: process/state/supervision guidance
-# - oban-thinking: queue/background-job guidance
-required = [
-  "using-elixir-skills",
-  "elixir-thinking",
-  "elixir-anti-patterns",
-  "phoenix-thinking",
-  "ecto-thinking",
-  "otp-thinking",
-  "oban-thinking"
-]
+# Required skills for design phases.
+# Empty by default. Use `spw skills --elixir` to add Elixir skills
+# (using-elixir-skills + elixir-anti-patterns) automatically.
+required = []
 
 # Optional skills: if present, SPW can use them to increase rigor.
 # - mermaid-architecture: architecture diagrams/patterns for design docs
@@ -189,10 +175,9 @@ optional = [
 # If false, missing required skills produce warnings and execution continues.
 enforce_required = true
 
+# Required skills for implementation phases.
+# Use `spw skills --elixir` to add Elixir skills automatically.
 required = [
-  "using-elixir-skills",
-  "elixir-thinking",
-  "elixir-anti-patterns",
   "conventional-commits"
 ]
 

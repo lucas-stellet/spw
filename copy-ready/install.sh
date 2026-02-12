@@ -41,7 +41,7 @@ resolve_config_path() {
   fi
 }
 
-DEFAULT_SKILLS=(
+ELIXIR_SKILLS=(
   "using-elixir-skills"
   "elixir-thinking"
   "elixir-anti-patterns"
@@ -49,11 +49,17 @@ DEFAULT_SKILLS=(
   "ecto-thinking"
   "otp-thinking"
   "oban-thinking"
+)
+
+GENERAL_SKILLS=(
   "mermaid-architecture"
   "qa-validation-planning"
   "conventional-commits"
   "test-driven-development"
 )
+
+# All skills combined (backward compat for spw install)
+DEFAULT_SKILLS=("${GENERAL_SKILLS[@]}" "${ELIXIR_SKILLS[@]}")
 
 show_help() {
   cat <<'USAGE'
@@ -62,13 +68,15 @@ spw - install or inspect the SPW kit in the current project
 Usage:
   spw
   spw install
-  spw skills
+  spw skills [--elixir|--all]
   spw status
 
 Behavior:
 - help (default): prints this help output.
 - install: copies commands, hooks, templates, and config into cwd.
-- skills: installs default SPW skills into .claude/skills (best effort).
+- skills: installs general skills into .claude/skills (best effort).
+  --elixir: installs Elixir-specific skills and patches config required lists.
+  --all: installs all skills (general + Elixir).
 - status: prints a quick summary of kit presence + default skills.
 
 Notes:
@@ -181,6 +189,13 @@ find_skill_source_dir() {
 }
 
 install_default_skills() {
+  install_skill_set "all" "${DEFAULT_SKILLS[@]}"
+}
+
+install_skill_set() {
+  local label="$1"
+  shift
+  local skills=("$@")
   local target_skills_dir="${TARGET_ROOT}/.claude/skills"
   mkdir -p "$target_skills_dir"
 
@@ -189,7 +204,7 @@ install_default_skills() {
   local missing=()
 
   local skill src_dir
-  for skill in "${DEFAULT_SKILLS[@]}"; do
+  for skill in "${skills[@]}"; do
     if [ -e "${target_skills_dir}/${skill}" ]; then
       skipped_existing=$((skipped_existing + 1))
       continue
@@ -203,10 +218,90 @@ install_default_skills() {
     fi
   done
 
-  echo "[spw-kit] Default skills install: installed=${installed}, existing=${skipped_existing}, missing=${#missing[@]}"
+  echo "[spw-kit] Skills (${label}): installed=${installed}, existing=${skipped_existing}, missing=${#missing[@]}"
   if [ "${#missing[@]}" -gt 0 ]; then
     echo "[spw-kit] Missing local skill sources (non-blocking): ${missing[*]}"
   fi
+}
+
+patch_config_elixir_skills() {
+  resolve_config_path
+  if [ ! -f "$CONFIG_PATH" ]; then
+    echo "[spw-kit] No config file found; skipping Elixir config patch."
+    return 0
+  fi
+
+  local elixir_required=("using-elixir-skills" "elixir-anti-patterns")
+  local patched=false
+
+  for skill in "${elixir_required[@]}"; do
+    if ! grep -q "\"${skill}\"" "$CONFIG_PATH" 2>/dev/null; then
+      patched=true
+      break
+    fi
+  done
+
+  if [ "$patched" = "false" ]; then
+    echo "[spw-kit] Elixir skills already in config required lists."
+    return 0
+  fi
+
+  # Patch required arrays in [skills.design] and [skills.implementation]
+  local tmp; tmp="$(mktemp)"
+  awk '
+    BEGIN { in_target=0; in_array=0 }
+    /^\[skills\.design\]/ || /^\[skills\.implementation\]/ { in_target=1 }
+    /^\[/ && !/^\[skills\.design\]/ && !/^\[skills\.implementation\]/ { in_target=0 }
+
+    in_target && /^required[[:space:]]*=/ {
+      in_array=1
+      print
+      next
+    }
+
+    in_array && /\]/ {
+      # Insert missing skills before closing bracket
+      needs_using=1; needs_anti=1
+      # Check what is already present by scanning backwards in output
+    }
+
+    { print }
+  ' "$CONFIG_PATH" > "$tmp"
+
+  # Simpler approach: use sed to insert entries before the ] in each target section
+  rm -f "$tmp"
+  tmp="$(mktemp)"
+  cp "$CONFIG_PATH" "$tmp"
+
+  for skill in "${elixir_required[@]}"; do
+    if grep -q "\"${skill}\"" "$tmp"; then
+      continue
+    fi
+    # Insert into [skills.design] required array
+    awk -v skill="$skill" '
+      BEGIN { in_design=0; in_impl=0; in_req=0; done_design=0; done_impl=0 }
+      /^\[skills\.design\]/ { in_design=1; in_impl=0 }
+      /^\[skills\.implementation\]/ { in_impl=1; in_design=0 }
+      /^\[/ && !/^\[skills\.design\]/ && !/^\[skills\.implementation\]/ { in_design=0; in_impl=0 }
+
+      (in_design || in_impl) && /^required[[:space:]]*=/ { in_req=1 }
+
+      in_req && /\]/ {
+        if (in_design && !done_design) || (in_impl && !done_impl) {
+          printf "  \"%s\",\n", skill
+          if (in_design) done_design=1
+          if (in_impl) done_impl=1
+        }
+        in_req=0
+      }
+
+      { print }
+    ' "$tmp" > "${tmp}.2"
+    mv "${tmp}.2" "$tmp"
+  done
+
+  mv "$tmp" "$CONFIG_PATH"
+  echo "[spw-kit] Patched config: added using-elixir-skills and elixir-anti-patterns to required lists."
 }
 
 status_default_skills() {
@@ -347,13 +442,34 @@ cmd_install() {
 }
 
 cmd_skills() {
-  if [ "$#" -gt 0 ]; then
-    echo "[spw-kit] Unexpected arguments for skills: $*" >&2
-    exit 1
-  fi
+  local mode="general"
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --elixir) mode="elixir"; shift ;;
+      --all)    mode="all";    shift ;;
+      *)
+        echo "[spw-kit] Unknown flag for skills: $1" >&2
+        echo "Usage: spw skills [--elixir|--all]" >&2
+        exit 1
+        ;;
+    esac
+  done
 
-  echo "[spw-kit] Installing default skills into: ${TARGET_ROOT}/.claude/skills"
-  install_default_skills
+  case "$mode" in
+    all)
+      echo "[spw-kit] Installing all skills into: ${TARGET_ROOT}/.claude/skills"
+      install_skill_set "all" "${DEFAULT_SKILLS[@]}"
+      ;;
+    elixir)
+      echo "[spw-kit] Installing Elixir skills into: ${TARGET_ROOT}/.claude/skills"
+      install_skill_set "elixir" "${ELIXIR_SKILLS[@]}"
+      patch_config_elixir_skills
+      ;;
+    *)
+      echo "[spw-kit] Installing general skills into: ${TARGET_ROOT}/.claude/skills"
+      install_skill_set "general" "${GENERAL_SKILLS[@]}"
+      ;;
+  esac
 }
 
 cmd_status() {
