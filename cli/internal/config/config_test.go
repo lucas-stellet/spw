@@ -386,6 +386,145 @@ optional = ["opt-1", "opt-2"]
 	}
 }
 
+func TestMergePreservesUserMultilineArrays(t *testing.T) {
+	tmp := t.TempDir()
+	templatePath := filepath.Join(tmp, "template.toml")
+	userPath := filepath.Join(tmp, "user.toml")
+	outputPath := filepath.Join(tmp, "output.toml")
+
+	template := `[skills.design]
+enforce_required = true
+required = []
+`
+	user := `[skills.design]
+enforce_required = true
+required = [
+  "elixir-skill-a",
+  "elixir-skill-b"
+]
+`
+
+	os.WriteFile(templatePath, []byte(template), 0644)
+	os.WriteFile(userPath, []byte(user), 0644)
+
+	if err := Merge(templatePath, userPath, outputPath); err != nil {
+		t.Fatalf("Merge: %v", err)
+	}
+
+	cfg, err := LoadFromPath(outputPath)
+	if err != nil {
+		t.Fatalf("LoadFromPath: %v", err)
+	}
+
+	if len(cfg.Skills.Design.Required) != 2 {
+		t.Errorf("Skills.Design.Required = %v, want [elixir-skill-a, elixir-skill-b]", cfg.Skills.Design.Required)
+	}
+}
+
+func TestMergeUserMultilineTemplateMultiline(t *testing.T) {
+	tmp := t.TempDir()
+	templatePath := filepath.Join(tmp, "template.toml")
+	userPath := filepath.Join(tmp, "user.toml")
+	outputPath := filepath.Join(tmp, "output.toml")
+
+	template := `[skills.implementation]
+enforce_required = true
+required = [
+  "conventional-commits"
+]
+`
+	user := `[skills.implementation]
+enforce_required = true
+required = [
+  "conventional-commits",
+  "elixir-skill"
+]
+`
+
+	os.WriteFile(templatePath, []byte(template), 0644)
+	os.WriteFile(userPath, []byte(user), 0644)
+
+	if err := Merge(templatePath, userPath, outputPath); err != nil {
+		t.Fatalf("Merge: %v", err)
+	}
+
+	cfg, err := LoadFromPath(outputPath)
+	if err != nil {
+		t.Fatalf("LoadFromPath: %v", err)
+	}
+
+	if len(cfg.Skills.Implementation.Required) != 2 {
+		t.Errorf("Skills.Implementation.Required = %v, want [conventional-commits, elixir-skill]", cfg.Skills.Implementation.Required)
+	}
+}
+
+func TestMergeTemplateMultilineNoUserKey(t *testing.T) {
+	tmp := t.TempDir()
+	templatePath := filepath.Join(tmp, "template.toml")
+	userPath := filepath.Join(tmp, "user.toml")
+	outputPath := filepath.Join(tmp, "output.toml")
+
+	template := `[skills.implementation]
+enforce_required = true
+required = [
+  "conventional-commits"
+]
+`
+	user := `[skills.implementation]
+enforce_required = true
+`
+
+	os.WriteFile(templatePath, []byte(template), 0644)
+	os.WriteFile(userPath, []byte(user), 0644)
+
+	if err := Merge(templatePath, userPath, outputPath); err != nil {
+		t.Fatalf("Merge: %v", err)
+	}
+
+	cfg, err := LoadFromPath(outputPath)
+	if err != nil {
+		t.Fatalf("LoadFromPath: %v", err)
+	}
+
+	if len(cfg.Skills.Implementation.Required) != 1 || cfg.Skills.Implementation.Required[0] != "conventional-commits" {
+		t.Errorf("Skills.Implementation.Required = %v, want [conventional-commits]", cfg.Skills.Implementation.Required)
+	}
+}
+
+func TestMergeUserSingleLineTemplateMultiline(t *testing.T) {
+	tmp := t.TempDir()
+	templatePath := filepath.Join(tmp, "template.toml")
+	userPath := filepath.Join(tmp, "user.toml")
+	outputPath := filepath.Join(tmp, "output.toml")
+
+	template := `[skills.implementation]
+enforce_required = true
+required = [
+  "conventional-commits"
+]
+`
+	user := `[skills.implementation]
+enforce_required = true
+required = ["user-skill"]
+`
+
+	os.WriteFile(templatePath, []byte(template), 0644)
+	os.WriteFile(userPath, []byte(user), 0644)
+
+	if err := Merge(templatePath, userPath, outputPath); err != nil {
+		t.Fatalf("Merge: %v", err)
+	}
+
+	cfg, err := LoadFromPath(outputPath)
+	if err != nil {
+		t.Fatalf("LoadFromPath: %v", err)
+	}
+
+	if len(cfg.Skills.Implementation.Required) != 1 || cfg.Skills.Implementation.Required[0] != "user-skill" {
+		t.Errorf("Skills.Implementation.Required = %v, want [user-skill]", cfg.Skills.Implementation.Required)
+	}
+}
+
 // findRepoFile searches for a file relative to the repo root
 func findRepoFile(t *testing.T, relPath string) string {
 	t.Helper()

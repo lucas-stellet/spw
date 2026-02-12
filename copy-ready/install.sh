@@ -277,17 +277,40 @@ patch_config_elixir_skills() {
     if grep -q "\"${skill}\"" "$tmp"; then
       continue
     fi
-    # Insert into [skills.design] required array
+    # Insert skill into required arrays in [skills.design] and [skills.implementation].
+    # Handles both single-line (required = []) and multiline arrays.
     awk -v skill="$skill" '
       BEGIN { in_design=0; in_impl=0; in_req=0; done_design=0; done_impl=0 }
       /^\[skills\.design\]/ { in_design=1; in_impl=0 }
       /^\[skills\.implementation\]/ { in_impl=1; in_design=0 }
       /^\[/ && !/^\[skills\.design\]/ && !/^\[skills\.implementation\]/ { in_design=0; in_impl=0 }
 
-      (in_design || in_impl) && /^required[[:space:]]*=/ { in_req=1 }
+      (in_design || in_impl) && /^required[[:space:]]*=/ {
+        # Single-line array: required = [] or required = ["existing"]
+        if ($0 ~ /\[.*\]/) {
+          if ((in_design && !done_design) || (in_impl && !done_impl)) {
+            # Replace closing ] with skill entry + ]
+            line = $0
+            sub(/\]/, "", line)
+            # Check if array has existing entries
+            if (line ~ /\[[[:space:]]*$/) {
+              # Empty array: required = [ → insert skill
+              printf "%s\"%s\"]\n", line, skill
+            } else {
+              # Has entries: required = ["x" → append with comma
+              printf "%s, \"%s\"]\n", line, skill
+            }
+            if (in_design) done_design=1
+            if (in_impl) done_impl=1
+            next
+          }
+        } else {
+          in_req=1
+        }
+      }
 
       in_req && /\]/ {
-        if (in_design && !done_design) || (in_impl && !done_impl) {
+        if ((in_design && !done_design) || (in_impl && !done_impl)) {
           printf "  \"%s\",\n", skill
           if (in_design) done_design=1
           if (in_impl) done_impl=1
