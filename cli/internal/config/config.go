@@ -85,6 +85,7 @@ type StatuslineConfig struct {
 	CacheTTLSeconds int      `toml:"cache_ttl_seconds"`
 	BaseBranches    []string `toml:"base_branches"`
 	StickySpec      bool     `toml:"sticky_spec"`
+	ShowTokenCost   string   `toml:"show_token_cost"`
 }
 
 type SafetyConfig struct {
@@ -157,6 +158,7 @@ func Defaults() Config {
 			CacheTTLSeconds: 10,
 			BaseBranches:    []string{"main", "master", "staging", "develop"},
 			StickySpec:      true,
+			ShowTokenCost:   "auto",
 		},
 		Safety: SafetyConfig{
 			BackupBeforeOverwrite: true,
@@ -206,8 +208,8 @@ func Load(workspaceRoot string) (Config, error) {
 		return cfg, fmt.Errorf("parsing config %s: %w", configPath, err)
 	}
 
-	// Normalize enforcement_mode
 	cfg.Hooks.EnforcementMode = normalizeEnforcementMode(cfg.Hooks.EnforcementMode)
+	cfg.Statusline.ShowTokenCost = normalizeShowTokenCost(cfg.Statusline.ShowTokenCost)
 
 	return cfg, nil
 }
@@ -229,6 +231,7 @@ func LoadFromPath(configPath string) (Config, error) {
 	}
 
 	cfg.Hooks.EnforcementMode = normalizeEnforcementMode(cfg.Hooks.EnforcementMode)
+	cfg.Statusline.ShowTokenCost = normalizeShowTokenCost(cfg.Statusline.ShowTokenCost)
 
 	return cfg, nil
 }
@@ -307,6 +310,16 @@ func formatValue(v reflect.Value) string {
 		return "[" + strings.Join(items, ", ") + "]"
 	default:
 		return fmt.Sprintf("%v", v.Interface())
+	}
+}
+
+func normalizeShowTokenCost(mode string) string {
+	mode = strings.ToLower(strings.TrimSpace(mode))
+	switch mode {
+	case "always", "never":
+		return mode
+	default:
+		return "auto"
 	}
 }
 

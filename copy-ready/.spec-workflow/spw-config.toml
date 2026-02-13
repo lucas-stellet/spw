@@ -229,6 +229,12 @@ base_branches = ["main", "master", "staging", "develop"]
 # - If false, cache respects cache_ttl_seconds and falls back to git/mtime.
 sticky_spec = true
 
+# show_token_cost:
+# - "auto" (default): show only when cost > $0 (API-key billing detected).
+# - "always": always show token/cost when data is available.
+# - "never": never show token/cost.
+show_token_cost = "auto"
+
 [safety]
 # If true, the hook creates a .bak backup of active template before overwrite.
 backup_before_overwrite = true

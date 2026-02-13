@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/lucas-stellet/spw/internal/workspace"
 )
 
 func TestFirstSpwCommand(t *testing.T) {
@@ -268,5 +270,118 @@ func TestSpecExists(t *testing.T) {
 	}
 	if specExists(tmp, "") {
 		t.Error("specExists should return false for empty name")
+	}
+}
+
+func TestFormatTokens(t *testing.T) {
+	tests := []struct {
+		input int64
+		want  string
+	}{
+		{0, "0"},
+		{847, "847"},
+		{1000, "1k"},
+		{1500, "1.5k"},
+		{25300, "25.3k"},
+		{25000, "25k"},
+		{1000000, "1M"},
+		{1200000, "1.2M"},
+	}
+	for _, tt := range tests {
+		got := formatTokens(tt.input)
+		if got != tt.want {
+			t.Errorf("formatTokens(%d) = %q, want %q", tt.input, got, tt.want)
+		}
+	}
+}
+
+func TestFormatTokenCost(t *testing.T) {
+	ptrF64 := func(v float64) *float64 { return &v }
+	ptrI64 := func(v int64) *int64 { return &v }
+
+	tests := []struct {
+		name string
+		p    workspace.Payload
+		mode string
+		want string
+	}{
+		{
+			name: "never mode",
+			p: workspace.Payload{
+				Cost: &struct {
+					TotalCostUSD *float64 `json:"total_cost_usd"`
+				}{TotalCostUSD: ptrF64(1.23)},
+			},
+			mode: "never",
+			want: "",
+		},
+		{
+			name: "auto with zero cost",
+			p: workspace.Payload{
+				ContextWindow: &struct {
+					RemainingPercentage *float64 `json:"remaining_percentage"`
+					TotalInputTokens    *int64   `json:"total_input_tokens"`
+					TotalOutputTokens   *int64   `json:"total_output_tokens"`
+				}{TotalInputTokens: ptrI64(1000), TotalOutputTokens: ptrI64(500)},
+				Cost: &struct {
+					TotalCostUSD *float64 `json:"total_cost_usd"`
+				}{TotalCostUSD: ptrF64(0)},
+			},
+			mode: "auto",
+			want: "",
+		},
+		{
+			name: "auto with positive cost",
+			p: workspace.Payload{
+				ContextWindow: &struct {
+					RemainingPercentage *float64 `json:"remaining_percentage"`
+					TotalInputTokens    *int64   `json:"total_input_tokens"`
+					TotalOutputTokens   *int64   `json:"total_output_tokens"`
+				}{TotalInputTokens: ptrI64(20000), TotalOutputTokens: ptrI64(5300)},
+				Cost: &struct {
+					TotalCostUSD *float64 `json:"total_cost_usd"`
+				}{TotalCostUSD: ptrF64(0.42)},
+			},
+			mode: "auto",
+			want: " │ \x1b[2m25.3k $0.42\x1b[0m",
+		},
+		{
+			name: "auto with nil cost",
+			p: workspace.Payload{
+				ContextWindow: &struct {
+					RemainingPercentage *float64 `json:"remaining_percentage"`
+					TotalInputTokens    *int64   `json:"total_input_tokens"`
+					TotalOutputTokens   *int64   `json:"total_output_tokens"`
+				}{TotalInputTokens: ptrI64(5000)},
+			},
+			mode: "auto",
+			want: "",
+		},
+		{
+			name: "always with nil data",
+			p:    workspace.Payload{},
+			mode: "always",
+			want: "",
+		},
+		{
+			name: "always with tokens only",
+			p: workspace.Payload{
+				ContextWindow: &struct {
+					RemainingPercentage *float64 `json:"remaining_percentage"`
+					TotalInputTokens    *int64   `json:"total_input_tokens"`
+					TotalOutputTokens   *int64   `json:"total_output_tokens"`
+				}{TotalInputTokens: ptrI64(5000), TotalOutputTokens: ptrI64(1000)},
+			},
+			mode: "always",
+			want: " │ \x1b[2m6k\x1b[0m",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := formatTokenCost(tt.p, tt.mode)
+			if got != tt.want {
+				t.Errorf("formatTokenCost() = %q, want %q", got, tt.want)
+			}
+		})
 	}
 }

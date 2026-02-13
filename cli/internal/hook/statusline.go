@@ -16,7 +16,7 @@ import (
 )
 
 // HandleStatusline outputs the Claude Code status line.
-// Format: Model | Task | Dir | spec:name | Context%
+// Format: Model | Task | Dir | spec:name | 25.3k $0.42 | Context%
 func HandleStatusline() error {
 	p := workspace.ReadStdinPayload()
 	dir := ""
@@ -50,10 +50,20 @@ func HandleStatusline() error {
 		specLabel = " │ \x1b[2mspec:" + spec + "\x1b[0m"
 	}
 
+	// Token cost segment
+	showTokenCost := "auto"
+	repoRoot := git.RepoRoot(dir)
+	if repoRoot != "" {
+		if fullCfg, err := loadConfigForRoot(repoRoot); err == nil {
+			showTokenCost = fullCfg.Statusline.ShowTokenCost
+		}
+	}
+	tokenCost := formatTokenCost(p, showTokenCost)
+
 	if task != "" {
-		fmt.Printf("\x1b[2m%s\x1b[0m │ \x1b[1m%s\x1b[0m │ \x1b[2m%s\x1b[0m%s%s", modelName, task, dirname, specLabel, ctx)
+		fmt.Printf("\x1b[2m%s\x1b[0m │ \x1b[1m%s\x1b[0m │ \x1b[2m%s\x1b[0m%s%s%s", modelName, task, dirname, specLabel, tokenCost, ctx)
 	} else {
-		fmt.Printf("\x1b[2m%s\x1b[0m │ \x1b[2m%s\x1b[0m%s%s", modelName, dirname, specLabel, ctx)
+		fmt.Printf("\x1b[2m%s\x1b[0m │ \x1b[2m%s\x1b[0m%s%s%s", modelName, dirname, specLabel, tokenCost, ctx)
 	}
 
 	return nil
@@ -151,6 +161,71 @@ func detectCurrentTask(sessionID string) string {
 	}
 
 	return ""
+}
+
+// formatTokens returns a compact display of token count: 847, 25.3k, 1.2M.
+func formatTokens(count int64) string {
+	switch {
+	case count >= 1_000_000:
+		formatted := fmt.Sprintf("%.1f", float64(count)/1_000_000)
+		formatted = strings.TrimSuffix(formatted, ".0")
+		return formatted + "M"
+	case count >= 1_000:
+		formatted := fmt.Sprintf("%.1f", float64(count)/1_000)
+		formatted = strings.TrimSuffix(formatted, ".0")
+		return formatted + "k"
+	default:
+		return fmt.Sprintf("%d", count)
+	}
+}
+
+// formatTokenCost builds the token/cost status segment.
+// Returns "" when nothing should be shown.
+func formatTokenCost(p workspace.Payload, mode string) string {
+	if mode == "never" {
+		return ""
+	}
+
+	var totalTokens int64
+	hasTokens := false
+	if p.ContextWindow != nil {
+		if p.ContextWindow.TotalInputTokens != nil {
+			totalTokens += *p.ContextWindow.TotalInputTokens
+			hasTokens = true
+		}
+		if p.ContextWindow.TotalOutputTokens != nil {
+			totalTokens += *p.ContextWindow.TotalOutputTokens
+			hasTokens = true
+		}
+	}
+
+	var cost float64
+	hasCost := false
+	if p.Cost != nil && p.Cost.TotalCostUSD != nil {
+		cost = *p.Cost.TotalCostUSD
+		hasCost = true
+	}
+
+	if mode == "auto" {
+		if !hasCost || cost <= 0 {
+			return ""
+		}
+	}
+
+	// "always" mode: show if any data present
+	if !hasTokens && !hasCost {
+		return ""
+	}
+
+	var parts []string
+	if hasTokens {
+		parts = append(parts, formatTokens(totalTokens))
+	}
+	if hasCost {
+		parts = append(parts, fmt.Sprintf("$%.2f", cost))
+	}
+
+	return " │ \x1b[2m" + strings.Join(parts, " ") + "\x1b[0m"
 }
 
 var specPathRe = regexp.MustCompile(`\.spec-workflow/specs/([^/]+)/`)

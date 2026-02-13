@@ -24,7 +24,12 @@ type Payload struct {
 	SessionID     string `json:"session_id"`
 	ContextWindow *struct {
 		RemainingPercentage *float64 `json:"remaining_percentage"`
+		TotalInputTokens    *int64   `json:"total_input_tokens"`
+		TotalOutputTokens   *int64   `json:"total_output_tokens"`
 	} `json:"context_window"`
+	Cost *struct {
+		TotalCostUSD *float64 `json:"total_cost_usd"`
+	} `json:"cost"`
 	ToolInput json.RawMessage `json:"tool_input"`
 	ToolName  string          `json:"tool_name"`
 }
