@@ -1,433 +1,506 @@
-# Oráculo
+# Oraculo 
 
 ![Version](https://img.shields.io/badge/version-2.0-blue)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
-> *"Conhece-te a ti mesmo."* — Inscrição no Templo de Apolo em Delfos
+> *"Know thyself."* — Inscription at the Temple of Apollo at Delphi
 
-## Índice
+## Index
 
-- [O que é o Oráculo?](#o-que-é-o-oráculo)
-- [Por que Oráculo?](#por-que-oráculo)
-- [Início Rápido](#início-rápido)
-- [Onde começar](#onde-começar)
-- [Instalação](#instalação)
-- [Armazenamento Local](#armazenamento-local)
-- [Comandos de Entrada](#comandos-de-entrada)
-- [Arquitetura do Orquestrador Enxuto](#arquitetura-do-orquestrador-enxuto)
-- [Compatibilidade com Dashboard](#compatibilidade-com-dashboard-spec-workflow-mcp)
-- [Mermaid para Design de Arquitetura](#mermaid-para-design-de-arquitetura)
-- [Validação QA (3 Fases)](#validação-qa-3-fases)
-- [Glossário](#glossário)
+- [What is the Oraculo?](#what-is-the-Oraculo)
+- [Why Oraculo?](#why-Oraculo)
+- [Quick Start](#quick-start)
+- [Where to start](#where-to-start)
+- [Installation](#installation)
+- [Local Storage](#local-storage)
+- [Input Commands](#input-commands)
+- [Orchestrator Architecture] [Lean](#lean-orchestrator-architecture)
+- [Dashboard Compatibility](#dashboard-compatibility-spec-workflow-mcp)
+- [Mermaid for Architectural Design](#mermaid-for-architectural-design)
+- [QA Validation (3 Phases)](#qa-validation-3-phases)
+- [Glossary](#glossary)
 
-## O que é o Oráculo?
+## What is the Oraculo?
 
-Nos templos da Grécia Antiga, o Oráculo de Delfos era consultado antes de qualquer empreitada importante — guerras, fundações de cidades, decisões políticas. Ninguém agia sem antes buscar a sabedoria das Pítias, que canalizavam o conhecimento de Apolo em profecias estruturadas e interpretáveis.
+First of all, is the word in portuguese for Oracle. 
 
-**Oráculo** traz esse mesmo princípio para o desenvolvimento de software com Claude Code. Assim como os antigos não partiam para a batalha sem consultar Delfos, Oráculo impede que um agente de IA ataque uma feature inteira de uma vez. Em vez disso, o trabalho é decomposto em fases ritualizadas — cada uma com seus portões de qualidade e pontos de aprovação — como os estágios de uma consulta oracular:
+In the temples of Ancient Greece, the Oraculo of Delphi was consulted before any important undertaking—wars, city foundings, political decisions. No one acted without first seeking the wisdom of the Pythia, who channeled Apollo's knowledge into structured and interpretable prophecies.
 
-| Fase | Analogia | O que acontece |
+**Oraculo** brings this same principle to software development with Claude Code. Just as the ancients did not go into battle without consulting Delphi, Oraculo prevents an AI agent from attacking an entire feature at once. Instead, the work is broken down into ritualized phases—each with its quality gates and approval points—like the stages of an oracular consultation:
+
+| Phase | Analogy | What happens |
 |------|----------|----------------|
-| **Profecia** (PRD) | A pergunta ao Oráculo | Requisitos são extraídos e estruturados |
-| **Interpretação** (Design) | A Pítia traduz a visão | Pesquisa, arquitetura e decisões técnicas |
-| **Tábuas** (Planning) | As tábuas de pedra com a resposta | Tarefas executáveis são geradas em ondas |
-| **Execução** (Exec) | Os generais implementam a profecia | Implementação com checkpoints automáticos |
-| **Julgamento** (QA) | O tribunal valida o cumprimento | Testes planejados, verificados e executados |
+| **Prophecy** (PRD) | The question to the Oraculo | Requirements are extracted and structured |
+| **Interpretation** (Design) | The Pythia translates the vision | Research, architecture, and technical decisions |
+| **Tablets** (Planning) | The stone tablets with the answer | Executable tasks are generated in waves |
+| **Execution** (Exec) | The generals implement the prophecy | Implementation with automatic checkpoints |
+| **Judgment** (QA) | The tribunal validates compliance | Tests planned, verified, and executed | Each phase dispatches **specialized agents** with model routing: Haiku performs light reconnaissance (like scouts), Opus conducts complex reasoning (like temple sages), and Sonnet executes implementation (like artisans). Agents communicate via artifacts in the file system—not chat—making each handoff reproducible and auditable.
 
-Cada fase despacha **agentes especializados** com roteamento de modelo: Haiku faz o reconhecimento leve (como batedores), Opus conduz o raciocínio complexo (como os sábios do templo), e Sonnet executa a implementação (como os artesãos). Os agentes se comunicam por artefatos no sistema de arquivos — não por chat — tornando cada handoff reproduzível e auditável.
+You orchestrate everything with slash commands in Claude Code (e.g., `/oraculo:prd`, `/oraculo:exec`) while `spec-workflow-mcp` serves as the truth source for artifacts and approvals.
 
-Você orquestra tudo por slash commands no Claude Code (ex: `/oraculo:prd`, `/oraculo:exec`) enquanto o `spec-workflow-mcp` serve como fonte de verdade para artefatos e aprovações.
+## Why Oraculo?
 
-## Por que Oráculo?
+The Oraculo of Delphi wasn't simply a diviner. It was a **system**:
 
-O Oráculo de Delfos não era simplesmente um adivinho. Era um **sistema**:
+- **Ritualistic structure** — Questions had a format. Answers followed protocol. Nothing was improvised. Oraculo imposes the same discipline: each phase has its format, its artifacts, its gates.
 
-- **Estrutura ritualística** — Perguntas tinham formato. Respostas seguiam protocolo. Nada era improvisado. Oráculo impõe a mesma disciplina: cada fase tem seu formato, seus artefatos, seus portões.
+- **Specialized Intermediaries** — The Pythia prophesied, the priests interpreted, the scribes recorded. The Oraculo replicates this with sub-agents: each has its role, its model, its scope.
 
-- **Intermediários especializados** — A Pítia profetizava, os sacerdotes interpretavam, os escribas registravam. Oráculo replica isso com subagentes: cada um tem seu papel, seu modelo, seu escopo.
+- **Accumulated Wisdom** — The temple kept records of past consultations. The Oraculo's post-mortems index lessons learned that inform future decisions.
 
-- **Sabedoria acumulada** — O templo mantinha registros de consultas passadas. Os post-mortems do Oráculo indexam lições aprendidas que alimentam decisões futuras.
+- **Never Act Without Consulting** — The greatest sin in Ancient Greece was *hubris*: acting arrogantly, without seeking guidance. The Oraculo ensures that no agent implements code without first passing through the planning gates.
 
-- **Nunca agir sem consultar** — O maior pecado na Grécia Antiga era a *hybris*: agir com arrogância, sem pedir orientação. Oráculo garante que nenhum agente implemente código sem antes passar pelos portões de planejamento.
+## Quick Start
 
-## Início Rápido
+After [installation](#installation), run the following within a Claude Code session:
 
-Após a [instalação](#instalação), execute dentro de uma sessão Claude Code:
+1. `/oraculo:prd my-feature` — Generates the requirements document from the description
+2. `/oraculo:plan my-feature` — Creates the design and decomposes it into executable tasks
+3. `/oraculo:exec my-feature` — Deploys in waves with automatic checkpoints
+4. `/oraculo:qa my-feature` — Builds and executes the QA validation plan
 
-1. `/oraculo:prd minha-feature` — Gera o documento de requisitos a partir da descrição
-2. `/oraculo:plan minha-feature` — Cria design e decompõe em tarefas executáveis
-3. `/oraculo:exec minha-feature` — Implementa em ondas com checkpoints automáticos
-4. `/oraculo:qa minha-feature` — Constrói e executa plano de validação QA
+Each command handles sub-agent dispatch, file handoff, and quality gates. Between steps, artifacts are located in `.spec-workflow/specs/my-feature/` and approvals flow through `spec-workflow-mcp`.
 
-Cada comando cuida do despacho de subagentes, handoff de arquivos e portões de qualidade. Entre passos, artefatos ficam em `.spec-workflow/specs/minha-feature/` e aprovações fluem pelo `spec-workflow-mcp`.
+## Where to start
 
-## Onde começar
+- This file is the primary source for usage and operation.
 
-- Este arquivo é a fonte principal de uso e operação.
-- Regras operacionais para agentes e contribuidores estão em `AGENTS.md`.
-- `docs/ORACULO-WORKFLOW.md`, `hooks/README.md` e `copy-ready/README.md` são ponteiros leves para este README.
+- Operational rules for agents and contributors are in `AGENTS.md`.
 
-## Instalação
+- `docs/ORACULO-WORKFLOW.md`, `hooks/README.md`, and `copy-ready/README.md` are lightweight pointers to this README.
 
-### 1. Instalar a CLI
+## Installation
 
-O script de bootstrap baixa o binário Go compilado do último Release no GitHub e instala em `~/.local/bin/oraculo`. Requer `curl` e `tar`.
+### 1. Install the CLI
 
-```bash
+The bootstrap script downloads the compiled Go binary from the latest release on GitHub and installs it in `~/.local/bin/oraculo`. Requires `curl` and `tar`.
+
+``bash
 curl -fsSL https://raw.githubusercontent.com/lucas-stellet/oraculo/main/scripts/bootstrap.sh | bash
 ```
 
-**A partir de um clone local (build do source):**
+**From a local clone (build from source):**
 
 ```bash
 cd cli && go build -o ~/.local/bin/oraculo ./cmd/oraculo/
 ```
 
-Execute `oraculo` sem argumentos para ver os comandos disponíveis. Use `oraculo update` para auto-atualizar.
+Execute `oraculo` without arguments to see the available commands. Use `oraculo update` to auto-update.
 
-### 2. Instalar no projeto
+### 2. Install in the project
 
-Na raiz do projeto:
+In the project root:
 
 ```bash
 oraculo install
 ```
 
-Copia comandos, workflows, hooks, config e skills para o projeto. Para instalação manual: `cp -R /path/to/oraculo/copy-ready/. .`
+Copies commands, workflows, hooks, config, and skills to the project. For manual installation: `cp -R /path/to/oraculo/copy-ready/. .`
 
-### 3. Checklist pós-instalação
+### 3. Post-installation checklist
 
-Obrigatório:
-1. Merge de `.claude/settings.json.example` no seu `.claude/settings.json` (se necessário).
-2. Revise `.spec-workflow/oraculo.toml`, especialmente `[planning].tasks_generation_strategy` e `[planning].max_wave_size`.
-3. Inicie uma nova sessão Claude Code para o hook SessionStart sincronizar o template de tasks.
+Required:
 
-Opcional:
-- Habilite enforcement de skills por fase: `skills.design.enforce_required` e `skills.implementation.enforce_required` em `oraculo.toml`.
-- Habilite a statusline do Oráculo (veja `.claude/settings.json.example`).
-- Habilite hooks de enforcement com `hooks.enforcement_mode = "warn"` ou `"block"` em `oraculo.toml`.
-- Para validação QA com browser e exploração de URLs no planejamento, adicione Playwright MCP:
-  ```
-  claude mcp add playwright -- npx @playwright/mcp@latest --headless --isolated
-  ```
+1. Merge `.claude/settings.json.example` into your `.claude/settings.json` (if necessary).
 
-Skills padrão são copiados para `.claude/skills/` durante a instalação. O skill `test-driven-development` está no catálogo padrão; `qa-validation-planning` está disponível para fases QA. Em fases de implementação (`oraculo:exec`, `oraculo:checkpoint`), TDD é obrigatório apenas quando `[execution].tdd_default = true`.
+2. Review `.spec-workflow/oraculo.toml`, especially `[planning].tasks_generation_strategy` and `[planning].max_wave_size`.
 
-Variantes de template TDD: `user-templates/variants/` contém `tasks-template.tdd-on.md` e `tasks-template.tdd-off.md`. A chave `[templates].tasks_template_mode` controla a seleção (`auto`, `on`, `off`). O hook SessionStart sincroniza a variante ativa ao início de cada sessão.
+3. Start a new Claude Code session for the SessionStart hook to synchronize the task template.
 
-> **Path legado:** o Oráculo também verifica `.spw/spw-config.toml` como fallback se `.spec-workflow/oraculo.toml` não for encontrado.
+Optional:
+- Enable skill enforcement per phase: `skills.design.enforce_required` and `skills.implementation.enforce_required` in `oraculo.toml`.
 
-### Instalação Global
+- Enable Oraculo statusline (see `.claude/settings.json.example`).
 
-Para quem trabalha em múltiplos projetos, o Oráculo suporta instalação em duas camadas que evita duplicar ~72 arquivos por projeto:
+- Enable enforcement hooks with `hooks.enforcement_mode = "warn"` or `"block"` in `oraculo.toml`.
 
-| Modo | Comando | O que instala | Onde |
+- For browser-based QA validation and URL exploration in planning, add Playwright MCP:
+
+```
+claude mcp add playwright --npx @playwright/mcp@latest --headless --isolated
+```
+
+Default skills are copied to `.claude/skills/` during installation. The `test-driven-development` skill is in the default catalog; `qa-validation-planning` is available for QA phases. In implementation phases (`oraculo:exec`, `oraculo:checkpoint`), TDD is only required when `[execution].tdd_default = true`.
+
+TDD template variants: `user-templates/variants/` contains `tasks-template.tdd-on.md` and `tasks-template.tdd-off.md`. The `[templates].tasks_template_mode` key controls the selection (`auto`, `on`, `off`). The SessionStart hook synchronizes the active variant at the start of each session.
+
+> **Legacy Path:** Oraculo also checks `.spw/spw-config.toml` as a fallback if `.spec-workflow/oraculo.toml` is not found.
+
+### Global Installation
+
+For those working on multiple projects, Oraculo supports a two-tier installation that avoids duplicating ~72 files per project:
+
+| Mode | Command | What it installs | Where |
+
 |------|---------|---------------|------|
-| **Global** | `oraculo install --global` | Comandos, workflows, hooks, skills | `~/.claude/` |
-| **Init de Projeto** | `oraculo init` | Config, templates, snippets, .gitattributes | `.spec-workflow/`, `CLAUDE.md`, `AGENTS.md` |
-| **Completo (padrão)** | `oraculo install` | Tudo (comportamento inalterado) | `.claude/` + `.spec-workflow/` |
+| **Global** | `oraculo install --global` | Commands, workflows, hooks, skills | `~/.claude/` |
+
+| **Project Initialization** | `oraculo init` | Config, templates, snippets, .gitattributes | `.spec-workflow/`, `CLAUDE.md`, `AGENTS.md` |
+
+| **Complete (default)** | `oraculo install` | Everything (unchanged behavior) | `.claude/` + `.spec-workflow/` |
 
 **Setup:**
 
 ```bash
-# Uma vez: instalar globalmente
+# Once: install globally
 oraculo install --global
 
-# Por projeto: inicializar config específica
-cd meu-projeto
+# Per project: initialize specific config
+cd my-project
 oraculo init
 ```
 
-**Como funciona:** Claude Code resolve paths `@.claude/` com prioridade local, fallback global. Se o projeto tem install local (`oraculo install`), ele prevalece sobre o global.
+**How it works:** Claude Code resolves paths `@.claude/` with local priority, global fallback. If the project has a local install (`oraculo install`), it takes precedence over the global one.
 
-**Limitações:**
-- Workflows globais usam config padrão (sem guidelines do projeto). Projetos que precisam de guidelines customizadas devem usar `oraculo install`.
-- Overlays de Agent Teams ficam como noop globalmente. Projetos usando Agent Teams precisam de `oraculo install` para ativação local.
+**Limitations:**
 
-### Comandos da CLI
+- Global workflows use default config (without project guidelines). Projects that need custom guidelines should use `oraculo install`.
 
-| Comando | Descrição |
+- Agent Teams overlays are globally noop. Projects using Agent Teams need `oraculo install` for local activation.
+
+### CLI Commands
+
+| Command | Description |
+
 |---------|-----------|
-| `oraculo install` | Instala Oráculo no projeto atual (instalação local completa) |
-| `oraculo install --global` | Instala comandos, workflows, hooks e skills em `~/.claude/` |
-| `oraculo init` | Inicializa config, templates e snippets específicos do projeto |
-| `oraculo update` | Auto-atualiza o binário via GitHub Releases |
-| `oraculo doctor` | Verifica saúde da instalação (versão, config, hooks, comandos, workflows, skills) |
-| `oraculo status` | Resumo rápido do kit e skills |
-| `oraculo skills` | Status de skills instalados/disponíveis/ausentes |
-| `oraculo skills install [--elixir]` | Instala skills gerais (ou Elixir com a flag) |
+
+| `oraculo install` | Installs Oraculo in the current project (complete local installation) |
+
+| `oraculo install --global` | Installs commands, workflows, hooks, and skills in `~/.claude/` |
+
+| `oraculo init` | Initializes project-specific config, templates, and snippets |
+
+| `oraculo update` | Auto-updates the binary via GitHub Releases |
+
+| `oraculo doctor` | Checks the health of the installation (version, config, hooks, commands, workflows, skills) |
+
+| `oraculo status` | Quick summary of the kit and skills |
+
+| `oraculo skills` | Status of installed/available/missing skills |
+
+| `oraculo skills install [--elixir]` | Installs general skills (or Elixir with the flag) |
 
 <details>
-<summary>Referência rápida de config (todas as seções)</summary>
+<summary>Quick config reference (all sections)</summary>
 
-| Seção | Chave(s) | Descrição |
+| Section | Key(s) | Description |
+
 |-------|----------|-----------|
-| `[statusline]` | `cache_ttl_seconds`, `base_branches`, `sticky_spec`, `show_token_cost` | Comportamento do hook StatusLine |
-| `[templates]` | `sync_tasks_template_on_session_start`, `tasks_template_mode` | Seleção de variante do template de tasks |
-| `[safety]` | `backup_before_overwrite` | Backup antes de sobrescrever arquivos spec |
-| `[verification]` | `inline_audit_max_iterations` | Máx. retentativas de audit inline |
-| `[qa]` | `max_scenarios_per_wave` | Dimensionamento de waves QA |
-| `[hooks]` | `verbose`, `recent_run_window_minutes`, `guard_prompt_require_spec`, `guard_paths`, `guard_wave_layout`, `guard_stop_handoff` | Toggles por guard de hook |
-| `[execution]` | `require_clean_worktree_for_wave_pass`, `manual_tasks_require_human_handoff`, `tdd_default` | Portões de execução |
-| `[planning]` | `tasks_generation_strategy`, `max_wave_size` | Estratégia de planejamento em ondas |
-| `[post_mortem_memory]` | `enabled`, `max_entries_for_design` | Indexação de lições post-mortem |
-| `[agent_teams]` | `enabled`, `exclude_phases`, `require_delegate_mode` | Toggle de Agent Teams |
 
-Veja `.spec-workflow/oraculo.toml` para documentação completa de cada chave.
+| `[statusline]` | `cache_ttl_seconds`, `base_branches`, `sticky_spec`, `show_token_cost` | StatusLine hook behavior |
+| `[templates]` | `sync_tasks_template_on_session_start`, `tasks_template_mode` | Task template variant selection |
+| `[safety]` | `backup_before_overwrite` | Backup before overwriting spec files |
+| `[verification]` | `inline_audit_max_iterations` | Max inline audit retry attempts |
+| `[qa]` | `max_scenarios_per_wave` | QA wave sizing |
+| `[hooks]` | `verbose`, `recent_run_window_minutes`, `guard_prompt_require_spec`, `guard_paths`, `guard_wave_layout`, `guard_stop_handoff` | Toggles by hook guard |
+| `[execution]` | `require_clean_worktree_for_wave_pass`, `manual_tasks_require_human_handoff`, `tdd_default` | Execution Gates |
+| `[planning]` | `tasks_generation_strategy`, `max_wave_size` | Wave Planning Strategy |
+| `[post_mortem_memory]` | `enabled`, `max_entries_for_design` | Indexing post-mortem lessons |
+| `[agent_teams]` | `enabled`, `exclude_phases`, `require_delegate_mode` | Agent Teams Toggle | See `.spec-workflow/oraculo.toml` for complete documentation of each key.
 
 </details>
 
-| `oraculo finalizar <spec>` | Marca spec como completo, gera sumário com frontmatter YAML |
-| `oraculo view <spec> [type]` | Visualiza artefatos no terminal ou VS Code |
-| `oraculo search <query>` | Busca full-text (FTS5) em specs indexadas |
-| `oraculo summary <spec>` | Gera resumo de progresso sob demanda |
+| `oraculo finalizar <spec>` | Marks spec as complete, generates a summary with frontmatter YAML |
 
-#### Ferramentas de workflow (usadas por subagentes)
+| `oraculo view <spec> [type]` | Views artifacts in the terminal or VS Code |
 
-| Comando | Descrição |
+| `oraculo search <query>` | Searches full-text (FTS5) in indexed specs |
+
+| `oraculo summary <spec>` | Generates progress summary on demand |
+
+#### Workflow tools (used by sub-agents)
+
+| Command | Description |
+
 |---------|-----------|
-| `oraculo tools verify-task <spec> --task-id N [--check-commit]` | Verifica existência de artefatos da task |
-| `oraculo tools impl-log register <spec> --task-id N --wave NN --title T --files F --changes C` | Cria log de implementação para task concluída |
-| `oraculo tools impl-log check <spec> --task-ids 1,2,3` | Verifica se logs de implementação existem |
-| `oraculo tools task-mark <spec> --task-id N --status done` | Atualiza checkbox da task em tasks.md |
-| `oraculo tools wave-status <spec>` | Resolução completa de estado da wave |
-| `oraculo tools wave-update <spec> --wave NN --status pass --tasks 3,4,7` | Escreve resumo da wave e JSON de estado |
-| `oraculo tools dispatch-init-audit --run-dir R --type T` | Cria diretório de audit dentro de um run |
-| `oraculo tools audit-iteration start --run-dir R --type T [--max N]` | Inicializa tracking de iteração de audit |
-| `oraculo tools audit-iteration check --run-dir R --type T` | Verifica se outra retentativa é permitida |
-| `oraculo tools audit-iteration advance --run-dir R --type T --result R` | Avança contador de iteração |
 
-### Agent Teams (opcional)
+| `oraculo tools verify-task <spec> --task-id N [--check-commit]` | Checks for the existence of task artifacts |
 
-Agent Teams é desabilitado por padrão. Para habilitar, defina `[agent_teams].enabled = true` em `oraculo.toml`. O instalador lê essa configuração e alterna symlinks em `.claude/workflows/oraculo/overlays/active/`.
+| `oraculo tools impl-log register <spec> --task-id N --wave NN --title T --files F --changes C` | Creates deployment log for completed task |
+| `oraculo tools impl-log check <spec> --task-ids 1,2,3` | Checks if deployment logs exist |
+| `oraculo tools task-mark <spec> --task-id N --status done` | Updates task checkbox in tasks.md |
+| `oraculo tools wave-status <spec>` | Full wave status resolution |
+| `oraculo tools wave-update <spec> --wave NN --status pass --tasks 3,4,7` | Writes wave summary and status JSON |
+| `oraculo tools dispatch-init-audit --run-dir R --type T` | Creates audit directory within a run |
+| `oraculo tools audit-iteration start --run-dir R --type T [--max N]` | Initializes audit iteration tracking |
 
-Configuração adicional (automática pelo instalador):
-- `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1"` em `.claude/settings.json`
-- `teammateMode = "in-process"` (altere manualmente para `"tmux"` se desejar)
-- Symlinks de overlay: `cd .claude/workflows/oraculo/overlays/active && ln -sf ../teams/<cmd>.md <cmd>.md`
+| `oraculo tools audit-iteration check --run-dir R --type T` | Checks if another retry is allowed |
 
-Quando habilitado, Oráculo cria um time para qualquer fase não listada em `[agent_teams].exclude_phases`. `oraculo:exec` exige delegate mode quando `[agent_teams].require_delegate_mode = true`.
+| `oraculo tools audit-iteration advance --run-dir R --type T --result R` | Advances iteration counter |
 
-## Armazenamento Local
+### Agent Teams (optional)
 
-Oráculo armazena dados estruturados em bancos SQLite (driver Go puro, sem CGO, modo WAL):
+Agent Teams is disabled by default. To enable it, set `[agent_teams].enabled = true` in `oraculo.toml`. The installer reads this setting and toggles symlinks in `.claude/workflows/oraculo/overlays/active/`.
 
-- **`spec.db`** — Banco por spec em `.spec-workflow/specs/<spec-name>/spec.db`. O sistema de dispatch colhe automaticamente artefatos de subagentes (briefs, reports, status) no DB durante handoff (dual-write). Três arquivos gerenciados pelo MCP permanecem em disco como fonte de verdade: `requirements.md`, `design.md`, `tasks.md`.
-- **`.oraculo-index.db`** — Índice global em `.spec-workflow/.oraculo-index.db` com FTS5 full-text search. Alimenta `oraculo search <query>`.
+Additional configuration (automatic by the installer):
+- `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1"` in `.claude/settings.json`
+- `teammateMode = "in-process"` (change manually to `"tmux"` if desired)
+- Overlay symlinks: `cd .claude/workflows/oraculo/overlays/active && ln -sf ../teams/<cmd>.md <cmd>.md`
 
-`oraculo finalizar <spec>` marca um spec como completo e gera um bloco de sumário YAML frontmatter, tornando o spec pesquisável no índice global.
+When enabled, Oraculo creates a team for any phase not listed in `[agent_teams].exclude_phases`. `oraculo:exec` requires delegate mode when `[agent_teams].require_delegate_mode = true`.
 
-## Comandos de Entrada
+## Local Storage
 
-As fases seguem a jornada oracular:
+Oraculo stores structured data in SQLite databases (pure Go driver, no CGO, WAL mode):
 
-- `oraculo:prd` → fluxo zero-to-PRD de requisitos *(a pergunta ao Oráculo)*
-- `oraculo:plan` → meta-orquestrador de design/tasks: encadeia pesquisa → draft → plano → checagem *(a interpretação)*
-- `oraculo:tasks-plan` → geração de tasks (`rolling-wave` ou `all-at-once`) *(as tábuas com a resposta)*
-- `oraculo:exec` → execução em batch com checkpoints *(os generais implementam)*
-- `oraculo:checkpoint` → portão de qualidade (PASS/BLOCKED) *(o templo valida)*
-- `oraculo:status` → resumo de onde o workflow parou + próximos comandos *(consulta ao templo)*
-- `oraculo:post-mortem` → analisa commits pós-spec e registra lições *(as crônicas)*
-- `oraculo:qa` → constrói plano de validação QA *(o tribunal)*
-- `oraculo:qa-check` → valida seletores e rastreabilidade *(verificação dos testemunhos)*
-- `oraculo:qa-exec` → executa plano validado *(o veredito)*
+- **`spec.db`** — Database per spec in `.spec-workflow/specs/<spec-name>/spec.db`. The dispatch system automatically retrieves artifacts from sub-agents (briefs, reports, status) in the DB during handoff (dual-write). Three files managed by the MCP remain on disk as a source of truth: `requirements.md`, `design.md`, `tasks.md`.
 
-## Arquitetura do Orquestrador Enxuto
+- **`.oraculo-index.db`** — Global index in `.spec-workflow/.oraculo-index.db` with FTS5 full-text search. Feeds `oraculo search <query>`.
 
-Oráculo usa orquestradores enxutos com um sistema de padrões de despacho:
-- wrappers de comando em `.claude/commands/oraculo/*.md`
-- workflows detalhados em `.claude/workflows/oraculo/*.md`
-- políticas de despacho compartilhadas em `.claude/workflows/oraculo/shared/dispatch-{pipeline,audit,wave}.md`
-- políticas transversais em `.claude/workflows/oraculo/shared/*.md`
+`oraculo finalizar <spec>` marks a spec as complete and generates a frontmatter YAML summary block, making the spec searchable in the global index.
 
-### Categorias de Despacho
+## Input Commands
 
-Cada workflow declara uma seção `<dispatch_pattern>` como **fonte única de verdade** para metadados de despacho (`category`, `phase`, `comms_path`, `artifacts`). A CLI parseia essa seção dos workflows embutidos na inicialização.
+The phases follow the Oraculo's journey:
 
-| Categoria | Política | Comandos |
+- `oraculo:prd` → zero-to-PRD requirements flow *(the question to the Oraculo)*
+- `oraculo:plan` → design/task meta-orchestrator: chains research → draft → plan → checkout *(the interpretation)*
+- `oraculo:tasks-plan` → task generation (`rolling-wave` or `all-at-once`) *(the tablets with the answer)*
+- `oraculo:exec` → batch execution with checkpoints *(the generals implement)*
+- `oraculo:checkpoint` → quality gate (PASS/BLOCKED) *(the temple validates)*
+- `oraculo:status` → summary of where the workflow left off + next commands *(consultation with the temple)*
+- `oraculo:post-mortem` → Analyzes post-spec commits and logs lessons *(the chronicles)*
+- `oraculo:qa` → Builds QA validation plan *(the tribunal)*
+- `oraculo:qa-check` → Validates selectors and traceability *(verification of witnesses)*
+- `oraculo:qa-exec` → Executes validated plan *(the verdict)*
+
+## Lean Orchestrator Architecture
+
+Oraculo uses lean orchestrators with a dispatch pattern system:
+- command wrappers in `.claude/commands/oraculo/*.md`
+- detailed workflows in `.claude/workflows/oraculo/*.md`
+- shared dispatch policies in `.claude/workflows/oraculo/shared/dispatch-{pipeline,audit,wave}.md`
+- cross-cutting policies in `.claude/workflows/oraculo/shared/*.md`
+
+### Dispatch Categories
+
+Each workflow declares a `<dispatch_pattern>` section as the **single source of truth** for dispatch metadata (`category`, `phase`, `comms_path`, `artifacts`). The CLI parses this section of the workflows embedded in the initialization.
+
+| Category | Policy | Commands |
+
 |-----------|----------|----------|
+
 | **Pipeline** | `dispatch-pipeline.md` | `prd`, `design-research`, `design-draft`, `tasks-plan`, `qa`, `post-mortem` |
+
 | **Audit** | `dispatch-audit.md` | `tasks-check`, `qa-check`, `checkpoint` |
+
 | **Wave Execution** | `dispatch-wave.md` | `exec`, `qa-exec` |
 
-Guardrails de checkpoint (comandos audit):
-- Orquestradores são observadores read-only — NUNCA criam/modificam/deletam artefatos fora de comms para resolver um auditor BLOCKED (anti-self-heal).
-- Se QUALQUER auditor retorna `blocked`, o veredito final DEVE ser BLOCKED (consistência de handoff).
-- Briefs nunca afirmam fatos sobre o código — instruem auditores a verificar.
-- `oraculo:exec` deve parar e instruir o usuário a rodar `oraculo:checkpoint` em sessão separada (isolamento de sessão).
+Checkpoint guardrails (audit commands):
+- Orchestrators are read-only observers — they NEVER create/modify/delete artifacts outside of commands to resolve a BLOCKED auditor (anti-self-heal).
 
-As 5 regras core do thin-dispatch:
-1. Orquestrador lê apenas `status.json` após dispatch (nunca `report.md` em caso de pass).
-2. Briefs contêm paths de filesystem para reports anteriores (nunca conteúdo).
-3. Sintetizadores/agregadores leem direto do disco.
-4. Estrutura de run segue layout da categoria.
-5. Resume pula subagentes completos, sempre reexecuta o estágio final.
+- If ANY auditor returns `blocked`, the final verdict MUST be BLOCKED (handoff consistency).
 
-Lógica específica por comando é injetada via `<extensions>` em pontos nomeados (`pre_pipeline`, `pre_dispatch`, `post_dispatch`, `post_pipeline`, `inter_wave`, `per_task`).
+- Briefs never state facts about the code — they instruct auditors to verify.
 
-### Agent Teams
+- `oraculo:exec` should stop and instruct the user to run `oraculo:checkpoint` in a separate session (session isolation).
 
-Agent Teams usa base + overlay via symlinks:
-- workflow base: `.claude/workflows/oraculo/<command>.md`
-- overlay ativo: `.claude/workflows/oraculo/overlays/active/<command>.md` (symlink)
-- teams off: symlink → `../noop.md`
-- teams on: symlink → `../teams/<command>.md`
+The 5 core rules of thin-dispatch:
+1. Orchestrator only reads `status.json` after dispatch (never `report.md` in case of pass).
 
-Wrappers permanecem intencionalmente enxutos e delegam 100% da lógica aos workflows.
+2. Briefs contain filesystem paths to previous reports (never content).
 
-Guardrail de contexto de execução (`oraculo:exec`):
-- Antes de leituras amplas, despacha `execution-state-scout` (modelo de implementação, default `sonnet`).
-- Scout retorna apenas estado compacto: status do checkpoint, task `[-]` em progresso, próximas tasks executáveis, e ação necessária (`resume|wait-user-authorization|manual-handoff|done|blocked`).
-- Orquestrador então lê apenas arquivos com escopo de task (evita `requirements.md`/`design.md` completos, exceto para blockers).
+3. Synthesizers/aggregators read directly from disk.
 
-Defaults de planejamento em `.spec-workflow/oraculo.toml`:
+4. Run structure follows category layout.
+
+5. Resume skips complete sub-agents, always re-executes the final stage.
+
+Specific logic per command is injected via `<extensions>` at named points (`pre_pipeline`, `pre_dispatch`, `post_dispatch`, `post_pipeline`, `inter_wave`, `per_task`).
+
+Agent Teams
+
+Agent Teams uses base + overlay via symlinks:
+- Workflow base: `.claude/workflows/oraculo/<command>.md`
+- Active overlay: `.claude/workflows/oraculo/overlays/active/<command>.md` (symlink)
+- Teams off: symlink → `../noop.md`
+- Teams on: symlink → `../teams/<command>.md`
+
+Wrappers remain intentionally lean and delegate 100% of the logic to workflows.
+
+Execution context guardrail (`oraculo:exec`):
+- Before wide reads, dispatch `execution-state-scout` (deployment model, default `sonnet`).
+
+- Scout returns only compact state: checkpoint status, task `[-]` in progress, next executable tasks, and required action (`resume|wait-user-authorization|manual-handoff|done|blocked`).
+
+- Orchestrator then reads only task-scoped files (avoids full `requirements.md`/`design.md` files, except for blockers).
+
+Planning defaults in `.spec-workflow/oraculo.toml`:
 
 ```toml
 [planning]
-tasks_generation_strategy = "rolling-wave" # ou "all-at-once"
+tasks_generation_strategy = "rolling-wave" # or "all-at-once"
 max_wave_size = 3
+
 ```
 
-- `rolling-wave`: cada ciclo de planejamento cria uma wave executável.
-  - Loop típico: `tabuas` → `exec` → `checkpoint` → `tabuas` (próxima wave)...
-- `all-at-once`: um passo de planejamento cria todas as waves.
-- Args explícitos da CLI sobrescrevem config (`--mode`, `--max-wave-size`).
+- `rolling-wave`: each planning cycle creates an executable wave.
 
-Memória post-mortem em `.spec-workflow/oraculo.toml`:
+- Typical loop: `boards` → `exec` → `checkpoint` → `boards` (next wave)...
+- `all-at-once`: a planning step creates all waves.
+
+- Explicit CLI arguments override config (`--mode`, `--max-wave-size`).
+
+Post-mortem memory in `.spec-workflow/oraculo.toml`:
 
 ```toml
 [post_mortem_memory]
 enabled = true
 max_entries_for_design = 5
+
 ```
 
-- `oraculo:pos-mortem` escreve reports em `.spec-workflow/post-mortems/<spec-name>/`.
-- Índice compartilhado: `.spec-workflow/post-mortems/INDEX.md` (usado por design/planning quando habilitado).
-- Fases de design/planning carregam lições indexadas com priorização por recência/tags.
+- `oraculo:pos-mortem` writes reports to `.spec-workflow/post-mortems/<spec-name>/`.
 
-Tratamento de runs inacabados para comandos longos:
-- Antes de criar um novo run-id, inspeciona a pasta de runs da fase.
-- Se existe run inacabado, pede decisão explícita do usuário:
-  - `continue-unfinished`
-  - `delete-and-restart`
-- Nunca escolhe automaticamente.
-- Se decisão indisponível, para com `WAITING_FOR_USER_DECISION`.
+- Shared index: `.spec-workflow/post-mortems/INDEX.md` (used by design/planning when enabled).
 
-Reconciliação de aprovações para comandos com gate MCP:
-- Primeiro lê estado de aprovação dos campos `spec-status`.
-- Se status ausente/desconhecido/inconsistente, resolve ID de aprovação e confirma via MCP `approvals status`.
-- `STATUS-SUMMARY.md` é output-only, nunca fonte de verdade.
+- Design/planning phases carry indexed lessons prioritized by recency/tags.
 
-Comunicação file-first entre subagentes é armazenada em diretórios `_comms/` organizados por fase:
+Handling unfinished runs for long commands:
+- Before creating a new run-id, inspect the phase's runs folder.
+
+- If an unfinished run exists, ask for an explicit user decision:
+
+- `continue-unfinished`
+
+- `delete-and-restart`
+
+- Never chooses automatically.
+
+- If a decision is unavailable, stop with `WAITING_FOR_USER_DECISION`.
+
+Reconciliation of approvals for commands with MCP gates:
+
+- First read the approval status from the `spec-status` fields.
+
+- If the status is missing/unknown/inconsistent, resolve the approval ID and confirm via MCP `approvals status`.
+
+- `STATUS-SUMMARY.md` is output-only, never a source of truth.
+
+File-first communication between subagents is stored in `_comms/` directories organized by phase:
 - prd: `.spec-workflow/specs/<spec-name>/prd/_comms/run-NNN/`
 - design: `.spec-workflow/specs/<spec-name>/design/_comms/{design-research,design-draft}/run-NNN/`
 - planning: `.spec-workflow/specs/<spec-name>/planning/_comms/{tasks-plan,tasks-check}/run-NNN/`
 - execution: `.spec-workflow/specs/<spec-name>/execution/waves/wave-NN/{execution,checkpoint}/run-NNN/`
 - qa: `.spec-workflow/specs/<spec-name>/qa/_comms/{qa,qa-check}/run-NNN/`
 - qa-exec: `.spec-workflow/specs/<spec-name>/qa/_comms/qa-exec/waves/wave-NN/run-NNN/`
+
 - post-mortem: `.spec-workflow/specs/<spec-name>/post-mortem/_comms/run-NNN/`
 
-Formato de `<run-id>`: `run-NNN` (sequencial com zero-padding, ex: `run-001`).
+Format of `<run-id>`: `run-NNN` (sequential with zero-padding, e.g., `run-001`).
 
-YAML frontmatter (metadados opcionais) é incluído nos templates de spec sob a chave `oraculo` para classificação de documentos por subagentes.
+YAML frontmatter (optional metadata) is included in the spec templates under the key `Oraculo` for classifying documents by sub-agents.
 
-## Compatibilidade com Dashboard (`spec-workflow-mcp`)
+## Dashboard Compatibility (`spec-workflow-mcp`)
 
-Para manter `tasks.md` compatível com renderização + parsing + validação de aprovação do Dashboard:
+To keep `tasks.md` compatible with Dashboard rendering + parsing + approval validation:
 
-- Checkbox markers apenas em linhas reais de task:
-  - `- [ ] <id>. <description>`
-  - `- [-] <id>. <description>`
-  - `- [x] <id>. <description>`
-- Use `-` como marcador (nunca `*`).
-- Nunca use checkboxes aninhados em blocos de metadados.
-- IDs numéricos no início (`1`, `1.1`, `2.3`, ...), únicos no arquivo inteiro.
-- Metadados como bullets regulares (`- ...`), nunca checkbox.
-- `Files` parseável em linha única:
-  - `- Files: path/to/file.ext, test/path/to/file_test.ext`
-- Campos de metadados com underscore:
-  - `_Requirements: ..._`
-  - `_Leverage: ..._`
-  - `_Prompt: ..._`
-- `_Prompt` estruturado como:
-  - `Role: ... | Task: ... | Restrictions: ... | Success: ...`
+- Checkbox markers only on actual task lines:
 
-## Mermaid para Design de Arquitetura
+- `- [ ] <id>. <description>`
+- `- [-] <id>. <description>`
 
-Oráculo inclui o skill `mermaid-architecture` para fases de design:
-- arquivo do skill: `skills/mermaid-architecture/SKILL.md`
-- config padrão: listado em `[skills.design].optional`
+- `- [x] <id>. <description>`
+- Use `-` as a marker (never `*`).
 
-Exemplos de arquitetura cobertos:
-- fronteiras de módulos/camadas (`flowchart`)
-- visão de containers/sistema (`flowchart`)
-- fluxo de request com paths de sucesso/erro (`sequenceDiagram`)
-- pipeline event-driven (`flowchart`)
-- ciclo de vida de workflow (`stateDiagram-v2`)
+- Never use nested checkboxes in metadata blocks.
 
-Em `oraculo:design-draft`, `design.md` deve incluir pelo menos um diagrama Mermaid válido na seção `## Architecture`.
+- Numeric IDs at the beginning (`1`, `1.1`, `2.3`, ...), unique in the entire file.
 
-## Validação QA (3 Fases)
+- Metadata as regular bullets (`- ...`), never checkboxes.
 
-O QA segue uma cadeia de planejar → verificar → executar, como um tribunal grego:
+- `Files` parsable in a single line:
+
+- `- Files: path/to/file.ext, test/path/to/file_test.ext`
+- Metadata fields with underscores:
+
+- `_Requirements: ..._`
+
+- `_Leverage: ..._`
+
+- `_Prompt: ..._`
+- `_Prompt` structured as:
+
+- `Role: ... | Task: ... | Restrictions: ... | Success: ...
+
+## Mermaid for Architecture Design
+
+Oraculo includes the `mermaid-architecture` skill for design phases:
+
+- skill file: `skills/mermaid-architecture/SKILL.md`
+- default config: listed in `[skills.design].optional`
+
+Examples of covered architecture:
+
+- module/layer boundaries (`flowchart`)
+- container/system view (`flowchart`)
+- request flow with success/error paths (`sequenceDiagram`)
+- event-driven pipeline (`flowchart`)
+- workflow lifecycle (`stateDiagram-v2`)
+
+In `oraculo:design-draft`, `design.md` must include at least one valid Mermaid diagram in the `## Architecture` section.
+
+## QA Validation (3 Phases)
+
+QA follows a plan → check → execute chain, like a Greek court:
 
 ```
-oraculo:julgamento (plano) → oraculo:julgamento-check (validar) → oraculo:julgamento-exec (executar)
+Oraculo:judgment (plan) → Oraculo:judgment-check (validate) → Oraculo:judgment-exec (execute)
+
 ```
 
-### `oraculo:julgamento` (planejamento)
-- Pergunta ao usuário o que validar quando foco não é explícito
-- Seleciona `Playwright MCP`, `Bruno CLI`, ou `hybrid` por risco/escopo
-- Produz `QA-TEST-PLAN.md` com seletores/endpoints concretos por cenário
-- Usa ferramentas de automação browser do Playwright MCP pré-configurado
+### `Oraculo:judgment` (planning)
+- Asks the user what to validate when the focus is not explicit
+- Selects `Playwright MCP`, `Bruno CLI`, or `hybrid` by risk/scope
+- Produces `QA-TEST-PLAN.md` with concrete selectors/endpoints per scenario
+- Uses Playwright MCP's pre-configured browser automation tools
 
-### `oraculo:julgamento-check` (validação)
-- Valida plano de teste contra código real (a ÚNICA fase que lê arquivos de implementação)
-- Verifica existência de seletores/endpoints via `qa-selector-verifier`
-- Checa rastreabilidade e viabilidade de dados
-- Produz `QA-CHECK.md` com mapa verificado (test-id → seletor → file:line)
-- Decisão PASS/BLOCKED gateia `oraculo:julgamento-exec`
+### `Oraculo:judgment-check` (validation)
+- Validates the test plan against real code (the ONLY phase that reads (Implementation files)
+- Checks for the existence of selectors/endpoints via `qa-selector-verifier`
+- Checks data traceability and feasibility
+- Produces `QA-CHECK.md` with a verified map (test-id → selector → file:line)
+- PASS/BLOCKED decision triggers `oraculo:julgamento-exec`
 
-### `oraculo:julgamento-exec` (execução)
-- Executa plano validado usando apenas seletores verificados do `QA-CHECK.md`
-- **Nunca lê arquivos fonte de implementação** — drift de seletores é logado como defeito
-- Suporta `--scope smoke|regression|full` e `--rerun-failed true|false`
-- Produz `QA-EXECUTION-REPORT.md` e `QA-DEFECT-REPORT.md` com decisão GO/NO-GO
+### `oraculo:julgamento-exec` (execution)
+- Executes validated plan using only verified selectors from `QA-CHECK.md`
+- **Never reads implementation source files** — selector drift is logged as a defect
+- Supports `--scope smoke|regression|full` and `--rerun-failed true|false`
+- Produces `QA-EXECUTION-REPORT.md` and `QA-DEFECT-REPORT.md` with GO/NO-GO decision
 
-Enforcement de hooks:
-- `warn` → apenas diagnósticos
-- `block` → nega ações violadoras
-- Detalhes: `AGENTS.md` + `.spec-workflow/oraculo.toml`
+Enforcement of Hooks:
+- `warn` → diagnostics only
+- `block` → negates violating actions
+- Details: `AGENTS.md` + `.spec-workflow/oraculo.toml`
 
-## Glossário
+## Glossary
 
-- **Agent Teams**: Modo opcional onde Oráculo instancia múltiplos agentes Claude Code para trabalhar em paralelo numa fase. Controlado por `[agent_teams].enabled` em `oraculo.toml`.
+- **Agent Teams**: Optional mode where Oraculo instantiates multiple Claude Code agents to work in parallel in a phase. Controlled by `[agent_teams].enabled` in `oraculo.toml`.
 
-- **Checkpoint** *(Portão)*: Gate de qualidade executado após cada wave via `oraculo:checkpoint`. Produz report PASS/BLOCKED que determina se a próxima wave pode prosseguir.
+- **Checkpoint**: Quality gate executed after each wave via `oraculo:checkpoint`. Produces a PASS/BLOCKED report that determines if the next wave can proceed.
 
-- **Dispatch Pattern** *(Padrão de Despacho)*: Estratégia de orquestração de um comando. Uma de três categorias: Pipeline (estágios sequenciais com sintetizador), Audit (revisores paralelos com agregador), ou Wave Execution (ciclos iterativos com checkpoints). Declarado via `<dispatch_pattern>` em cada workflow.
+- **Dispatch Pattern**: Orchestration strategy for a command. One of three categories: Pipeline (sequential stages with synthesizer), Audit (parallel reviewers with aggregator), or Wave Execution (iterative cycles with checkpoints). Declared via `<dispatch_pattern>` in each workflow.
 
-- **File-First Communication** *(Comunicação por Artefato)*: Subagentes se comunicam exclusivamente via artefatos no filesystem (`brief.md`, `report.md`, `status.json`) — nunca por chat. Armazenados em diretórios `_comms/`.
+- **File-First Communication**: Sub-agents communicate exclusively via artifacts in the filesystem (`brief.md`, `report.md`, `status.json`) — never via chat. Stored in `_comms/` directories.
 
-- **Overlay**: Mecanismo baseado em symlinks que alterna comportamento entre modo solo (symlink para `noop.md`) e Agent Teams (symlink para `teams/<cmd>.md`).
+- **Overlay**: Symlink-based mechanism that alternates behavior between solo mode (symlink to `noop.md`) and Agent Teams mode (symlink to `teams/<cmd>.md`).
 
-- **Rolling Wave** *(Onda Progressiva)*: Estratégia onde tasks são geradas uma wave por vez, permitindo que waves futuras incorporem lições da execução anterior. Config: `[planning].tasks_generation_strategy = "rolling-wave"`.
+- **Rolling Wave**: Strategy where tasks are generated one wave at a time, allowing future waves to incorporate lessons from the previous execution. Config: `[planning].tasks_generation_strategy = "rolling-wave"`.
 
-- **Scout** *(Batedor)*: Subagente leve despachado antes de uma wave para coletar estado de execução sem ler specs completos. Retorna estado compacto de resume para o orquestrador.
+- **Scout**: Lightweight sub-agent dispatched before a wave to collect execution state without reading complete specs. Returns compact resume state to the orchestrator.
 
-- **Synthesizer** *(Sintetizador)*: Subagente final num Pipeline que lê todos os reports anteriores do disco e produz o artefato consolidado.
+- **Synthesizer**: Final sub-agent in a pipeline that reads all previous reports from disk and produces the consolidated artifact.
 
-- **Thin Dispatch** *(Despacho Enxuto)*: Princípio arquitetural central: orquestradores leem apenas `status.json` após cada subagente, passam paths entre estágios, e delegam lógica detalhada aos workflows.
+- **Thin Dispatch**: Core architectural principle: orchestrators read only `status.json` after each sub-agent, pass paths between stages, and delegate detailed logic to workflows.
 
-- **Wave** *(Onda)*: Batch de tasks executadas juntas em `oraculo:exec`. Cada wave é seguida por checkpoint. Tamanho controlado por `[planning].max_wave_size`.
+- **Wave**: Batch of tasks executed together in `oraculo:exec`. Each wave is followed by a checkpoint. Size controlled by `[planning].max_wave_size`.
 
-- **spec.db**: Banco SQLite por spec que armazena artefatos colhidos de subagentes. Criado automaticamente via dual-write durante dispatch handoff.
-
-- **Harvest** *(Colheita)*: Padrão onde dispatch-handoff coleta arquivos de subagentes (`brief.md`, `report.md`, `status.json`) para `spec.db` após cada subagente completar.
+- **spec.db**: SQLite database per spec that stores artifacts collected from sub-agents. Created automatically via dual-write during dispatch handoff. - **Harvest**: A pattern where dispatch-handoff collects files from sub-agents (`brief.md`, `report.md`, `status.json`) to `spec.db` after each sub-agent completes.
 
 ---
 
 <p align="center">
-  <em>"Μηδὲν ἄγαν"</em> — Nada em excesso.<br>
-  <small>Segunda inscrição no Templo de Apolo em Delfos.</small>
+<em>"Μηδὲν ἄγαν"</em> — Nothing in excess.<br>
+
+<small>Second inscription on the Temple of Apollo at Delphi.</small>
 </p>
