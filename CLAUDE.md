@@ -27,13 +27,26 @@ bash -n copy-ready/install.sh
 # Validate thin-orchestrator contract (wrapper sizes, workflow refs, mirror sync)
 scripts/validate-thin-orchestrator.sh
 
-# Build and smoke-test Go hooks (each reads JSON from stdin)
+# Build and smoke-test Go CLI
 go build -o /tmp/spw ./cli/cmd/spw && PATH="/tmp:$PATH"
+
+# Hooks (each reads JSON from stdin)
 echo '{"workspace":{"current_dir":"'"$(pwd)"'"}}' | spw hook statusline
 echo '{"prompt":"/spw:plan"}' | spw hook guard-prompt
 echo '{"cwd":"'"$(pwd)"'","tool_input":{"file_path":"README.md"}}' | spw hook guard-paths
 echo '{}' | spw hook guard-stop
 echo '{}' | spw hook session-start
+
+# User-facing commands
+spw finalizar --help
+spw view --help
+spw search --help
+spw summary --help
+
+# Inspection commands
+spw tasks state --help
+spw wave state --help
+spw spec list --help
 ```
 
 ## Architecture
@@ -62,7 +75,11 @@ Source files in this repo must stay in sync with their `copy-ready/` counterpart
 
 `scripts/validate-thin-orchestrator.sh` enforces mirror integrity via `diff -rq`. Always update both sides in the same patch.
 
-### Hooks (Go CLI)
+### Go CLI (`cli/`)
+
+The Go CLI (`cli/cmd/spw/`) provides hooks, inspection commands, user-facing commands, and workflow tools. Full CLI reference: `.claude/docs/spw-cli-reference.md`.
+
+#### Hooks
 
 All hooks are implemented in Go at `cli/internal/hook/` and invoked via `spw hook <event>`. Each reads JSON from stdin and follows the same exit-code contract: 0 = ok, 2 = block.
 
@@ -74,7 +91,29 @@ All hooks are implemented in Go at `cli/internal/hook/` and invoked via `spw hoo
 
 Hook enforcement mode is configured in `config/spw-config.toml` under `[hooks]`: `warn` (diagnostics only) or `block` (deny violating actions).
 
-### CLI (`bin/spw`)
+#### Local Storage
+
+SPW stores structured data in SQLite databases (pure Go driver, no CGO, WAL mode):
+
+- **`spec.db`** — Per-spec database at `.spec-workflow/specs/<spec-name>/spec.db`. The dispatch-handoff dual-writes subagent artifacts (briefs, reports, status) into the DB when the store is available. Three MCP-managed files remain on disk as source of truth: `requirements.md`, `design.md`, `tasks.md`.
+- **`.spw-index.db`** — Global index at `.spec-workflow/.spw-index.db` with FTS5 full-text search across all specs. Updated by `spw finalizar` and queried by `spw search`.
+
+#### User-Facing Commands
+
+| Command | Description |
+|---------|-------------|
+| `spw finalizar <spec>` | Mark spec as completed, harvest artifacts, generate summary with YAML frontmatter, index in global FTS5 |
+| `spw view <spec> [type]` | View spec artifacts (`overview`, `report`, `brief`, `checkpoint`, `implementation-log`, `wave-summary`, `completion-summary`) |
+| `spw search <query>` | FTS5 full-text search across indexed specs |
+| `spw summary <spec>` | Generate on-demand progress summary |
+
+#### Inspection Commands
+
+- **`spw tasks`** — Task state resolution: `state`, `next`, `mark`, `count`, `files`, `validate`, `complexity`
+- **`spw wave`** — Wave inspection: `state`, `summary`, `checkpoint`, `resume`
+- **`spw spec`** — Spec lifecycle: `artifacts`, `stage`, `prereqs`, `approval`, `list`
+
+### CLI Wrapper (`bin/spw`)
 
 The `spw` CLI is a bash wrapper that caches the kit from GitHub and delegates to `copy-ready/install.sh`. Key commands: `spw install`, `spw update`, `spw doctor`, `spw status`, `spw skills`. Environment variables: `SPW_REPO`, `SPW_REF`, `SPW_HOME`, `SPW_KIT_DIR`, `SPW_AUTO_UPDATE`.
 
@@ -85,6 +124,8 @@ Canonical path: `.spec-workflow/spw-config.toml` (legacy fallback: `.spw/spw-con
 ### SPW Command Entry Points
 
 `spw:prd` (requirements) → `spw:plan` (design+tasks) → `spw:design-research` → `spw:design-draft` → `spw:tasks-plan` → `spw:tasks-check` → `spw:exec` (implementation) → `spw:checkpoint` (quality gate) → `spw:post-mortem` → `spw:qa` (validation planning) → `spw:qa-check` (plan validation) → `spw:qa-exec` (test execution) → `spw:status` (resume guidance)
+
+These slash commands are complemented by CLI commands for post-workflow operations (`spw finalizar`, `spw view`, `spw search`, `spw summary`) and state inspection (`spw tasks`, `spw wave`, `spw spec`). See `.claude/docs/spw-cli-reference.md` for the full reference.
 
 ### File-First Subagent Communication
 

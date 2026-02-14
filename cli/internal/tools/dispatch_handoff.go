@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/lucas-stellet/spw/internal/registry"
+	"github.com/lucas-stellet/spw/internal/store"
 )
 
 type subagentStatus struct {
@@ -83,6 +84,22 @@ func DispatchHandoff(cwd, runDir, command string, raw bool) {
 	handoffPath := filepath.Join(runDir, "_handoff.md")
 	if err := os.WriteFile(handoffPath, []byte(sb.String()), 0644); err != nil {
 		Fail("failed to write _handoff.md: "+err.Error(), raw)
+	}
+
+	// Dual-write: harvest run to spec.db
+	if specDir := resolveSpecDirFromRunDir(runDir); specDir != "" {
+		if s := store.TryOpen(specDir); s != nil {
+			defer s.Close()
+			var waveNum *int
+			if w := extractWaveFromPath(runDir); w > 0 {
+				waveNum = &w
+			}
+			cmdName := command
+			if cmdName == "" {
+				cmdName = extractCommandFromRunDir(runDir)
+			}
+			s.HarvestRunDir(runDir, cmdName, waveNum)
+		}
 	}
 
 	handoffRel, _ := filepath.Rel(cwd, handoffPath)

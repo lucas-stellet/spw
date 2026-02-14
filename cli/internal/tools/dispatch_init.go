@@ -11,6 +11,7 @@ import (
 	"github.com/lucas-stellet/spw/internal/config"
 	"github.com/lucas-stellet/spw/internal/embedded"
 	"github.com/lucas-stellet/spw/internal/registry"
+	"github.com/lucas-stellet/spw/internal/store"
 )
 
 var runNumRe = regexp.MustCompile(`^run-(\d+)$`)
@@ -90,6 +91,18 @@ func DispatchInit(cwd, command, specName, wave string, raw bool) {
 	runDir := filepath.Join(commsDir, runID)
 	if err := os.MkdirAll(runDir, 0755); err != nil {
 		Fail("failed to create run dir: "+err.Error(), raw)
+	}
+
+	// Dual-write: register run in spec.db
+	if s := store.TryOpen(specDir); s != nil {
+		defer s.Close()
+		var waveNumPtr *int
+		if meta.WaveAware {
+			n, _ := strconv.Atoi(wave)
+			waveNumPtr = &n
+		}
+		runDirRelToSpec, _ := filepath.Rel(specDir, runDir)
+		s.CreateRun(command, nextRun, meta.Phase, waveNumPtr, runDirRelToSpec)
 	}
 
 	// Create artifact directories declared in dispatch_pattern.

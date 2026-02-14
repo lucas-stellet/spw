@@ -9,6 +9,7 @@
 - [Quick Start](#quick-start)
 - [Where to start](#where-to-start)
 - [Installation](#installation)
+- [Local Storage](#local-storage)
 - [Command entry points](#command-entry-points)
 - [Thin-Orchestrator Architecture](#thin-orchestrator-architecture)
 - [Dashboard Markdown Compatibility](#dashboard-markdown-compatibility-spec-workflow-mcp)
@@ -97,6 +98,10 @@ Default SPW skills are copied into `.claude/skills/` during install (best effort
 | `spw status` | Print a quick kit and skills summary |
 | `spw skills` | Show installed/available/missing skills status |
 | `spw skills install [--elixir]` | Install general skills (or Elixir with flag) |
+| `spw finalizar <spec>` | Mark spec as completed, generate summary with YAML frontmatter |
+| `spw view <spec> [type]` | View spec artifacts in terminal or VS Code |
+| `spw search <query>` | Full-text search across indexed specs |
+| `spw summary <spec>` | Generate on-demand progress summary |
 
 #### Workflow tools (used by subagents and workflows)
 
@@ -123,6 +128,15 @@ Additional setup (done automatically by the installer):
 - Overlay symlinks: `cd .claude/workflows/spw/overlays/active && ln -sf ../teams/<cmd>.md <cmd>.md`
 
 When enabled, SPW creates a team for any phase not listed in `[agent_teams].exclude_phases` (all phases are eligible by default). `spw:exec` enforces delegate mode when `[agent_teams].require_delegate_mode = true`. Team overlays are available for all subagent-first entrypoints: `spw:prd`, `spw:plan`, `spw:design-research`, `spw:design-draft`, `spw:tasks-plan`, `spw:tasks-check`, `spw:exec`, `spw:checkpoint`, `spw:post-mortem`, `spw:qa`, `spw:qa-check`, `spw:qa-exec`, `spw:status`.
+
+## Local Storage
+
+SPW stores structured data in SQLite databases (pure Go driver, no CGO, WAL mode):
+
+- **`spec.db`** — Per-spec database at `.spec-workflow/specs/<spec-name>/spec.db`. The dispatch system automatically harvests subagent artifacts (briefs, reports, status) into the DB during handoff (dual-write). Three MCP-managed files remain on disk as source of truth: `requirements.md`, `design.md`, and `tasks.md`.
+- **`.spw-index.db`** — Global index at `.spec-workflow/.spw-index.db` with FTS5 full-text search across all specs. Powers `spw search <query>`.
+
+`spw finalizar <spec>` marks a spec as completed and generates a YAML frontmatter summary block, making the spec searchable and queryable from the global index.
 
 ## Command entry points
 
@@ -341,3 +355,7 @@ Hook enforcement:
 - **Thin Dispatch**: Core architectural principle: orchestrators read only `status.json` after each subagent (never full reports), pass filesystem paths between stages, and delegate all detailed logic to workflows. Enforced by the 5 core thin-dispatch rules (see Dispatch Categories).
 
 - **Wave**: A batch of tasks executed together in `spw:exec`. Each wave is followed by a checkpoint. Wave size is controlled by `[planning].max_wave_size` in `spw-config.toml`.
+
+- **spec.db**: Per-spec SQLite database that stores harvested subagent artifacts. Created automatically via dual-write during dispatch handoff.
+
+- **Harvest**: Pattern where dispatch-handoff collects subagent files (`brief.md`, `report.md`, `status.json`) into `spec.db` after each subagent completes.
