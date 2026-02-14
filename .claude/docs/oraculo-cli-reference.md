@@ -11,7 +11,7 @@ Complete reference for all `oraculo` CLI commands. The Go binary is built from `
 | `oraculo doctor` | Check Oráculo installation health (version, config, hooks, commands, workflows, skills) |
 | `oraculo status` | Show Oraculo kit presence and spec summary |
 | `oraculo skills` | Show skills installation status |
-| `oraculo skills install [--elixir]` | Install general skills (or Elixir-specific with flag) |
+| `oraculo skills install` | Install general skills |
 | `oraculo version` | Print version information |
 | `oraculo render [command] [--all]` | Render composed workflow with all shared policies inlined |
 | `oraculo hook <event>` | Handle Claude Code hook events (see [Hooks](#hooks)) |
