@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oráculo — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Ambient background -->
+<div class="ambient">
+  <div class="ambient__orb ambient__orb--indigo"></div>
+  <div class="ambient__orb ambient__orb--gold"></div>
+</div>
+<div class="grid-overlay"></div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     VIEW 1 — APP SELECTOR
+     ═══════════════════════════════════════════════════ -->
+<div class="view view--picker" id="viewPicker">
+  <div class="picker">
+    <div class="picker__header">
+      <div class="picker__logo">
+        <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M60 8L110 98H10L60 8Z" stroke="#9B8FFF" stroke-width="1.5" fill="none" opacity="0.7"/>
+          <path d="M60 92L35 42H85L60 92Z" stroke="#9B8FFF" stroke-width="1.5" fill="none" opacity="0.5"/>
+          <circle cx="60" cy="58" r="16" stroke="#F0D078" stroke-width="2" fill="none"/>
+          <circle cx="60" cy="58" r="6" fill="#F0D078"/>
+        </svg>
+        <span class="picker__logo-text">Or<span class="accent">á</span>culo</span>
+      </div>
+      <p class="picker__subtitle">Select an application to begin.</p>
+    </div>
+
+    <div class="picker__search">
+      <span class="picker__search-icon">&#128269;</span>
+      <input type="text" placeholder="Search applications..." id="pickerSearch">
+      <span class="picker__search-kbd">&#8984;K</span>
+    </div>
+
+    <div class="picker__grid" id="pickerGrid">
+      <button class="app-card" onclick="selectApp('fintrack', 'FinTrack')" data-name="fintrack">
+        <div class="app-card__top">
+          <div class="app-card__icon app-card__icon--gold">F</div>
+          <div class="app-card__status app-card__status--executing"><span class="pulse-dot"></span> Executing</div>
+        </div>
+        <div class="app-card__name">FinTrack</div>
+        <div class="app-card__desc">Financial tracking platform</div>
+        <div class="app-card__meta">
+          <span class="app-card__stat"><span class="app-card__stat-dot" style="background: var(--indigo-bright)"></span>3 projects</span>
+          <span class="app-card__stat"><span class="app-card__stat-dot" style="background: var(--warning)"></span>7 specs</span>
+        </div>
+        <div class="app-card__bar"><div class="app-card__bar-fill" style="width: 75%"></div></div>
+      </button>
+
+      <button class="app-card" onclick="selectApp('mediflow', 'MediFlow')" data-name="mediflow">
+        <div class="app-card__top">
+          <div class="app-card__icon app-card__icon--success">M</div>
+          <div class="app-card__status app-card__status--pass">&#10003; All pass</div>
+        </div>
+        <div class="app-card__name">MediFlow</div>
+        <div class="app-card__desc">Healthcare appointment system</div>
+        <div class="app-card__meta">
+          <span class="app-card__stat"><span class="app-card__stat-dot" style="background: var(--indigo-bright)"></span>2 projects</span>
+          <span class="app-card__stat"><span class="app-card__stat-dot" style="background: var(--success)"></span>4 specs</span>
+        </div>
+        <div class="app-card__bar"><div class="app-card__bar-fill app-card__bar-fill--success" style="width: 100%"></div></div>
+      </button>
+
+      <button class="app-card" onclick="selectApp('logistix', 'Logistix')" data-name="logistix">
+        <div class="app-card__top">
+          <div class="app-card__icon app-card__icon--indigo">L</div>
+          <div class="app-card__status app-card__status--planning">&#9878; Planning</div>
+        </div>
+        <div class="app-card__name">Logistix</div>
+        <div class="app-card__desc">Warehouse management API</div>
+        <div class="app-card__meta">
+          <span class="app-card__stat"><span class="app-card__stat-dot" style="background: var(--indigo-bright)"></span>1 project</span>
+          <span class="app-card__stat"><span class="app-card__stat-dot" style="background: var(--info)"></span>3 specs</span>
+        </div>
+        <div class="app-card__bar"><div class="app-card__bar-fill app-card__bar-fill--info" style="width: 30%"></div></div>
+      </button>
+
+      <button class="app-card" onclick="selectApp('chatpulse', 'ChatPulse')" data-name="chatpulse">
+        <div class="app-card__top">
+          <div class="app-card__icon app-card__icon--blocked">C</div>
+          <div class="app-card__status app-card__status--new">New</div>
+        </div>
+        <div class="app-card__name">ChatPulse</div>
+        <div class="app-card__desc">Real-time messaging service</div>
+        <div class="app-card__meta">
+          <span class="app-card__stat"><span class="app-card__stat-dot" style="background: var(--mist)"></span>0 projects</span>
+          <span class="app-card__stat"><span class="app-card__stat-dot" style="background: var(--mist)"></span>0 specs</span>
+        </div>
+        <div class="app-card__bar"><div class="app-card__bar-fill" style="width: 0%"></div></div>
+      </button>
+
+      <button class="app-card app-card--add">
+        <div class="app-card--add__icon">+</div>
+        <div class="app-card__name">New Application</div>
+        <div class="app-card__desc">Connect a new project</div>
+      </button>
+    </div>
+
+    <div class="picker__footer">
+      <span class="picker__version">v1.16.0</span>
+      <span>4 applications connected</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     VIEW 2 — DASHBOARD
+     ═══════════════════════════════════════════════════ -->
+<div class="view view--dashboard is-hidden" id="viewDashboard">
+  <div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar__logo">
+        <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M60 8L110 98H10L60 8Z" stroke="#9B8FFF" stroke-width="1.5" fill="none" opacity="0.7"/>
+          <path d="M60 92L35 42H85L60 92Z" stroke="#9B8FFF" stroke-width="1.5" fill="none" opacity="0.5"/>
+          <circle cx="60" cy="58" r="16" stroke="#F0D078" stroke-width="2" fill="none"/>
+          <circle cx="60" cy="58" r="6" fill="#F0D078"/>
+        </svg>
+        <span class="sidebar__logo-text">Or<span class="accent">á</span>culo</span>
+      </div>
+
+      <nav class="sidebar__nav">
+        <div class="nav-group">
+          <div class="nav-group__label">Overview</div>
+          <ul>
+            <li><a class="nav-item nav-item--active" href="#"><span class="nav-item__icon">&#9737;</span> Dashboard</a></li>
+            <li><a class="nav-item" href="#"><span class="nav-item__icon">&#128269;</span> Search</a></li>
+            <li><a class="nav-item" href="#"><span class="nav-item__icon">&#9878;</span> Artifacts</a></li>
+          </ul>
+        </div>
+
+        <!-- Projects with nested specs -->
+        <div class="nav-group">
+          <div class="nav-group__label">Projects</div>
+          <ul>
+            <!-- Project 1 -->
+            <li>
+              <button class="nav-project" onclick="toggleProject(this)">
+                <span class="nav-project__chevron">&#9656;</span>
+                <span class="nav-project__name">Auth System</span>
+                <span class="nav-item__badge nav-item__badge--gold">2</span>
+              </button>
+              <ul class="nav-project__specs is-collapsed">
+                <li><a class="spec-list-item spec-list-item--active" href="#">
+                  <span class="spec-dot spec-dot--executing"></span>
+                  auth-middleware
+                  <span class="spec-list-item__stage">exec</span>
+                </a></li>
+                <li><a class="spec-list-item" href="#">
+                  <span class="spec-dot spec-dot--planning"></span>
+                  oauth-provider
+                  <span class="spec-list-item__stage">plan</span>
+                </a></li>
+              </ul>
+            </li>
+            <!-- Project 2 -->
+            <li>
+              <button class="nav-project" onclick="toggleProject(this)">
+                <span class="nav-project__chevron">&#9656;</span>
+                <span class="nav-project__name">Payments</span>
+                <span class="nav-item__badge nav-item__badge--success">3</span>
+              </button>
+              <ul class="nav-project__specs is-collapsed">
+                <li><a class="spec-list-item" href="#">
+                  <span class="spec-dot spec-dot--pass"></span>
+                  payment-gateway
+                  <span class="spec-list-item__stage">qa</span>
+                </a></li>
+                <li><a class="spec-list-item" href="#">
+                  <span class="spec-dot spec-dot--pass"></span>
+                  refund-flow
+                  <span class="spec-list-item__stage">done</span>
+                </a></li>
+                <li><a class="spec-list-item" href="#">
+                  <span class="spec-dot spec-dot--blocked"></span>
+                  subscription-billing
+                  <span class="spec-list-item__stage">blocked</span>
+                </a></li>
+              </ul>
+            </li>
+            <!-- Project 3 -->
+            <li>
+              <button class="nav-project" onclick="toggleProject(this)">
+                <span class="nav-project__chevron">&#9656;</span>
+                <span class="nav-project__name">Dashboard UI</span>
+                <span class="nav-item__badge nav-item__badge--info">2</span>
+              </button>
+              <ul class="nav-project__specs is-collapsed">
+                <li><a class="spec-list-item" href="#">
+                  <span class="spec-dot spec-dot--planning"></span>
+                  user-dashboard
+                  <span class="spec-list-item__stage">plan</span>
+                </a></li>
+                <li><a class="spec-list-item" href="#">
+                  <span class="spec-dot spec-dot--blocked"></span>
+                  email-service
+                  <span class="spec-list-item__stage">blocked</span>
+                </a></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group__label">Tools</div>
+          <ul>
+            <li><a class="nav-item" href="#"><span class="nav-item__icon">&#9881;</span> Config</a></li>
+            <li><a class="nav-item" href="#"><span class="nav-item__icon">&#10047;</span> Post-Mortems <span class="nav-item__badge nav-item__badge--info">3</span></a></li>
+            <li><a class="nav-item" href="#"><span class="nav-item__icon">&#9776;</span> Guidelines</a></li>
+          </ul>
+        </div>
+      </nav>
+
+      <div class="sidebar__footer">
+        <span class="sidebar__version">v1.16.0</span>
+        Oráculo Kit
+      </div>
+    </aside>
+
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar__left">
+        <!-- App switcher -->
+        <div class="app-switcher" id="appSwitcher">
+          <button class="app-switcher__trigger" onclick="toggleAppMenu()">
+            <span class="app-switcher__icon" id="appSwitcherIcon">F</span>
+            <span class="app-switcher__name" id="appSwitcherName">FinTrack</span>
+            <span class="app-switcher__chevron">&#9662;</span>
+          </button>
+          <div class="app-switcher__dropdown is-hidden" id="appDropdown">
+            <div class="app-switcher__dropdown-search">
+              <input type="text" placeholder="Switch application...">
+            </div>
+            <div class="app-switcher__dropdown-list">
+              <button class="app-switcher__option app-switcher__option--active" onclick="switchApp('fintrack','FinTrack','F')">
+                <span class="app-switcher__option-icon app-card__icon--gold">F</span><span>FinTrack</span><span class="app-switcher__option-check">&#10003;</span>
+              </button>
+              <button class="app-switcher__option" onclick="switchApp('mediflow','MediFlow','M')">
+                <span class="app-switcher__option-icon app-card__icon--success">M</span><span>MediFlow</span>
+              </button>
+              <button class="app-switcher__option" onclick="switchApp('logistix','Logistix','L')">
+                <span class="app-switcher__option-icon app-card__icon--indigo">L</span><span>Logistix</span>
+              </button>
+              <button class="app-switcher__option" onclick="switchApp('chatpulse','ChatPulse','C')">
+                <span class="app-switcher__option-icon app-card__icon--blocked">C</span><span>ChatPulse</span>
+              </button>
+            </div>
+            <div class="app-switcher__dropdown-footer">
+              <button onclick="backToPicker()">&#8592; All applications</button>
+            </div>
+          </div>
+        </div>
+
+        <span class="topbar__sep">/</span>
+        <div class="topbar__breadcrumb"><span class="current">overview</span></div>
+      </div>
+
+      <div class="topbar__right">
+        <div class="search-box">
+          <span class="search-box__icon">&#128269;</span>
+          <input type="text" placeholder="Search projects, specs, tasks...">
+          <span class="search-box__kbd">&#8984;K</span>
+        </div>
+        <div class="status-pill status-pill--live"><span class="pulse-dot"></span> 2 executing</div>
+        <div class="avatar">LC</div>
+      </div>
+    </header>
+
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <!-- Hierarchy breadcrumb -->
+      <div class="hierarchy-bar">
+        <span class="hierarchy-bar__label">Application</span>
+        <span class="hierarchy-bar__sep">&#8250;</span>
+        <span class="hierarchy-bar__label">Projects</span>
+        <span class="hierarchy-bar__sep">&#8250;</span>
+        <span class="hierarchy-bar__label hierarchy-bar__label--muted">Specs</span>
+        <span class="hierarchy-bar__sep">&#8250;</span>
+        <span class="hierarchy-bar__label hierarchy-bar__label--muted">Tasks</span>
+      </div>
+
+      <div class="page-header">
+        <h1 class="page-header__greeting">The <span class="gold">Oracle</span> awaits.</h1>
+        <p class="page-header__sub">
+          <span class="mono">3 projects</span> &middot; <span class="mono">7 specs</span> &middot; <span class="mono">62 tasks</span>
+        </p>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats">
+        <div class="stat-card">
+          <div class="stat-card__header">
+            <span class="stat-card__label">Projects</span>
+            <span class="stat-card__icon stat-card__icon--indigo">&#9883;</span>
+          </div>
+          <div class="stat-card__value">3</div>
+          <div class="stat-card__delta">1 completing</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__header">
+            <span class="stat-card__label">Active Specs</span>
+            <span class="stat-card__icon stat-card__icon--gold">&#9737;</span>
+          </div>
+          <div class="stat-card__value">7</div>
+          <div class="stat-card__delta">across 3 projects</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__header">
+            <span class="stat-card__label">Tasks Done</span>
+            <span class="stat-card__icon stat-card__icon--success">&#10003;</span>
+          </div>
+          <div class="stat-card__value">47<span class="dim">/62</span></div>
+          <div class="stat-card__delta">75.8% complete</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__header">
+            <span class="stat-card__label">Checkpoints</span>
+            <span class="stat-card__icon stat-card__icon--info">&#9878;</span>
+          </div>
+          <div class="stat-card__value">9<span class="dim">/11</span></div>
+          <div class="stat-card__delta"><span class="up">2 PASS</span> today</div>
+        </div>
+      </div>
+
+      <!-- Two column -->
+      <div class="content-grid">
+
+        <!-- Left: Projects with nested specs -->
+        <div class="panel">
+          <div class="panel__header">
+            <span class="panel__title">Projects</span>
+            <button class="panel__action">View all</button>
+          </div>
+          <div class="panel__body">
+
+            <!-- PROJECT 1: Auth System -->
+            <div class="project-group">
+              <button class="project-row" onclick="toggleProjectMain(this)">
+                <span class="project-row__chevron">&#9662;</span>
+                <div class="project-row__icon project-row__icon--gold">&#9883;</div>
+                <div class="project-row__info">
+                  <div class="project-row__name">Auth System</div>
+                  <div class="project-row__desc">Authentication & authorization infrastructure</div>
+                </div>
+                <div class="project-row__stats">
+                  <span class="project-row__stat">2 specs</span>
+                  <span class="project-row__stat-sep">&middot;</span>
+                  <span class="project-row__stat">14/22 tasks</span>
+                </div>
+                <div class="progress" style="width: 100px;">
+                  <div class="progress__bar"><div class="progress__fill progress__fill--warning" style="width: 63%"></div></div>
+                </div>
+                <span class="status-tag status-tag--executing">Executing</span>
+              </button>
+
+              <!-- Nested specs -->
+              <div class="project-specs">
+                <div class="specs-table">
+                  <div class="specs-table__row">
+                    <div class="spec-name">
+                      <span class="spec-dot spec-dot--executing"></span>
+                      <span class="spec-name__text">auth-middleware</span>
+                    </div>
+                    <span class="spec-stage">exec / wave-02</span>
+                    <div class="progress">
+                      <div class="progress__bar"><div class="progress__fill progress__fill--warning" style="width: 66%"></div></div>
+                      <span class="progress__text">12/18</span>
+                    </div>
+                    <span class="model-badge model-badge--sonnet"><span class="model-badge__dot"></span> Sonnet</span>
+                    <span class="status-tag status-tag--executing">Executing</span>
+                  </div>
+                  <div class="specs-table__row">
+                    <div class="spec-name">
+                      <span class="spec-dot spec-dot--planning"></span>
+                      <span class="spec-name__text">oauth-provider</span>
+                    </div>
+                    <span class="spec-stage">planning</span>
+                    <div class="progress">
+                      <div class="progress__bar"><div class="progress__fill progress__fill--info" style="width: 50%"></div></div>
+                      <span class="progress__text">2/4</span>
+                    </div>
+                    <span class="model-badge model-badge--haiku"><span class="model-badge__dot"></span> Haiku</span>
+                    <span class="status-tag status-tag--planning">Planning</span>
+                  </div>
+                </div>
+
+                <!-- Wave mini for active spec -->
+                <div class="project-specs__waves">
+                  <span class="project-specs__waves-label">auth-middleware waves</span>
+                  <div class="project-specs__waves-row">
+                    <div style="display: flex; align-items: center; gap: var(--sp-2);">
+                      <span class="wave-label-sm">W-01</span>
+                      <div class="wave-mini">
+                        <div class="wave-mini__block wave-mini__block--done"></div><div class="wave-mini__block wave-mini__block--done"></div><div class="wave-mini__block wave-mini__block--done"></div><div class="wave-mini__block wave-mini__block--done"></div><div class="wave-mini__block wave-mini__block--done"></div><div class="wave-mini__block wave-mini__block--done"></div>
+                      </div>
+                      <span class="wave-status-sm wave-status-sm--pass">PASS</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: var(--sp-2);">
+                      <span class="wave-label-sm">W-02</span>
+                      <div class="wave-mini">
+                        <div class="wave-mini__block wave-mini__block--done"></div><div class="wave-mini__block wave-mini__block--done"></div><div class="wave-mini__block wave-mini__block--done"></div><div class="wave-mini__block wave-mini__block--active"></div><div class="wave-mini__block wave-mini__block--pending"></div><div class="wave-mini__block wave-mini__block--pending"></div>
+                      </div>
+                      <span class="wave-status-sm wave-status-sm--active">4/6</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: var(--sp-2);">
+                      <span class="wave-label-sm">W-03</span>
+                      <div class="wave-mini">
+                        <div class="wave-mini__block wave-mini__block--pending"></div><div class="wave-mini__block wave-mini__block--pending"></div><div class="wave-mini__block wave-mini__block--pending"></div><div class="wave-mini__block wave-mini__block--pending"></div><div class="wave-mini__block wave-mini__block--pending"></div><div class="wave-mini__block wave-mini__block--pending"></div>
+                      </div>
+                      <span class="wave-status-sm wave-status-sm--pending">0/6</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PROJECT 2: Payments -->
+            <div class="project-group">
+              <button class="project-row" onclick="toggleProjectMain(this)">
+                <span class="project-row__chevron">&#9656;</span>
+                <div class="project-row__icon project-row__icon--success">&#10003;</div>
+                <div class="project-row__info">
+                  <div class="project-row__name">Payments</div>
+                  <div class="project-row__desc">Payment processing, refunds & subscriptions</div>
+                </div>
+                <div class="project-row__stats">
+                  <span class="project-row__stat">3 specs</span>
+                  <span class="project-row__stat-sep">&middot;</span>
+                  <span class="project-row__stat">24/26 tasks</span>
+                </div>
+                <div class="progress" style="width: 100px;">
+                  <div class="progress__bar"><div class="progress__fill progress__fill--success" style="width: 92%"></div></div>
+                </div>
+                <span class="status-tag status-tag--pass">Pass</span>
+              </button>
+
+              <div class="project-specs is-collapsed">
+                <div class="specs-table">
+                  <div class="specs-table__row">
+                    <div class="spec-name">
+                      <span class="spec-dot spec-dot--pass"></span>
+                      <span class="spec-name__text">payment-gateway</span>
+                    </div>
+                    <span class="spec-stage">qa / wave-01</span>
+                    <div class="progress">
+                      <div class="progress__bar"><div class="progress__fill progress__fill--success" style="width: 100%"></div></div>
+                      <span class="progress__text">8/8</span>
+                    </div>
+                    <span class="model-badge model-badge--opus"><span class="model-badge__dot"></span> Opus</span>
+                    <span class="status-tag status-tag--pass">Pass</span>
+                  </div>
+                  <div class="specs-table__row">
+                    <div class="spec-name">
+                      <span class="spec-dot spec-dot--pass"></span>
+                      <span class="spec-name__text">refund-flow</span>
+                    </div>
+                    <span class="spec-stage">done</span>
+                    <div class="progress">
+                      <div class="progress__bar"><div class="progress__fill progress__fill--success" style="width: 100%"></div></div>
+                      <span class="progress__text">10/10</span>
+                    </div>
+                    <span class="model-badge model-badge--sonnet"><span class="model-badge__dot"></span> Sonnet</span>
+                    <span class="status-tag status-tag--pass">Done</span>
+                  </div>
+                  <div class="specs-table__row">
+                    <div class="spec-name">
+                      <span class="spec-dot spec-dot--blocked"></span>
+                      <span class="spec-name__text">subscription-billing</span>
+                    </div>
+                    <span class="spec-stage">exec / wave-01</span>
+                    <div class="progress">
+                      <div class="progress__bar"><div class="progress__fill progress__fill--warning" style="width: 75%"></div></div>
+                      <span class="progress__text">6/8</span>
+                    </div>
+                    <span class="model-badge model-badge--opus"><span class="model-badge__dot"></span> Opus</span>
+                    <span class="status-tag status-tag--blocked">Blocked</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PROJECT 3: Dashboard UI -->
+            <div class="project-group">
+              <button class="project-row" onclick="toggleProjectMain(this)">
+                <span class="project-row__chevron">&#9656;</span>
+                <div class="project-row__icon project-row__icon--info">&#9878;</div>
+                <div class="project-row__info">
+                  <div class="project-row__name">Dashboard UI</div>
+                  <div class="project-row__desc">User-facing dashboard & notifications</div>
+                </div>
+                <div class="project-row__stats">
+                  <span class="project-row__stat">2 specs</span>
+                  <span class="project-row__stat-sep">&middot;</span>
+                  <span class="project-row__stat">9/14 tasks</span>
+                </div>
+                <div class="progress" style="width: 100px;">
+                  <div class="progress__bar"><div class="progress__fill progress__fill--info" style="width: 35%"></div></div>
+                </div>
+                <span class="status-tag status-tag--planning">Planning</span>
+              </button>
+
+              <div class="project-specs is-collapsed">
+                <div class="specs-table">
+                  <div class="specs-table__row">
+                    <div class="spec-name">
+                      <span class="spec-dot spec-dot--planning"></span>
+                      <span class="spec-name__text">user-dashboard</span>
+                    </div>
+                    <span class="spec-stage">planning</span>
+                    <div class="progress">
+                      <div class="progress__bar"><div class="progress__fill progress__fill--info" style="width: 30%"></div></div>
+                      <span class="progress__text">0/0</span>
+                    </div>
+                    <span class="model-badge model-badge--haiku"><span class="model-badge__dot"></span> Haiku</span>
+                    <span class="status-tag status-tag--planning">Planning</span>
+                  </div>
+                  <div class="specs-table__row">
+                    <div class="spec-name">
+                      <span class="spec-dot spec-dot--blocked"></span>
+                      <span class="spec-name__text">email-service</span>
+                    </div>
+                    <span class="spec-stage">exec / wave-01</span>
+                    <div class="progress">
+                      <div class="progress__bar"><div class="progress__fill progress__fill--warning" style="width: 15%"></div></div>
+                      <span class="progress__text">2/14</span>
+                    </div>
+                    <span class="model-badge model-badge--sonnet"><span class="model-badge__dot"></span> Sonnet</span>
+                    <span class="status-tag status-tag--blocked">Blocked</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Right column -->
+        <div style="display: flex; flex-direction: column; gap: var(--sp-6);">
+
+          <!-- Activity -->
+          <div class="panel">
+            <div class="panel__header">
+              <span class="panel__title">Recent Activity</span>
+              <button class="panel__action">All</button>
+            </div>
+            <div class="panel__body">
+              <div class="activity-feed">
+                <div class="activity-item">
+                  <div class="activity-item__dot activity-item__dot--success">&#10003;</div>
+                  <div class="activity-item__content">
+                    <div class="activity-item__text"><strong>Auth System</strong> &rsaquo; auth-middleware task-010 completed</div>
+                    <div class="activity-item__time">2 min ago</div>
+                  </div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-item__dot activity-item__dot--gold">&#9737;</div>
+                  <div class="activity-item__content">
+                    <div class="activity-item__text"><strong>Auth System</strong> &rsaquo; checkpoint wave-01 cleared</div>
+                    <div class="activity-item__time">12 min ago</div>
+                  </div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-item__dot activity-item__dot--warning">&#9883;</div>
+                  <div class="activity-item__content">
+                    <div class="activity-item__text"><strong>Auth System</strong> &rsaquo; auth-middleware wave-02 started</div>
+                    <div class="activity-item__time">14 min ago</div>
+                  </div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-item__dot activity-item__dot--info">&#9878;</div>
+                  <div class="activity-item__content">
+                    <div class="activity-item__text"><strong>Dashboard UI</strong> &rsaquo; user-dashboard design approved</div>
+                    <div class="activity-item__time">38 min ago</div>
+                  </div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-item__dot activity-item__dot--error">&#10007;</div>
+                  <div class="activity-item__content">
+                    <div class="activity-item__text"><strong>Dashboard UI</strong> &rsaquo; email-service blocked</div>
+                    <div class="activity-item__time">1h ago</div>
+                  </div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-item__dot activity-item__dot--success">&#10003;</div>
+                  <div class="activity-item__content">
+                    <div class="activity-item__text"><strong>Payments</strong> &rsaquo; payment-gateway QA all pass</div>
+                    <div class="activity-item__time">2h ago</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick actions -->
+          <div class="panel">
+            <div class="panel__header"><span class="panel__title">Quick Actions</span></div>
+            <div class="panel__body">
+              <div class="quick-actions">
+                <button class="quick-action">
+                  <div class="quick-action__icon quick-action__icon--indigo">&#9883;</div>
+                  <div><div class="quick-action__label">New Project</div><div class="quick-action__desc">Create project</div></div>
+                </button>
+                <button class="quick-action">
+                  <div class="quick-action__icon quick-action__icon--gold">&#9737;</div>
+                  <div><div class="quick-action__label">New Spec</div><div class="quick-action__desc">oraculo:prd</div></div>
+                </button>
+                <button class="quick-action">
+                  <div class="quick-action__icon quick-action__icon--success">&#10003;</div>
+                  <div><div class="quick-action__label">Checkpoint</div><div class="quick-action__desc">oraculo:checkpoint</div></div>
+                </button>
+                <button class="quick-action">
+                  <div class="quick-action__icon quick-action__icon--info">&#128269;</div>
+                  <div><div class="quick-action__label">Search</div><div class="quick-action__desc">oraculo search</div></div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Statusline -->
+  <div class="statusline">
+    <span class="statusline__item statusline__item--gold">&#9673;</span>
+    <span class="statusline__item statusline__item--spec" id="statusApp">FinTrack</span>
+    <span class="statusline__sep">|</span>
+    <span class="statusline__item statusline__item--phase">Auth System</span>
+    <span class="statusline__sep">|</span>
+    <span class="statusline__item statusline__item--spec">auth-middleware</span>
+    <span class="statusline__sep">|</span>
+    <span class="statusline__item statusline__item--phase">exec / wave-02</span>
+    <span class="statusline__sep">|</span>
+    <span class="statusline__item statusline__item--model">sonnet</span>
+    <div class="statusline__right">
+      <span>~24k tokens</span>
+      <span class="statusline__sep">|</span>
+      <span>$0.12</span>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  // View toggling
+  function selectApp(id, name) {
+    document.getElementById('viewPicker').classList.add('is-hidden');
+    document.getElementById('viewDashboard').classList.remove('is-hidden');
+    document.getElementById('appSwitcherName').textContent = name;
+    document.getElementById('appSwitcherIcon').textContent = name[0];
+    document.getElementById('statusApp').textContent = name;
+  }
+
+  function backToPicker() {
+    document.getElementById('viewDashboard').classList.add('is-hidden');
+    document.getElementById('viewPicker').classList.remove('is-hidden');
+    closeAppMenu();
+  }
+
+  // App switcher dropdown
+  function toggleAppMenu() {
+    document.getElementById('appDropdown').classList.toggle('is-hidden');
+  }
+  function closeAppMenu() {
+    document.getElementById('appDropdown').classList.add('is-hidden');
+  }
+  function switchApp(id, name, letter) {
+    document.getElementById('appSwitcherName').textContent = name;
+    document.getElementById('appSwitcherIcon').textContent = letter;
+    document.getElementById('statusApp').textContent = name;
+    closeAppMenu();
+  }
+
+  // Sidebar project expand/collapse
+  function toggleProject(btn) {
+    const specs = btn.nextElementSibling;
+    const chevron = btn.querySelector('.nav-project__chevron');
+    specs.classList.toggle('is-collapsed');
+    chevron.classList.toggle('is-rotated');
+  }
+
+  // Main content project expand/collapse
+  function toggleProjectMain(btn) {
+    const group = btn.closest('.project-group');
+    const specs = group.querySelector('.project-specs');
+    const chevron = btn.querySelector('.project-row__chevron');
+    specs.classList.toggle('is-collapsed');
+    chevron.classList.toggle('is-rotated');
+  }
+
+  // Close dropdown on outside click
+  document.addEventListener('click', function(e) {
+    const s = document.getElementById('appSwitcher');
+    if (s && !s.contains(e.target)) closeAppMenu();
+  });
+
+  // Picker search
+  const ps = document.getElementById('pickerSearch');
+  if (ps) ps.addEventListener('input', function(e) {
+    const q = e.target.value.toLowerCase();
+    document.querySelectorAll('.app-card[data-name]').forEach(c => {
+      c.style.display = c.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  });
+</script>
+
+</body>
+</html>
