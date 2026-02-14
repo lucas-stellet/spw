@@ -131,105 +131,45 @@ The `oraculo` CLI is a bash wrapper that caches the kit from GitHub and delegate
 
 Coexistence: if a project has a local install, it takes precedence over the global (Claude Code native path resolution).
 
-The installer injects snippet content into target `CLAUDE.md` and `AGENTS.md` using `<!-- ORACULO-KIT-START -->` / `<!-- ORACULO-KIT-END -->` markers. It also auto-merges Oraculo hook entries into `.claude/settings.json` via `oraculo tools merge-settings`.
+<!-- ORACULO-KIT-START — managed by oraculo install, do not edit manually -->
+## Oraculo (Spec-Workflow)
 
-### Runtime Config
+This project uses Oraculo for structured AI-driven development workflows.
 
-Canonical path: `.spec-workflow/oraculo.toml` (legacy fallback: `.spw/spw-config.toml`). This TOML controls model routing, execution gates, planning strategy, per-stage skill enforcement, hook behavior, and Agent Teams. Config sections:
+### Commands
 
-| Section | Keys | Purpose |
-|---------|------|---------|
-| `[statusline]` | `cache_ttl_seconds`, `base_branches`, `sticky_spec`, `show_token_cost` | StatusLine hook behavior |
-| `[templates]` | `sync_tasks_template_on_session_start`, `tasks_template_mode` | Task template variant selection (auto/on/off) |
-| `[safety]` | `backup_before_overwrite` | Backup before overwriting spec files |
-| `[verification]` | `inline_audit_max_iterations` | Max inline audit retry iterations |
-| `[qa]` | `max_scenarios_per_wave` | QA execution wave sizing |
-| `[hooks]` | `verbose`, `recent_run_window_minutes`, `guard_prompt_require_spec`, `guard_paths`, `guard_wave_layout`, `guard_stop_handoff` | Per-guard hook toggles and enforcement |
-| `[execution]` | `require_clean_worktree_for_wave_pass`, `manual_tasks_require_human_handoff`, `tdd_default`, `commit_per_task`, `wave_approval` | Execution gates (TDD, clean worktree, commit tri-state) |
-| `[planning]` | `tasks_generation_strategy`, `max_wave_size` | Rolling-wave vs all-at-once, wave sizing |
-| `[post_mortem_memory]` | `enabled`, `max_entries_for_design` | Post-mortem lesson indexing |
-| `[skills.*]` | `enforce_required`, `required`, `optional` | Per-stage skill enforcement (design, implementation) |
-| `[agent_teams]` | `enabled`, `exclude_phases`, `require_delegate_mode` | Agent Teams toggle and deny-list |
+`/oraculo:prd` → `/oraculo:plan` → `/oraculo:design-research` → `/oraculo:design-draft` → `/oraculo:tasks-plan` → `/oraculo:tasks-check` → `/oraculo:exec` → `/oraculo:checkpoint` → `/oraculo:qa` → `/oraculo:qa-check` → `/oraculo:qa-exec` → `/oraculo:post-mortem` → `/oraculo:status`
 
-### Oraculo Command Entry Points
+### Dispatch CLI (used within workflows)
 
-`oraculo:prd` (requirements) → `oraculo:plan` (design+tasks) → `oraculo:design-research` → `oraculo:design-draft` → `oraculo:tasks-plan` → `oraculo:tasks-check` → `oraculo:exec` (implementation) → `oraculo:checkpoint` (quality gate) → `oraculo:post-mortem` → `oraculo:qa` (validation planning) → `oraculo:qa-check` (plan validation) → `oraculo:qa-exec` (test execution) → `oraculo:status` (resume guidance)
+All Oraculo workflows use these CLI commands for subagent dispatch. The CLI creates directories, boilerplate files, and enforces the file-first handoff contract:
 
-These slash commands are complemented by CLI commands for post-workflow operations (`oraculo finalizar`, `oraculo view`, `oraculo search`, `oraculo summary`) and state inspection (`oraculo tasks`, `oraculo wave`, `oraculo spec`). See `.claude/docs/oraculo-cli-reference.md` for the full reference.
+- `oraculo tools dispatch-init <command> <spec-name> [--wave NN]` — creates run-NNN dir, returns category/dispatch_policy/models
+- `oraculo tools dispatch-setup <subagent> --run-dir <dir> --model-alias <alias>` — creates subagent dir + brief.md skeleton
+- `oraculo tools dispatch-read-status <subagent> --run-dir <dir>` — reads status.json (ONLY read report.md if status=blocked)
+- `oraculo tools dispatch-handoff --run-dir <dir>` — generates _handoff.md from all status.json files
+- `oraculo tools resolve-model <alias>` — maps config alias (web_research/complex_reasoning/implementation) to model
 
-### File-First Subagent Communication
+### File-First Handoff Contract
 
-Subagent handoffs use filesystem artifacts, not chat. Required files per subagent:
-- `<subagent>/brief.md`, `<subagent>/report.md`, `<subagent>/status.json`
-- `<run-dir>/_handoff.md`
+Every subagent MUST produce: `brief.md` (written by orchestrator), `report.md`, `status.json`.
+Every run MUST produce: `_handoff.md`.
+Status.json format: `{"status": "pass"|"blocked", "summary": "one-line description"}`
 
-Stored under `.spec-workflow/specs/<spec-name>/<phase>/_comms/` within each phase directory.
+### Config
 
-### User Guidelines
+Runtime config: `.spec-workflow/oraculo.toml`
+<!-- ORACULO-KIT-END -->
 
-Project-specific guidelines in `.spec-workflow/guidelines/*.md` are injected into rendered workflows. Builtin phase mapping:
+<!-- ORACULO-KIT-START — managed by oraculo install, do not edit manually -->
+## Oraculo Dispatch Rules
 
-- `project.md` → all phases
-- `coding.md` → exec, checkpoint
-- `quality.md` → checkpoint, qa-check, post-mortem
-- `testing.md` → exec, qa, qa-check, qa-exec
+When executing Oraculo workflow commands, follow these rules strictly:
 
-Custom files use YAML frontmatter `applies_to: [phase1, phase2]`. Files without frontmatter apply to all phases. Loaded by `oraculo render` and the `session-start` hook.
-
-### Dispatch Categories
-
-All commands follow a **thin-dispatch** model: the orchestrator reads only `status.json` after each subagent (never `report.md` unless blocked), and passes filesystem paths between stages — never inline content. Synthesizers/aggregators read all reports directly from disk. See `docs/DISPATCH-PATTERNS.md` for the full reference.
-
-Commands are organized into three dispatch categories:
-
-| Category | Pattern | Commands |
-|----------|---------|----------|
-| **Pipeline** | Sequential subagents → synthesizer | `prd`, `design-research`, `design-draft`, `tasks-plan`, `qa`, `post-mortem` |
-| **Audit** | Parallel auditors → aggregator | `tasks-check`, `qa-check`, `checkpoint` |
-| **Wave Execution** | Scout → iterative waves → synthesizer | `exec`, `qa-exec` |
-
-Pipeline has two subcategories: **Research** (external sources, may branch — `prd`, `design-research`) and **Synthesis** (local artifacts, linear — the rest). Audit splits into **Artifact** (document-only — `tasks-check`) and **Code** (reads source — `qa-check`, `checkpoint`). Wave Execution splits into **Implementation** (code changes + checkpoints — `exec`) and **Validation** (no code changes — `qa-exec`).
-
-### Spec Directory Structure
-
-Artifacts are organized by **workflow phase**, not in flat dumps. Each phase directory owns its generated outputs and agent communications (`_comms/`). See `docs/SPEC-DIRECTORY-STRUCTURE.md` for the full reference and migration table.
-
-```
-.spec-workflow/specs/<spec-name>/
-├── requirements.md                    ← dashboard (MCP approval)
-├── design.md                          ← dashboard (MCP approval)
-├── tasks.md                           ← dashboard (MCP approval)
-├── STATUS-SUMMARY.md                  ← output-only (not source of truth)
-│
-├── prd/                               ← PRD.md, PRD-SOURCE-NOTES.md, ...
-│   └── _comms/run-NNN/
-├── design/                            ← DESIGN-RESEARCH.md, SKILLS-DESIGN.md
-│   └── _comms/{design-research,design-draft}/run-NNN/
-├── planning/                          ← TASKS-CHECK.md, SKILLS-EXEC.md
-│   └── _comms/{tasks-plan,tasks-check}/run-NNN/
-├── execution/                         ← CHECKPOINT-REPORT.md, _implementation-logs/
-│   └── waves/wave-NN/{execution,checkpoint,post-check}/run-NNN/
-├── qa/                                ← QA-TEST-PLAN.md, QA-CHECK.md, QA-*-REPORT.md
-│   ├── qa-artifacts/wave-NN/
-│   └── _comms/{qa,qa-check}/run-NNN/
-│   └── _comms/qa-exec/waves/wave-NN/run-NNN/
-└── post-mortem/                       ← report.md
-    └── _comms/run-NNN/
-```
-
-### PR Review Optimization
-
-Spec-workflow files are marked as `linguist-generated` via `.gitattributes` so GitHub collapses them by default in PR diffs. Reviewers see only feature code changes; spec artifacts are expandable on demand. The installer adds the rule automatically during `oraculo install`. See `docs/PR-REVIEW-OPTIMIZATION.md`.
-
-```gitattributes
-.spec-workflow/specs/** linguist-generated=true
-```
-
-## Key Constraints
-
-- Approval is MCP-only (via `spec-workflow-mcp`), never manual chat approval. `STATUS-SUMMARY.md` is output-only, not a source of truth.
-- `tasks.md` must follow dashboard compatibility: checkbox markers only on task lines with numeric IDs, `-` as list marker (never `*`), no nested checkboxes in metadata, `Files` in single line.
-- Unfinished runs must prompt user decision (`continue-unfinished` or `delete-and-restart`), never auto-restart.
-- `oraculo:exec` orchestrator never implements code directly — always dispatches subagents, even for single-task waves. Exception: the orchestrator can apply a surgical fix of ≤3 lines when an audit critic returns BLOCKED with a mechanical fix; the fix must be logged in `_handoff.md`.
-- Complexity routing in `oraculo:exec`: the `complex_reasoning` model alias is triggered for tasks involving auth/security/payments, tasks touching >3 core files, or cross-context architecture decisions.
-- When modifying behavior, defaults, or guardrails, update `README.md`, `AGENTS.md`, `docs/ORACULO-WORKFLOW.md`, `hooks/README.md`, and `copy-ready/README.md` in the same patch.
+1. **Always use CLI for dispatch.** Never create run dirs or subagent dirs manually. Use `oraculo tools dispatch-init` and `oraculo tools dispatch-setup`.
+2. **Status-only reads.** After dispatching a subagent, read ONLY status.json via `oraculo tools dispatch-read-status`. Never read report.md unless status=blocked.
+3. **Paths, not content.** When subagent-B depends on subagent-A, write the filesystem PATH to A's report.md in B's brief.md. Never copy content.
+4. **Synthesizer reads from disk.** The final subagent (synthesizer/aggregator) receives a brief listing all report paths and reads them directly.
+5. **MCP inline exception.** When a subagent needs session-scoped MCP tools (Linear, Playwright), run dispatch-setup normally but execute the work inline — still write report.md and status.json to the subagent directory.
+6. **Always finalize.** Call `oraculo tools dispatch-handoff --run-dir <dir>` after all subagents complete.
+<!-- ORACULO-KIT-END -->
