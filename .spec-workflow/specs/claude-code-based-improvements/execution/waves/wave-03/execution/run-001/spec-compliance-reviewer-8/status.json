@@ -1,0 +1,7 @@
+{
+  "status": "blocked",
+  "summary": "Exit code 2 for errors not implemented - both errors and violations exit with code 1",
+  "skills_used": [],
+  "skills_missing": [],
+  "model_override_reason": null
+}

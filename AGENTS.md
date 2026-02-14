@@ -173,3 +173,4 @@ When executing Oraculo workflow commands, follow these rules strictly:
 5. **MCP inline exception.** When a subagent needs session-scoped MCP tools (Linear, Playwright), run dispatch-setup normally but execute the work inline — still write report.md and status.json to the subagent directory.
 6. **Always finalize.** Call `oraculo tools dispatch-handoff --run-dir <dir>` after all subagents complete.
 <!-- ORACULO-KIT-END -->
+

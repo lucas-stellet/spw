@@ -1,0 +1,26 @@
+{
+  "wave": "wave-01",
+  "run_id": "run-002",
+  "tasks": [
+    {
+      "task_id": "1",
+      "status": "pass",
+      "summary": "Created validate package foundation with FieldRule, Violation, ValidationResult, ValidationStats types",
+      "reviews": ["spec-compliance-reviewer: pass", "code-quality-reviewer: pass"]
+    },
+    {
+      "task_id": "2",
+      "status": "pass",
+      "summary": "Implemented frontmatter validation logic with yaml.v3",
+      "reviews": ["spec-compliance-reviewer-2: pass", "code-quality-reviewer-2: pass"]
+    },
+    {
+      "task_id": "5",
+      "status": "pass",
+      "summary": "Extended config with AuditConfig struct and iteration limit fields",
+      "reviews": ["spec-compliance-reviewer-5: pass", "code-quality-reviewer-5: pass"]
+    }
+  ],
+  "wave_status": "complete",
+  "next_wave": "wave-02"
+}

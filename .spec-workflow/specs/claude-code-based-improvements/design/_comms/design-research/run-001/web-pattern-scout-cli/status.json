@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "summary": "Documented Cobra subcommand patterns, dual output modes, exit codes, and CI-ready JSON schema",
+  "skills_used": [],
+  "skills_missing": [],
+  "model_override_reason": null
+}

@@ -1,0 +1,7 @@
+{
+  "status": "blocked",
+  "summary": "Implementation logs missing from _implementation-logs/ directory - blocked per implementation_log_gate policy",
+  "skills_used": [],
+  "skills_missing": [],
+  "model_override_reason": null
+}

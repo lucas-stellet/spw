@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "summary": "Identified 7 reusable patterns across CLI, registry, hooks, config, and test infrastructure",
+  "skills_used": [],
+  "skills_missing": [],
+  "model_override_reason": null
+}

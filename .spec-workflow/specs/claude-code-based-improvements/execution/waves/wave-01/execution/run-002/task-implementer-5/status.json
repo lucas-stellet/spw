@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "summary": "Added AuditConfig struct with AuditMinConfidence, MaxRevisionAttempts, and MaxReplanAttempts fields with defaults (0.8, 3, 2)",
+  "skills_used": [],
+  "skills_missing": [],
+  "model_override_reason": null
+}
