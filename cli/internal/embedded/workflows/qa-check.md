@@ -18,6 +18,7 @@ policy: @.claude/workflows/spw/shared/dispatch-audit.md
 - @.claude/workflows/spw/shared/resume-policy.md
 - @.claude/workflows/spw/shared/skills-policy.md
 - @.claude/workflows/spw/shared/approval-reconciliation.md
+- @.claude/workflows/spw/shared/dispatch-implementation.md
 </shared_policies>
 
 <objective>
@@ -57,6 +58,15 @@ comms:
   - Consumes all auditor/verifier reports.
   - Produces PASS/BLOCKED decision with severity-ranked findings.
 </subagents>
+
+<subagent_artifact_map>
+| Subagent | Artifact | Dispatch | Model |
+|----------|----------|----------|-------|
+| qa-traceability-auditor | (report.md only) | task | complex_reasoning |
+| qa-selector-verifier | (report.md only) | task | implementation |
+| qa-data-feasibility-checker | (report.md only) | task | implementation |
+| qa-check-aggregator | QA-CHECK.md | task | complex_reasoning |
+</subagent_artifact_map>
 
 <!-- ============================================================
      EXTENSION POINTS — command-specific logic injected into
@@ -124,6 +134,8 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 </acceptance_criteria>
 
 <completion_guidance>
+Note: Inline audit now runs automatically during `spw:qa`. Use this command for re-validation after manual fixes or as a standalone CI gate.
+
 On PASS:
 - Confirm output path: `.spec-workflow/specs/<spec-name>/qa/QA-CHECK.md`.
 - Recommend next command: `spw:qa-exec <spec-name>`.

@@ -134,6 +134,8 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 </acceptance_criteria>
 
 <completion_guidance>
+Note: Inline audit now runs automatically during `spw:qa`. Use this command for re-validation after manual fixes or as a standalone CI gate.
+
 On PASS:
 - Confirm output path: `.spec-workflow/specs/<spec-name>/qa/QA-CHECK.md`.
 - Recommend next command: `spw:qa-exec <spec-name>`.

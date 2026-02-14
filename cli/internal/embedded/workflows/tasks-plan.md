@@ -18,6 +18,8 @@ policy: @.claude/workflows/spw/shared/dispatch-pipeline.md
 - @.claude/workflows/spw/shared/resume-policy.md
 - @.claude/workflows/spw/shared/skills-policy.md
 - @.claude/workflows/spw/shared/approval-reconciliation.md
+- @.claude/workflows/spw/shared/dispatch-implementation.md
+- @.claude/workflows/spw/shared/dispatch-inline-audit.md
 </shared_policies>
 
 <objective>
@@ -56,6 +58,16 @@ comms:
   - Writes final markdown in template format.
 </subagents>
 
+<subagent_artifact_map>
+| Subagent | Artifact | Dispatch | Model |
+|----------|----------|----------|-------|
+| task-decomposer | (report.md only) | task | complex_reasoning |
+| dependency-graph-builder | (report.md only) | task | complex_reasoning |
+| parallel-conflict-checker | (report.md only) | task | implementation |
+| test-policy-enforcer | (report.md only) | task | complex_reasoning |
+| tasks-writer | tasks.md | task | implementation |
+</subagent_artifact_map>
+
 <!-- ============================================================
      EXTENSION POINTS — command-specific logic injected into
      the pipeline dispatch pattern
@@ -75,14 +87,43 @@ comms:
 5. Read templates:
    - `.spec-workflow/user-templates/tasks-template.md` (preferred)
    - fallback: `.spec-workflow/templates/tasks-template.md`
-6. Inspect existing tasks-plan run dirs and apply resume decision gate.
+6. Use config values from dispatch-init output:
+   - `execution.tdd_default` is the source of truth for TDD policy.
+   - If template contains `tdd_default: managed-by-config`, resolve to
+     the dispatch-init value when writing the final artifact.
+   - dispatch-setup already injects Config Context into each brief —
+     do not override or restate these values in ## Task sections.
+7. Inspect existing tasks-plan run dirs and apply resume decision gate.
 </pre_pipeline>
 
-<!-- post_pipeline: dashboard compatibility + approval ............. -->
+<!-- post_pipeline: inline audit + dashboard compatibility + approval  -->
 <post_pipeline>
+
+### Inline Audit
+
+After tasks-writer produces tasks.md, validate it before proceeding to approval.
+Follow @.claude/workflows/spw/shared/dispatch-inline-audit.md.
+
+1. `spw tools audit-iteration start --run-dir <RUN_DIR> --type inline-audit`
+2. `spw tools dispatch-init-audit --run-dir <RUN_DIR> --type inline-audit --iteration 1`
+3. Inside the audit dir, dispatch auditors via dispatch-setup:
+   - traceability-auditor (complex_reasoning model)
+   - dag-validator (implementation model)
+   - test-policy-auditor (implementation model)
+4. Dispatch decision-aggregator to synthesize results
+5. `spw tools dispatch-read-status decision-aggregator --run-dir <audit_dir>`
+6. If PASS → proceed to dashboard verification and approval below
+7. If BLOCKED:
+   a. `spw tools audit-iteration check --run-dir <RUN_DIR> --type inline-audit`
+   b. If allowed: `spw tools audit-iteration advance --run-dir <RUN_DIR> --type inline-audit --result blocked`, re-dispatch tasks-writer with aggregator report path as feedback, then repeat from step 2 with next iteration
+   c. If exhausted: STOP, recommend `spw:tasks-check <spec-name>`
+
+### Dashboard Verification and Approval
+
 1. Verify `tasks.md` satisfies `<dashboard_markdown_profile>`.
 2. Write `<run-dir>/_handoff.md` with mode decisions, DAG rationale, conflict/test policy outcomes.
 3. Handle approval via MCP only:
+   - If MCP tools are unavailable or fail: log WARNING to `_handoff.md` per `<approval_reconciliation>` § MCP Unavailability, stop `WAITING_FOR_APPROVAL`.
    - call `spec-status`, resolve via `<approval_reconciliation>`
    - if approved: continue
    - if `needs-revision`/`changes-requested`/`rejected`: stop BLOCKED
@@ -247,7 +288,8 @@ On success:
 - Confirm effective planning mode (`initial`, `next-wave`, or `all-at-once`).
 - Confirm effective `max_wave_size` source (CLI override or `[planning].max_wave_size`).
 - Confirm approval request status for tasks.
-- Recommend next command: `spw:tasks-check <spec-name>`.
+- Confirm inline audit result (PASS or iteration count).
+- Recommend next command: `spw:tasks-check <spec-name>` (for re-validation or CI gate).
 
 If blocked:
 - Show mode/precondition/decomposition/dependency/conflict/test-policy failures.

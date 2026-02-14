@@ -24,6 +24,7 @@ type Config struct {
 	Templates        TemplatesConfig        `toml:"templates"`
 	Statusline       StatuslineConfig       `toml:"statusline"`
 	Safety           SafetyConfig           `toml:"safety"`
+	Verification     VerificationConfig     `toml:"verification"`
 	Hooks            HooksConfig            `toml:"hooks"`
 }
 
@@ -90,6 +91,10 @@ type StatuslineConfig struct {
 
 type SafetyConfig struct {
 	BackupBeforeOverwrite bool `toml:"backup_before_overwrite"`
+}
+
+type VerificationConfig struct {
+	InlineAuditMaxIterations int `toml:"inline_audit_max_iterations"`
 }
 
 type HooksConfig struct {
@@ -162,6 +167,9 @@ func Defaults() Config {
 		},
 		Safety: SafetyConfig{
 			BackupBeforeOverwrite: true,
+		},
+		Verification: VerificationConfig{
+			InlineAuditMaxIterations: 3,
 		},
 		Hooks: HooksConfig{
 			Enabled:                true,

@@ -186,6 +186,8 @@ If status is BLOCKED, do not proceed to the next batch/wave.
 </acceptance_criteria>
 
 <completion_guidance>
+Note: Inline checkpoint now runs automatically at the end of each `spw:exec` wave. Use this command for re-validation after manual fixes or when the inline checkpoint recommends it.
+
 On PASS:
 - Show concise go/no-go summary and recommend next command: `spw:exec <spec-name>` (next batch/wave).
 

@@ -43,6 +43,11 @@ Each spec organizes its artifacts by **workflow phase**. Generated outputs and a
 │   ├── SKILLS-EXEC.md
 │   └── _comms/
 │       ├── tasks-plan/run-NNN/
+│       │   └── _inline-audit/             ← inline audit (from tasks-plan)
+│       │       ├── _iteration-state.json
+│       │       └── iteration-N/
+│       │           ├── <auditor>/brief.md, report.md, status.json
+│       │           └── _handoff.md
 │       └── tasks-check/run-NNN/
 │
 ├── execution/                             ← phase: implementation (waves)
@@ -56,6 +61,10 @@ Each spec organizes its artifacts by **workflow phase**. Generated outputs and a
 │           ├── checkpoint/run-NNN/
 │           │   ├── <subagent>/brief.md, report.md, status.json
 │           │   └── _handoff.md
+│           ├── _inline-checkpoint/        ← inline checkpoint (from exec)
+│           │   ├── _iteration-state.json
+│           │   ├── <auditor>/brief.md, report.md, status.json
+│           │   └── _handoff.md
 │           ├── _wave-summary.json
 │           └── _latest.json
 │
@@ -68,6 +77,11 @@ Each spec organizes its artifacts by **workflow phase**. Generated outputs and a
 │   │   └── wave-NN/                       ← evidence per wave
 │   └── _comms/
 │       ├── qa/run-NNN/                    ← pipeline: plan creation
+│       │   └── _inline-audit/             ← inline audit (from qa)
+│       │       ├── _iteration-state.json
+│       │       └── iteration-N/
+│       │           ├── <auditor>/brief.md, report.md, status.json
+│       │           └── _handoff.md
 │       ├── qa-check/run-NNN/              ← audit: selector verification
 │       └── qa-exec/
 │           └── waves/

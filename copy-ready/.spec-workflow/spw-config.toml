@@ -239,6 +239,10 @@ show_token_cost = "auto"
 # If true, the hook creates a .bak backup of active template before overwrite.
 backup_before_overwrite = true
 
+[verification]
+# Maximum iterations for inline audit retry loops (tasks-plan, qa).
+inline_audit_max_iterations = 3
+
 [hooks]
 # Enables SPW runtime guard hooks (PreToolUse/UserPromptSubmit/Stop).
 #

@@ -101,6 +101,16 @@ Spec-workflow files are marked as `linguist-generated` so GitHub collapses them 
 38. The installer (`spw install`) must add `.spec-workflow/specs/** linguist-generated=true` to the project's `.gitattributes`. The rule is idempotent -- if it already exists, do not duplicate.
 39. Only files under `.spec-workflow/specs/` are marked. Config (`.spec-workflow/spw-config.toml`) and templates (`.spec-workflow/user-templates/`) are not affected.
 
+## Inline verification (mandatory)
+
+40. Subagents that produce artifacts MUST run a self-check before reporting `pass`. Implementation subagents use `spw tools impl-log register` and `spw tools verify-task --check-commit`. Self-check results go in `status.json` (`self_check` field).
+41. After reading a subagent status via `dispatch-read-status`, the orchestrator runs an independent spot-check with `spw tools verify-task`. If spot-check fails, treat as BLOCKED.
+42. Producer commands (`spw:tasks-plan`, `spw:qa`) run inline audit after artifact generation, using `spw tools audit-iteration start/check/advance` and `spw tools dispatch-init-audit`. Max iterations from `[verification].inline_audit_max_iterations`.
+43. `spw:exec` runs an inline checkpoint at the end of each wave (evidence-collector, traceability-judge, release-gate-decider). On PASS: `spw tools wave-update`. On BLOCKED: max 1 retry, then recommend standalone `/spw:checkpoint`.
+44. Task status updates use `spw tools task-mark --status <in-progress|done|blocked>` instead of manual edits to `tasks.md`.
+45. Wave state resolution uses `spw tools wave-status --spec <name>` for deterministic state (replaces AI interpretation of wave directories).
+46. Standalone check commands (`spw:tasks-check`, `spw:checkpoint`, `spw:qa-check`) remain available for re-validation after manual fixes, CI/CD pipelines, or when inline audit recommends them.
+
 ## File-first comms (do not break)
 
 For commands that require file-based handoff, ensure the following files are present:

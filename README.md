@@ -98,6 +98,21 @@ Default SPW skills are copied into `.claude/skills/` during install (best effort
 | `spw skills` | Show installed/available/missing skills status |
 | `spw skills install [--elixir]` | Install general skills (or Elixir with flag) |
 
+#### Workflow tools (used by subagents and workflows)
+
+| Command | Description |
+|---------|-------------|
+| `spw tools verify-task <spec> --task-id N [--check-commit]` | Verify task artifacts exist (impl log, optional commit check) |
+| `spw tools impl-log register <spec> --task-id N --wave NN --title T --files F --changes C` | Create implementation log for a completed task |
+| `spw tools impl-log check <spec> --task-ids 1,2,3` | Check if implementation logs exist for given task IDs |
+| `spw tools task-mark <spec> --task-id N --status done` | Update task checkbox status in tasks.md (`in-progress`, `done`, `blocked`) |
+| `spw tools wave-status <spec>` | Comprehensive wave state resolution (current wave, resume action, progress) |
+| `spw tools wave-update <spec> --wave NN --status pass --tasks 3,4,7` | Write wave summary and latest JSON files |
+| `spw tools dispatch-init-audit --run-dir R --type T` | Create nested audit directory inside a run (`_inline-audit/` or `_inline-checkpoint/`) |
+| `spw tools audit-iteration start --run-dir R --type T [--max N]` | Initialize inline audit iteration tracking |
+| `spw tools audit-iteration check --run-dir R --type T` | Check if another audit retry is allowed |
+| `spw tools audit-iteration advance --run-dir R --type T --result R` | Increment audit iteration counter and record result |
+
 ### Agent Teams (optional)
 
 Agent Teams is disabled by default. To enable it, set `[agent_teams].enabled = true` in `spw-config.toml`. The installer (`spw install`) reads this setting and switches symlinks in `.claude/workflows/spw/overlays/active/` from `../noop.md` to `../teams/<cmd>.md` accordingly.

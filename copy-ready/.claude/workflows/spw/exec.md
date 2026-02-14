@@ -79,18 +79,39 @@ comms:
 2. Apply skills policy: run implementation skills preflight and write `SKILLS-EXEC.md`.
 3. Dispatch `execution-state-scout` and require compact handoff contract.
    - if `tasks.md` is missing, stop BLOCKED → instruct `spw:tasks-plan <spec-name>`.
-4. Resolve resume state from scout handoff.
+4. Run deterministic wave state resolution:
+   ```
+   spw tools wave-status --spec <spec-name>
+   ```
+   Use the returned `resume_action`, `current_wave`, `next_tasks`, `in_progress_tasks` fields
+   as the primary source for resume decisions. Cross-reference with scout handoff for consistency.
 5. Resolve current wave ID and ensure canonical wave comms folder exists.
 6. Read only task-scoped context required for selected task IDs.
 </pre_pipeline>
 
 <!-- inter_wave: checkpoint + user authorization .................. -->
 <inter_wave>
-1. At end of batch, **stop execution** and instruct the user:
+1. At end of batch, run inline checkpoint before recommending standalone checkpoint:
+
+   INLINE CHECKPOINT:
+   a. Initialize:
+      ```
+      spw tools dispatch-init-audit --run-dir <current-run> --type inline-checkpoint
+      ```
+   b. Dispatch `evidence-collector`, `traceability-judge`, `release-gate-decider` inside the audit dir.
+      See `@.claude/workflows/spw/shared/dispatch-inline-audit.md` for the full pattern.
+   c. On PASS:
+      ```
+      spw tools wave-update --spec <spec-name> --wave <NN> --status pass --tasks <ids>
+      ```
+   d. On BLOCKED: max 1 retry (re-dispatch task-implementer to fix missing artifacts),
+      then recommend standalone `/spw:checkpoint <spec-name>` in a new session.
+
+2. If inline checkpoint was not run or returned BLOCKED after retries, instruct the user:
    "Wave complete. Run `/spw:checkpoint <spec-name>` in a new session (`/clear` first or new Claude Code session)."
-   Do NOT invoke checkpoint via Skill, inline, or any other method within the current exec session.
-2. If checkpoint BLOCKED, stop.
-3. If checkpoint PASS:
+   Do NOT invoke the standalone checkpoint via Skill within the current exec session.
+3. If checkpoint BLOCKED, stop.
+4. If checkpoint PASS:
    - if `require_clean_worktree_for_wave_pass=true` and worktree is dirty: stop BLOCKED
    - if no remaining waves: finish
    - if remaining waves and `require_user_approval_between_waves=true`: request explicit authorization (§ wave_authorization)
@@ -99,14 +120,32 @@ comms:
 
 <!-- per_task: git hygiene, commit policy ......................... -->
 <per_task>
-1. Mark task `[-]`.
+1. Mark task in-progress:
+   ```
+   spw tools task-mark --spec <spec-name> --task-id <N> --status in-progress
+   ```
 2. Dispatch `task-implementer` (mandatory, even when single-task batch).
-3. Dispatch `spec-compliance-reviewer` (use `<complexity_routing>` for model selection).
-4. Dispatch `code-quality-reviewer`.
-5. If all gates pass:
-   - log implementation details and mark `[x]`
-   - enforce `<git_hygiene>` commit policy for this task
-6. If any gate fails: mark BLOCKED and stop current batch.
+   - Subagent MUST run self-check before reporting pass (see `@.claude/workflows/spw/shared/file-handoff.md` section 6):
+     ```
+     spw tools impl-log register --spec <name> --task-id <N> --wave <NN> \
+       --title "..." --files "..." --changes "..."
+     spw tools verify-task --spec <name> --task-id <N> --check-commit
+     ```
+   - Include `self_check` results in `status.json`.
+3. Orchestrator spot-check (after `dispatch-read-status`):
+   ```
+   spw tools verify-task --spec <name> --task-id <N> --check-commit
+   ```
+   If spot-check fails, treat task as BLOCKED — do NOT dispatch reviewers.
+4. Dispatch `spec-compliance-reviewer` (use `<complexity_routing>` for model selection).
+5. Dispatch `code-quality-reviewer`.
+6. If all gates pass:
+   - Mark task done:
+     ```
+     spw tools task-mark --spec <spec-name> --task-id <N> --status done
+     ```
+   - Enforce `<git_hygiene>` commit policy for this task.
+7. If any gate fails: mark BLOCKED and stop current batch.
 </per_task>
 
 <!-- post_pipeline: completion guidance ........................... -->
@@ -237,7 +276,7 @@ Resolve from `.spec-workflow/spw-config.toml` `[execution]`:
 Rules:
 - If `commit_per_task="auto"` or `"manual"`: for each completed implementation task, create an atomic commit before moving forward.
 - Commit must include task-scoped code changes plus task status artifacts (`tasks.md`).
-- Implementation logs should be recorded during execution, but missing logs are enforced only at `spw:checkpoint`.
+- Implementation logs are registered via `spw tools impl-log register` during execution and verified inline via `spw tools verify-task`. Missing logs block the task before reviewers run.
 - Commit message must follow Conventional Commits:
   - `<type>(<spec-name>): task <task-id> - <short-title>`
   - type guidance: `feat|fix|refactor|test|docs|chore`

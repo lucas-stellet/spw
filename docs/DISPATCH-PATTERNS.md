@@ -197,12 +197,53 @@ Execute tests or checks without modifying code. Lighter gates between waves.
 
 ---
 
+## Inline Audit
+
+Producer commands (`tasks-plan`, `qa`, `exec`) can run audit subagents inline before proceeding to approval, avoiding a separate check command round-trip. The inline audit runs inside the producer's own `run-NNN/` directory using nested audit subdirectories.
+
+**Types:**
+
+| Type | Used by | Scope |
+|------|---------|-------|
+| `inline-audit` | `tasks-plan`, `qa` | Validate producer artifact (tasks.md, QA plan) |
+| `inline-checkpoint` | `exec` | Validate wave completion (evidence, traceability, gate) |
+
+**Dispatch pattern:**
+```
+producer (tasks-plan / qa / exec):
+  ... produce primary artifact ...
+  audit-iteration start → initialize state (max from [verification].inline_audit_max_iterations)
+  dispatch-init-audit   → create _inline-audit/iteration-1/ or _inline-checkpoint/
+  dispatch auditors     → same subagents as standalone check command
+  read aggregator status.json
+  IF PASS → done
+  IF BLOCKED:
+    audit-iteration check → allowed?
+      YES → audit-iteration advance, re-dispatch writer with feedback, repeat
+      NO  → STOP, recommend standalone check command
+```
+
+**CLI commands:**
+- `spw tools audit-iteration start --run-dir R --type T [--max N]` — initialize `_iteration-state.json`
+- `spw tools dispatch-init-audit --run-dir R --type T [--iteration N]` — create nested audit directory
+- `spw tools audit-iteration check --run-dir R --type T` — check if another retry is allowed
+- `spw tools audit-iteration advance --run-dir R --type T --result R` — increment iteration counter
+
+**Anti-self-heal rule:** The orchestrator must not fix artifacts directly on BLOCKED. It re-dispatches the writer subagent with the aggregator report path, preserving separation between production and validation.
+
+**Fallback:** When inline audit exhausts iterations, the orchestrator recommends the standalone check command (`spw:tasks-check`, `spw:qa-check`, or `spw:checkpoint`).
+
+Full reference: `workflows/spw/shared/dispatch-inline-audit.md`.
+
+---
+
 ## Shared Policy Reference
 
-The thin-dispatch rules are codified in three category-specific policies referenced by all command workflows via `<shared_policies>`:
+The thin-dispatch rules are codified in four category-specific policies referenced by all command workflows via `<shared_policies>`:
 - `workflows/spw/shared/dispatch-pipeline.md` — pipeline sequencing (sequential chain → synthesizer)
 - `workflows/spw/shared/dispatch-audit.md` — audit parallelism (auditors → aggregator)
 - `workflows/spw/shared/dispatch-wave.md` — wave iteration (scout → waves → synthesizer)
+- `workflows/spw/shared/dispatch-inline-audit.md` — inline audit retry loop (producer → auditors → retry)
 
 Step-by-step CLI implementation procedure: `workflows/spw/shared/dispatch-implementation.md`.
 The `spw tools dispatch-init` command enforces these category mappings deterministically.
