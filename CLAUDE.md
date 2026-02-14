@@ -42,6 +42,7 @@ spw finalizar --help
 spw view --help
 spw search --help
 spw summary --help
+spw init --help
 
 # Inspection commands
 spw tasks state --help
@@ -118,7 +119,17 @@ SPW stores structured data in SQLite databases (pure Go driver, no CGO, WAL mode
 
 ### CLI Wrapper (`bin/spw`)
 
-The `spw` CLI is a bash wrapper that caches the kit from GitHub and delegates to `copy-ready/install.sh`. Key commands: `spw install`, `spw update`, `spw doctor`, `spw status`, `spw skills`. Environment variables: `SPW_REPO`, `SPW_REF`, `SPW_HOME`, `SPW_KIT_DIR`, `SPW_AUTO_UPDATE`, `INSTALL_DIR`.
+The `spw` CLI is a bash wrapper that caches the kit from GitHub and delegates to `copy-ready/install.sh`. Key commands: `spw install`, `spw install --global`, `spw init`, `spw update`, `spw doctor`, `spw status`, `spw skills`. Environment variables: `SPW_REPO`, `SPW_REF`, `SPW_HOME`, `SPW_KIT_DIR`, `SPW_AUTO_UPDATE`, `INSTALL_DIR`.
+
+#### Two-Tier Installation
+
+| Mode | Command | What it installs | Where |
+|------|---------|------------------|-------|
+| **Global** | `spw install --global` | Commands, workflows, hooks, skills | `~/.claude/` |
+| **Project Init** | `spw init` | Config, templates, snippets, .gitattributes | `.spec-workflow/`, `CLAUDE.md`, `AGENTS.md` |
+| **Full (default)** | `spw install` | Everything (unchanged behavior) | `.claude/` + `.spec-workflow/` |
+
+Coexistence: if a project has a local install, it takes precedence over the global (Claude Code native path resolution).
 
 The installer injects snippet content into target `CLAUDE.md` and `AGENTS.md` using `<!-- SPW-KIT-START -->` / `<!-- SPW-KIT-END -->` markers. It also auto-merges SPW hook entries into `.claude/settings.json` via `spw tools merge-settings`.
 

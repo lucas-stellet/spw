@@ -105,11 +105,63 @@ func runDoctor(cmd *cobra.Command) error {
 		fmt.Println("specs: .spec-workflow/specs/ not found")
 	}
 
+	// Global install check
+	home, _ := os.UserHomeDir()
+	if home != "" {
+		fmt.Println("")
+		fmt.Println("--- global install ---")
+		globalCmds := filepath.Join(home, ".claude", "commands", "spw")
+		globalWfs := filepath.Join(home, ".claude", "workflows", "spw")
+		globalSettings := filepath.Join(home, ".claude", "settings.json")
+		globalSkills := filepath.Join(home, ".claude", "skills")
+
+		if entries, err := os.ReadDir(globalCmds); err == nil {
+			fmt.Printf("global commands: %d found in ~/.claude/commands/spw/\n", len(entries))
+			// Warn on conflict with local
+			localCmds := filepath.Join(cwd, ".claude", "commands", "spw")
+			if _, err := os.Stat(localCmds); err == nil {
+				fmt.Println("  (!) local commands also present — local takes precedence")
+			}
+		} else {
+			fmt.Println("global commands: not installed")
+		}
+
+		if entries, err := os.ReadDir(globalWfs); err == nil {
+			fmt.Printf("global workflows: %d found in ~/.claude/workflows/spw/\n", len(entries))
+			localWfs := filepath.Join(cwd, ".claude", "workflows", "spw")
+			if _, err := os.Stat(localWfs); err == nil {
+				fmt.Println("  (!) local workflows also present — local takes precedence")
+			}
+		} else {
+			fmt.Println("global workflows: not installed")
+		}
+
+		if _, err := os.Stat(globalSettings); err == nil {
+			fmt.Println("global settings: ~/.claude/settings.json found")
+		} else {
+			fmt.Println("global settings: not found")
+		}
+
+		if entries, err := os.ReadDir(globalSkills); err == nil {
+			count := 0
+			for _, e := range entries {
+				if e.IsDir() {
+					if _, err := os.Stat(filepath.Join(globalSkills, e.Name(), "SKILL.md")); err == nil {
+						count++
+					}
+				}
+			}
+			fmt.Printf("global skills: %d installed in ~/.claude/skills/\n", count)
+		} else {
+			fmt.Println("global skills: not installed")
+		}
+	}
+
 	// spw on PATH
 	if spwPath, err := exec.LookPath("spw"); err == nil {
-		fmt.Printf("spw binary: %s\n", spwPath)
+		fmt.Printf("\nspw binary: %s\n", spwPath)
 	} else {
-		fmt.Println("spw binary: not found on PATH")
+		fmt.Printf("\nspw binary: not found on PATH\n")
 	}
 
 	return nil

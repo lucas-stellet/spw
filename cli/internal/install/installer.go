@@ -181,6 +181,116 @@ func writeCommandStubs(root string) error {
 	return nil
 }
 
+// RunGlobal performs a global SPW install to ~/.claude/.
+// Commands, workflows, hooks, skills, and overlay symlinks are installed globally.
+// No project-specific config, templates, or snippets are touched.
+func RunGlobal(opts Options) error {
+	home := opts.WorkspaceRoot
+	fmt.Printf("[spw] Installing globally into: %s\n", home)
+
+	// 1. Generate command stubs → ~/.claude/commands/spw/
+	if err := writeCommandStubs(home); err != nil {
+		return fmt.Errorf("writing command stubs: %w", err)
+	}
+
+	// 2. Render workflows with default config (no project guidelines)
+	cfg := config.Defaults()
+	if err := writeRenderedWorkflows(home, cfg); err != nil {
+		return fmt.Errorf("rendering workflows: %w", err)
+	}
+
+	// 3. Write/merge settings.json → ~/.claude/settings.json
+	// Agent Teams disabled by default for global install
+	if err := WriteSettings(home, config.AgentTeamsConfig{Enabled: false}); err != nil {
+		return fmt.Errorf("writing settings: %w", err)
+	}
+
+	// 4. Install default skills → ~/.claude/skills/
+	InstallDefaultSkills(home)
+
+	// 5. Overlay symlinks → noop by default (project controls activation)
+	WriteOverlaySymlinks(home, false)
+
+	fmt.Println("[spw] Global installation complete.")
+	fmt.Println("[spw] Use 'spw init' in each project to set up project-specific config.")
+	return nil
+}
+
+// RunInit performs a lightweight project initialization.
+// Only project-specific assets are created: config, templates, snippets, .gitattributes.
+// Commands and workflows are expected to come from a global install.
+func RunInit(opts Options) error {
+	root := opts.WorkspaceRoot
+	fmt.Printf("[spw] Initializing project: %s\n", root)
+
+	// 1. Write default config and templates
+	if err := writeDefaults(root); err != nil {
+		return fmt.Errorf("writing defaults: %w", err)
+	}
+
+	// 2. Inject snippets (CLAUDE.md, AGENTS.md)
+	if err := injectProjectSnippets(root); err != nil {
+		return fmt.Errorf("injecting snippets: %w", err)
+	}
+
+	// 3. Setup .gitattributes
+	SetupGitattributes(root)
+
+	// 4. Diagnose global install presence
+	home, err := os.UserHomeDir()
+	if err == nil {
+		globalCmds := filepath.Join(home, ".claude", "commands", "spw")
+		if entries, err := os.ReadDir(globalCmds); err == nil && len(entries) > 0 {
+			fmt.Printf("[spw] Global install detected: %d commands in ~/.claude/commands/spw/\n", len(entries))
+		} else {
+			fmt.Println("[spw] No global install detected. Run 'spw install --global' or 'spw install' for a full local install.")
+		}
+	}
+
+	fmt.Println("[spw] Project initialized.")
+	fmt.Println("[spw] Next step: adjust .spec-workflow/spw-config.toml")
+	return nil
+}
+
+// WriteOverlaySymlinks creates overlay symlinks in the target directory.
+// When teamsEnabled is true, symlinks point to ../teams/<cmd>.md;
+// when false, they point to ../noop.md.
+func WriteOverlaySymlinks(root string, teamsEnabled bool) {
+	activeDir := filepath.Join(root, ".claude", "workflows", "spw", "overlays", "active")
+	if err := os.MkdirAll(activeDir, 0755); err != nil {
+		fmt.Fprintf(os.Stderr, "[spw] Failed to create overlay active dir: %v\n", err)
+		return
+	}
+
+	// Also ensure noop.md exists
+	noopPath := filepath.Join(root, ".claude", "workflows", "spw", "overlays", "noop.md")
+	if _, err := os.Stat(noopPath); os.IsNotExist(err) {
+		os.MkdirAll(filepath.Dir(noopPath), 0755)
+		os.WriteFile(noopPath, []byte("<!-- noop overlay -->\n"), 0644)
+	}
+
+	for _, cmd := range AllCommands() {
+		linkPath := filepath.Join(activeDir, cmd.Name+".md")
+		os.Remove(linkPath) // remove existing symlink/file
+
+		var target string
+		if teamsEnabled {
+			target = "../teams/" + cmd.Name + ".md"
+		} else {
+			target = "../noop.md"
+		}
+		if err := os.Symlink(target, linkPath); err != nil {
+			fmt.Fprintf(os.Stderr, "[spw] Failed to create symlink %s: %v\n", linkPath, err)
+		}
+	}
+
+	if teamsEnabled {
+		fmt.Println("[spw] Activated team overlays via symlinks.")
+	} else {
+		fmt.Println("[spw] Overlay symlinks set to noop (teams disabled).")
+	}
+}
+
 func writeRenderedWorkflows(root string, cfg config.Config) error {
 	engine, err := render.New(cfg)
 	if err != nil {

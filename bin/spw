@@ -17,12 +17,18 @@ spw - install or inspect the SPW kit in the current project
 
 Usage:
   spw
-  spw install
+  spw install [--global]
+  spw init
   spw skills
   spw skills install [--elixir]
   spw status
   spw update
   spw doctor
+
+Installation modes:
+  install           Full local install (commands, workflows, hooks, config, templates)
+  install --global  Global install to ~/.claude/ (commands, workflows, hooks, skills)
+  init              Project init only (config, templates, snippets, .gitattributes)
 
 Environment:
   SPW_REPO         GitHub repository (default: lucas-stellet/spw)
@@ -34,6 +40,7 @@ Environment:
 Default behavior:
   - `spw` shows this help output
   - use `spw install` to install the kit in the current project
+  - use `spw install --global` + `spw init` for two-tier setup
 USAGE
 }
 

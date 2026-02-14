@@ -90,13 +90,42 @@ TDD template variants: `user-templates/variants/` contains `tasks-template.tdd-o
 
 > **Legacy path:** SPW also checks `.spw/spw-config.toml` as a fallback if `.spec-workflow/spw-config.toml` is not found.
 
+### Global Installation
+
+For users working across multiple projects, SPW supports a two-tier installation model that avoids duplicating ~72 files per project:
+
+| Mode | Command | What it installs | Where |
+|------|---------|------------------|-------|
+| **Global** | `spw install --global` | Commands, workflows, hooks, skills | `~/.claude/` |
+| **Project Init** | `spw init` | Config, templates, snippets, .gitattributes | `.spec-workflow/`, `CLAUDE.md`, `AGENTS.md` |
+| **Full (default)** | `spw install` | Everything (unchanged behavior) | `.claude/` + `.spec-workflow/` |
+
+**Setup:**
+
+```bash
+# Once: install globally
+spw install --global
+
+# Per project: initialize project-specific config
+cd my-project
+spw init
+```
+
+**How it works:** Claude Code resolves `@.claude/` paths with project-local first, global as fallback. If a project has a local install (`spw install`), it takes precedence over the global one.
+
+**Limitations:**
+- Global workflows are rendered with default config (no project-specific guidelines). Projects needing custom guidelines should use `spw install`.
+- Agent Teams overlays are set to noop globally. Projects using Agent Teams need `spw install` for local overlay activation.
+
 ### CLI commands
 
 | Command | Description |
 |---------|-------------|
-| `spw install` | Install SPW in the current project |
+| `spw install` | Install SPW in the current project (full local install) |
+| `spw install --global` | Install commands, workflows, hooks, and skills to `~/.claude/` |
+| `spw init` | Initialize project-specific config, templates, and snippets |
 | `spw update` | Self-update the CLI binary from GitHub Releases |
-| `spw doctor` | Check SPW installation health (version, config, hooks, commands, workflows, skills) |
+| `spw doctor` | Check SPW installation health (version, config, hooks, commands, workflows, skills, global) |
 | `spw status` | Print a quick kit and skills summary |
 | `spw skills` | Show installed/available/missing skills status |
 | `spw skills install [--elixir]` | Install general skills (or Elixir with flag) |

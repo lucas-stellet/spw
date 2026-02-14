@@ -67,14 +67,18 @@ spw - install or inspect the SPW kit in the current project
 
 Usage:
   spw
-  spw install
+  spw install [--global]
+  spw init
   spw skills
   spw skills install [--elixir]
   spw status
 
 Behavior:
 - help (default): prints this help output.
-- install: copies commands, hooks, templates, and config into cwd.
+- install: copies commands, hooks, templates, and config into cwd (full local install).
+  --global: installs commands, workflows, hooks, and skills to ~/.claude/ for all projects.
+- init: initializes project-specific config, templates, snippets, and .gitattributes.
+  Use with a global install — does NOT copy commands/workflows locally.
 - skills: shows installed/available/missing status for all skill sets.
 - skills install: installs general skills into .claude/skills (best effort).
   --elixir: installs Elixir-specific skills and patches config required lists.
@@ -84,6 +88,7 @@ Notes:
 - SPW hooks are auto-merged into .claude/settings.json (non-SPW entries preserved).
 - User config (.spec-workflow/spw-config.toml) is preserved across installs via smart merge.
 - Agent Teams activation is driven by [agent_teams].enabled in spw-config.toml.
+- Global + init coexist: local installs take precedence over global (Claude Code native behavior).
 USAGE
 }
 
@@ -372,6 +377,98 @@ inject_snippet() {
   fi
 }
 
+cmd_install_global() {
+  local global_root="${HOME}"
+  echo "[spw-kit] Installing globally into: ${global_root}"
+
+  # 1. Command stubs → ~/.claude/commands/spw/
+  rsync -a "${SCRIPT_DIR}/.claude/commands/" "${global_root}/.claude/commands/"
+  echo "[spw-kit] Copied command stubs to ~/.claude/commands/spw/"
+
+  # 2. Workflows → ~/.claude/workflows/spw/
+  rsync -a "${SCRIPT_DIR}/.claude/workflows/" "${global_root}/.claude/workflows/"
+  echo "[spw-kit] Copied workflows to ~/.claude/workflows/spw/"
+
+  # 3. Settings.json → ~/.claude/settings.json
+  if [ ! -f "${global_root}/.claude/settings.json" ]; then
+    mkdir -p "${global_root}/.claude"
+    cp "${SCRIPT_DIR}/.claude/settings.json.example" "${global_root}/.claude/settings.json"
+    echo "[spw-kit] Created ~/.claude/settings.json with SPW hooks."
+  else
+    if command -v spw >/dev/null 2>&1 && spw tools merge-settings --global >/dev/null 2>&1; then
+      echo "[spw-kit] Hooks merged into ~/.claude/settings.json."
+    else
+      echo "[spw-kit] spw Go binary not available; manually merge hooks from ${SCRIPT_DIR}/.claude/settings.json.example"
+    fi
+  fi
+
+  # 4. Skills → ~/.claude/skills/
+  local saved_target_root="${TARGET_ROOT}"
+  TARGET_ROOT="${global_root}"
+  install_default_skills
+  TARGET_ROOT="${saved_target_root}"
+
+  # 5. Overlay symlinks → noop by default
+  local active_dir="${global_root}/.claude/workflows/spw/overlays/active"
+  mkdir -p "$active_dir"
+  # Ensure noop.md exists
+  local noop_path="${global_root}/.claude/workflows/spw/overlays/noop.md"
+  if [ ! -f "$noop_path" ]; then
+    mkdir -p "$(dirname "$noop_path")"
+    echo "<!-- noop overlay -->" > "$noop_path"
+  fi
+  deactivate_teams_overlay_symlinks_at "${global_root}"
+
+  echo "[spw-kit] Global installation complete."
+  echo "[spw-kit] Use 'spw init' in each project to set up project-specific config."
+}
+
+deactivate_teams_overlay_symlinks_at() {
+  local root="$1"
+  local active_dir="${root}/.claude/workflows/spw/overlays/active"
+  [ -d "$active_dir" ] || return 0
+  # Create noop symlinks for all commands
+  local commands=("prd" "plan" "design-research" "design-draft" "tasks-plan" "tasks-check" "exec" "checkpoint" "post-mortem" "qa" "qa-check" "qa-exec" "status")
+  local cmd_name
+  for cmd_name in "${commands[@]}"; do
+    rm -f "${active_dir}/${cmd_name}.md"
+    ln -s "../noop.md" "${active_dir}/${cmd_name}.md"
+  done
+  echo "[spw-kit] Overlay symlinks set to noop (teams disabled)."
+}
+
+cmd_init() {
+  if [ "$#" -gt 0 ]; then
+    echo "[spw-kit] Unexpected arguments for init: $*" >&2
+    exit 1
+  fi
+
+  echo "[spw-kit] Initializing project: ${TARGET_ROOT}"
+
+  # 1. Write defaults (.spec-workflow/spw-config.toml + user-templates/)
+  rsync -a "${SCRIPT_DIR}/.spec-workflow/" "${TARGET_ROOT}/.spec-workflow/"
+  echo "[spw-kit] Copied config and templates to .spec-workflow/"
+
+  # 2. Inject snippets (CLAUDE.md, AGENTS.md)
+  inject_snippet "${TARGET_ROOT}/CLAUDE.md" "${SCRIPT_DIR}/.claude.md.snippet"
+  inject_snippet "${TARGET_ROOT}/AGENTS.md" "${SCRIPT_DIR}/.agents.md.snippet"
+  echo "[spw-kit] Updated CLAUDE.md and AGENTS.md with SPW dispatch instructions."
+
+  # 3. Setup .gitattributes
+  setup_gitattributes
+
+  # 4. Diagnose global install presence
+  local global_cmds="${HOME}/.claude/commands/spw"
+  if [ -d "$global_cmds" ] && [ "$(ls -1 "$global_cmds" 2>/dev/null | wc -l)" -gt 0 ]; then
+    echo "[spw-kit] Global install detected: commands found in ~/.claude/commands/spw/"
+  else
+    echo "[spw-kit] No global install detected. Run 'spw install --global' or 'spw install' for a full local install."
+  fi
+
+  echo "[spw-kit] Project initialized."
+  echo "[spw-kit] Next step: adjust .spec-workflow/spw-config.toml"
+}
+
 cmd_install() {
   if [ "$#" -gt 0 ]; then
     echo "[spw-kit] Unexpected arguments for install: $*" >&2
@@ -597,7 +694,15 @@ case "$cmd" in
     show_help
     ;;
   install)
-    cmd_install "$@"
+    if [ "${1:-}" = "--global" ]; then
+      shift
+      cmd_install_global "$@"
+    else
+      cmd_install "$@"
+    fi
+    ;;
+  init)
+    cmd_init "$@"
     ;;
   skills)
     cmd_skills "$@"

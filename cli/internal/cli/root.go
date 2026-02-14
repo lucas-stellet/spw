@@ -20,6 +20,7 @@ func NewRootCmd(version, commit, date string) *cobra.Command {
 
 	cmd.AddCommand(newVersionCmd(version, commit, date))
 	cmd.AddCommand(newInstallCmd())
+	cmd.AddCommand(newInitCmd())
 	cmd.AddCommand(newRenderCmd())
 	cmd.AddCommand(newHookCmd())
 	cmd.AddCommand(newToolsCmd())

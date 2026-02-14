@@ -244,14 +244,26 @@ func newToolsMergeConfigCmd() *cobra.Command {
 }
 
 func newToolsMergeSettingsCmd() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "merge-settings",
 		Short: "Merge SPW hooks into .claude/settings.json, preserving non-SPW entries",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			tools.MergeSettings(getCwd())
+			global, _ := cmd.Flags().GetBool("global")
+			root := getCwd()
+			if global {
+				home, err := os.UserHomeDir()
+				if err != nil {
+					root = getCwd()
+				} else {
+					root = home
+				}
+			}
+			tools.MergeSettings(root)
 		},
 	}
+	cmd.Flags().Bool("global", false, "Target ~/.claude/settings.json")
+	return cmd
 }
 
 func newToolsVerifyTaskCmd() *cobra.Command {
