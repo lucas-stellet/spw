@@ -28,6 +28,13 @@ func newToolsCmd() *cobra.Command {
 	cmd.AddCommand(newToolsResolveModelCmd())
 	cmd.AddCommand(newToolsMergeConfigCmd())
 	cmd.AddCommand(newToolsMergeSettingsCmd())
+	cmd.AddCommand(newToolsVerifyTaskCmd())
+	cmd.AddCommand(newToolsImplLogCmd())
+	cmd.AddCommand(newToolsTaskMarkCmd())
+	cmd.AddCommand(newToolsWaveUpdateCmd())
+	cmd.AddCommand(newToolsWaveStatusCmd())
+	cmd.AddCommand(newToolsDispatchInitAuditCmd())
+	cmd.AddCommand(newToolsAuditIterationCmd())
 
 	return cmd
 }
@@ -245,4 +252,240 @@ func newToolsMergeSettingsCmd() *cobra.Command {
 			tools.MergeSettings(getCwd())
 		},
 	}
+}
+
+func newToolsVerifyTaskCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "verify-task <spec-name>",
+		Short: "Verify a task has implementation log and optionally a commit",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			raw, _ := cmd.Flags().GetBool("raw")
+			taskID, _ := cmd.Flags().GetString("task-id")
+			checkCommit, _ := cmd.Flags().GetBool("check-commit")
+			tools.VerifyTask(getCwd(), args[0], taskID, checkCommit, raw)
+		},
+	}
+	cmd.Flags().String("task-id", "", "Task ID to verify")
+	cmd.Flags().Bool("check-commit", false, "Also check for a git commit mentioning the task")
+	cmd.Flags().Bool("raw", false, "Output raw value without JSON wrapping")
+	_ = cmd.MarkFlagRequired("task-id")
+	return cmd
+}
+
+func newToolsImplLogCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "impl-log",
+		Short: "Implementation log commands (register, check)",
+	}
+	cmd.AddCommand(newToolsImplLogRegisterCmd())
+	cmd.AddCommand(newToolsImplLogCheckCmd())
+	return cmd
+}
+
+func newToolsImplLogRegisterCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "register <spec-name>",
+		Short: "Register an implementation log for a completed task",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			raw, _ := cmd.Flags().GetBool("raw")
+			taskID, _ := cmd.Flags().GetString("task-id")
+			wave, _ := cmd.Flags().GetString("wave")
+			title, _ := cmd.Flags().GetString("title")
+			files, _ := cmd.Flags().GetString("files")
+			changes, _ := cmd.Flags().GetString("changes")
+			tests, _ := cmd.Flags().GetString("tests")
+			tools.ImplLogRegister(getCwd(), args[0], taskID, wave, title, files, changes, tests, raw)
+		},
+	}
+	cmd.Flags().String("task-id", "", "Task ID")
+	cmd.Flags().String("wave", "", "Wave number (e.g. 01)")
+	cmd.Flags().String("title", "", "Task title")
+	cmd.Flags().String("files", "", "Comma-separated list of changed files")
+	cmd.Flags().String("changes", "", "Description of changes made")
+	cmd.Flags().String("tests", "", "Description of tests added (optional)")
+	cmd.Flags().Bool("raw", false, "Output raw value without JSON wrapping")
+	_ = cmd.MarkFlagRequired("task-id")
+	_ = cmd.MarkFlagRequired("wave")
+	_ = cmd.MarkFlagRequired("title")
+	_ = cmd.MarkFlagRequired("files")
+	_ = cmd.MarkFlagRequired("changes")
+	return cmd
+}
+
+func newToolsImplLogCheckCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "check <spec-name>",
+		Short: "Check if implementation logs exist for given task IDs",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			raw, _ := cmd.Flags().GetBool("raw")
+			taskIDs, _ := cmd.Flags().GetString("task-ids")
+			tools.ImplLogCheck(getCwd(), args[0], taskIDs, raw)
+		},
+	}
+	cmd.Flags().String("task-ids", "", "Comma-separated task IDs to check")
+	cmd.Flags().Bool("raw", false, "Output raw value without JSON wrapping")
+	_ = cmd.MarkFlagRequired("task-ids")
+	return cmd
+}
+
+func newToolsTaskMarkCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "task-mark <spec-name>",
+		Short: "Update a task checkbox status in tasks.md",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			raw, _ := cmd.Flags().GetBool("raw")
+			taskID, _ := cmd.Flags().GetString("task-id")
+			status, _ := cmd.Flags().GetString("status")
+			tools.TaskMark(getCwd(), args[0], taskID, status, raw)
+		},
+	}
+	cmd.Flags().String("task-id", "", "Task ID to mark")
+	cmd.Flags().String("status", "", "New status: in-progress, done, blocked")
+	cmd.Flags().Bool("raw", false, "Output raw value without JSON wrapping")
+	_ = cmd.MarkFlagRequired("task-id")
+	_ = cmd.MarkFlagRequired("status")
+	return cmd
+}
+
+func newToolsWaveUpdateCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "wave-update <spec-name>",
+		Short: "Write wave summary and latest JSON files",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			raw, _ := cmd.Flags().GetBool("raw")
+			wave, _ := cmd.Flags().GetString("wave")
+			status, _ := cmd.Flags().GetString("status")
+			tasks, _ := cmd.Flags().GetString("tasks")
+			checkpointRun, _ := cmd.Flags().GetString("checkpoint-run")
+			executionRun, _ := cmd.Flags().GetString("execution-run")
+			tools.WaveUpdate(getCwd(), args[0], wave, status, tasks, checkpointRun, executionRun, raw)
+		},
+	}
+	cmd.Flags().String("wave", "", "Wave number (e.g. 02)")
+	cmd.Flags().String("status", "", "Wave status: pass, blocked")
+	cmd.Flags().String("tasks", "", "Comma-separated task numbers in this wave")
+	cmd.Flags().String("checkpoint-run", "", "Checkpoint run ID (optional)")
+	cmd.Flags().String("execution-run", "", "Execution run ID (optional)")
+	cmd.Flags().Bool("raw", false, "Output raw value without JSON wrapping")
+	_ = cmd.MarkFlagRequired("wave")
+	_ = cmd.MarkFlagRequired("status")
+	_ = cmd.MarkFlagRequired("tasks")
+	return cmd
+}
+
+func newToolsWaveStatusCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "wave-status <spec-name>",
+		Short: "Resolve comprehensive wave state for a spec",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			raw, _ := cmd.Flags().GetBool("raw")
+			tools.WaveStatus(getCwd(), args[0], raw)
+		},
+	}
+	cmd.Flags().Bool("raw", false, "Output raw value without JSON wrapping")
+	return cmd
+}
+
+func newToolsDispatchInitAuditCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "dispatch-init-audit",
+		Short: "Create an audit subdirectory within a run directory",
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			raw, _ := cmd.Flags().GetBool("raw")
+			runDir, _ := cmd.Flags().GetString("run-dir")
+			auditType, _ := cmd.Flags().GetString("type")
+			iteration, _ := cmd.Flags().GetInt("iteration")
+			tools.DispatchInitAudit(getCwd(), runDir, auditType, iteration, raw)
+		},
+	}
+	cmd.Flags().String("run-dir", "", "Run directory path")
+	cmd.Flags().String("type", "", "Audit type: inline-audit, inline-checkpoint")
+	cmd.Flags().Int("iteration", 1, "Iteration number (default 1)")
+	cmd.Flags().Bool("raw", false, "Output raw value without JSON wrapping")
+	_ = cmd.MarkFlagRequired("run-dir")
+	_ = cmd.MarkFlagRequired("type")
+	return cmd
+}
+
+func newToolsAuditIterationCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "audit-iteration",
+		Short: "Audit iteration tracking (start, check, advance)",
+	}
+	cmd.AddCommand(newToolsAuditIterationStartCmd())
+	cmd.AddCommand(newToolsAuditIterationCheckCmd())
+	cmd.AddCommand(newToolsAuditIterationAdvanceCmd())
+	return cmd
+}
+
+func newToolsAuditIterationStartCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "start",
+		Short: "Initialize iteration tracking for an audit",
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			raw, _ := cmd.Flags().GetBool("raw")
+			runDir, _ := cmd.Flags().GetString("run-dir")
+			auditType, _ := cmd.Flags().GetString("type")
+			max, _ := cmd.Flags().GetInt("max")
+			tools.AuditIterationStart(getCwd(), runDir, auditType, max, raw)
+		},
+	}
+	cmd.Flags().String("run-dir", "", "Run directory path")
+	cmd.Flags().String("type", "", "Audit type: inline-audit, inline-checkpoint")
+	cmd.Flags().Int("max", 3, "Maximum iterations allowed")
+	cmd.Flags().Bool("raw", false, "Output raw value without JSON wrapping")
+	_ = cmd.MarkFlagRequired("run-dir")
+	_ = cmd.MarkFlagRequired("type")
+	return cmd
+}
+
+func newToolsAuditIterationCheckCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "check",
+		Short: "Check whether another iteration is allowed",
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			raw, _ := cmd.Flags().GetBool("raw")
+			runDir, _ := cmd.Flags().GetString("run-dir")
+			auditType, _ := cmd.Flags().GetString("type")
+			tools.AuditIterationCheck(getCwd(), runDir, auditType, raw)
+		},
+	}
+	cmd.Flags().String("run-dir", "", "Run directory path")
+	cmd.Flags().String("type", "", "Audit type: inline-audit, inline-checkpoint")
+	cmd.Flags().Bool("raw", false, "Output raw value without JSON wrapping")
+	_ = cmd.MarkFlagRequired("run-dir")
+	_ = cmd.MarkFlagRequired("type")
+	return cmd
+}
+
+func newToolsAuditIterationAdvanceCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "advance",
+		Short: "Increment iteration counter and record result",
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			raw, _ := cmd.Flags().GetBool("raw")
+			runDir, _ := cmd.Flags().GetString("run-dir")
+			auditType, _ := cmd.Flags().GetString("type")
+			result, _ := cmd.Flags().GetString("result")
+			tools.AuditIterationAdvance(getCwd(), runDir, auditType, result, raw)
+		},
+	}
+	cmd.Flags().String("run-dir", "", "Run directory path")
+	cmd.Flags().String("type", "", "Audit type: inline-audit, inline-checkpoint")
+	cmd.Flags().String("result", "", "Result of the current iteration (pass, blocked, etc.)")
+	cmd.Flags().Bool("raw", false, "Output raw value without JSON wrapping")
+	_ = cmd.MarkFlagRequired("run-dir")
+	_ = cmd.MarkFlagRequired("type")
+	_ = cmd.MarkFlagRequired("result")
+	return cmd
 }

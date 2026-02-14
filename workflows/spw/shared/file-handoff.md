@@ -35,3 +35,51 @@ The 5 core thin-dispatch rules apply on top of this contract:
 3. Synthesizers/aggregators read from disk directly.
 4. Run structure follows category layout.
 5. Resume skips completed subagents, always reruns final stage.
+
+## 6. Self-Check Policy
+
+Subagents that produce artifacts (implementation code, tasks.md, QA plans) MUST
+run a self-check before reporting `pass` in their `status.json`.
+
+### Implementation subagents (task-implementer)
+
+Before writing `status.json`, the subagent MUST:
+
+1. Register the implementation log:
+   ```
+   spw tools impl-log register --spec <name> --task-id <N> --wave <NN> \
+     --title "<description>" --files "<files>" --changes "<summary>" [--tests "<tests>"]
+   ```
+
+2. Verify artifacts exist:
+   ```
+   spw tools verify-task --spec <name> --task-id <N> --check-commit
+   ```
+
+3. Include self-check results in `status.json`:
+   ```json
+   {
+     "status": "pass",
+     "summary": "Task N implemented",
+     "self_check": {
+       "all_passed": true,
+       "impl_log": true,
+       "commit": true
+     }
+   }
+   ```
+
+If any self-check fails, the subagent MUST report `blocked` instead of `pass`.
+
+### Orchestrator spot-check
+
+After reading a subagent's `status.json` via `dispatch-read-status`, the
+orchestrator runs an independent spot-check:
+
+```
+spw tools verify-task --spec <name> --task-id <N> --check-commit
+```
+
+If the spot-check fails, the orchestrator treats the task as BLOCKED even if
+the subagent reported `pass`. This prevents reviewers from running on
+incomplete work.

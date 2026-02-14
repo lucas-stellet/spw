@@ -146,6 +146,9 @@ func TestParseActualConfig(t *testing.T) {
 	if cfg.Safety.BackupBeforeOverwrite != true {
 		t.Error("Safety.BackupBeforeOverwrite should be true")
 	}
+	if cfg.Verification.InlineAuditMaxIterations != 3 {
+		t.Errorf("Verification.InlineAuditMaxIterations = %d, want 3", cfg.Verification.InlineAuditMaxIterations)
+	}
 	if cfg.Hooks.EnforcementMode != "warn" {
 		t.Errorf("Hooks.EnforcementMode = %q, want %q", cfg.Hooks.EnforcementMode, "warn")
 	}

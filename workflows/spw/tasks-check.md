@@ -150,6 +150,8 @@ Skill gate (mandatory when `skills.enabled=true`):
 </acceptance_criteria>
 
 <completion_guidance>
+Note: Inline audit now runs automatically during `spw:tasks-plan`. Use this command for re-validation after manual fixes or as a standalone CI gate.
+
 On PASS:
 - Confirm output path: `.spec-workflow/specs/<spec-name>/planning/TASKS-CHECK.md`.
 - Recommend next command: `spw:exec <spec-name> --batch-size <N>`.

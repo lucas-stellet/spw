@@ -76,3 +76,48 @@ spw tools dispatch-handoff --run-dir <RUN_DIR> [--command <cmd>]
 
 Generates _handoff.md from all subagent status.json files.
 For wave commands: also validates _wave-summary.json presence.
+
+### 5. Inline Audit Dispatch
+
+After a producer subagent generates a primary artifact (tasks.md, QA plan,
+implementation code), run an inline audit to validate it before proceeding.
+
+Follow the pattern defined in `@.claude/workflows/spw/shared/dispatch-inline-audit.md`.
+
+**Quick reference:**
+
+a) Initialize iteration tracking:
+```
+spw tools audit-iteration start --run-dir <RUN_DIR> --type <inline-audit|inline-checkpoint>
+```
+
+b) Create nested audit directory:
+```
+spw tools dispatch-init-audit --run-dir <RUN_DIR> --type <type> [--iteration N]
+```
+
+c) Setup and dispatch auditors inside the audit directory (use dispatch-setup
+   with the audit_dir as run-dir).
+
+d) Read aggregator/decider status via dispatch-read-status.
+
+e) On BLOCKED, check retry budget and re-dispatch writer if allowed:
+```
+spw tools audit-iteration check --run-dir <RUN_DIR> --type <type>
+spw tools audit-iteration advance --run-dir <RUN_DIR> --type <type> --result blocked
+```
+
+f) On exhausted retries, recommend the standalone check command.
+
+**Per-task self-check and spot-check** (exec only):
+
+After each task-implementer completes, use verify-task for both
+self-check (inside subagent) and spot-check (orchestrator):
+
+```
+spw tools impl-log register --spec <name> --task-id <N> --wave <NN> ...
+spw tools verify-task --spec <name> --task-id <N> --check-commit
+```
+
+See `@.claude/workflows/spw/shared/file-handoff.md` section 6 for the
+full self-check policy.

@@ -86,10 +86,12 @@ type StatusDoc struct {
 
 // LatestDoc represents a _latest.json file that points to the latest run.
 type LatestDoc struct {
-	RunID   string `json:"run_id"`
-	RunDir  string `json:"run_dir"`
-	Status  string `json:"status"`
-	Summary string `json:"summary"`
+	RunID      string `json:"run_id,omitempty"`
+	RunDir     string `json:"run_dir,omitempty"`
+	Status     string `json:"status"`
+	Summary    string `json:"summary,omitempty"`
+	Execution  string `json:"execution,omitempty"`
+	Checkpoint string `json:"checkpoint,omitempty"`
 }
 
 // ReadLatestJSON reads and unmarshals a _latest.json file.

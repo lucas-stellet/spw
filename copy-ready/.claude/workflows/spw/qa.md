@@ -19,6 +19,7 @@ policy: @.claude/workflows/spw/shared/dispatch-pipeline.md
 - @.claude/workflows/spw/shared/skills-policy.md
 - @.claude/workflows/spw/shared/approval-reconciliation.md
 - @.claude/workflows/spw/shared/dispatch-implementation.md
+- @.claude/workflows/spw/shared/dispatch-inline-audit.md
 </shared_policies>
 
 <objective>
@@ -104,8 +105,30 @@ Skip this subagent if tool selection resolved to `bruno`.
 Skip this subagent if tool selection resolved to `playwright`.
 </pre_dispatch>
 
-<!-- post_pipeline: artifact generation + guidance .............. -->
+<!-- post_pipeline: inline audit + artifact verification + guidance  -->
 <post_pipeline>
+
+### Inline Audit
+
+After qa-plan-synthesizer produces the QA test plan, validate it inline.
+Follow @.claude/workflows/spw/shared/dispatch-inline-audit.md.
+
+1. `spw tools audit-iteration start --run-dir <RUN_DIR> --type inline-audit`
+2. `spw tools dispatch-init-audit --run-dir <RUN_DIR> --type inline-audit --iteration 1`
+3. Inside the audit dir, dispatch QA auditors for coverage validation via dispatch-setup:
+   - qa-traceability-auditor (complex_reasoning model)
+   - qa-selector-verifier (implementation model)
+   - qa-data-feasibility-checker (implementation model)
+4. Dispatch qa-check-aggregator to synthesize results
+5. `spw tools dispatch-read-status qa-check-aggregator --run-dir <audit_dir>`
+6. If PASS → proceed to artifact verification below
+7. If BLOCKED:
+   a. `spw tools audit-iteration check --run-dir <RUN_DIR> --type inline-audit`
+   b. If allowed: `spw tools audit-iteration advance --run-dir <RUN_DIR> --type inline-audit --result blocked`, re-dispatch qa-plan-synthesizer with aggregator report path as feedback, then repeat from step 2 with next iteration
+   c. If exhausted: STOP, recommend `spw:qa-check <spec-name>`
+
+### Artifact Verification
+
 1. Verify QA-TEST-PLAN.md includes Selector/Endpoint column in Coverage Matrix.
 2. Verify all scenarios have concrete identifiers (per § concrete_selector_policy).
    Mark scenarios missing selectors as INCOMPLETE — does not block plan generation.
@@ -195,7 +218,8 @@ Skill gate:
 <completion_guidance>
 On success:
 - Confirm output path: `.spec-workflow/specs/<spec-name>/qa/QA-TEST-PLAN.md`.
-- Recommend next command: `spw:qa-check <spec-name>` to validate selectors and traceability before execution.
+- Confirm inline audit result (PASS or iteration count).
+- Recommend next command: `spw:qa-check <spec-name>` (for re-validation or CI gate).
 - Recommend running `/clear` before validation.
 
 On BLOCKED:

@@ -18,6 +18,7 @@ policy: @.claude/workflows/spw/shared/dispatch-audit.md
 - @.claude/workflows/spw/shared/resume-policy.md
 - @.claude/workflows/spw/shared/skills-policy.md
 - @.claude/workflows/spw/shared/approval-reconciliation.md
+- @.claude/workflows/spw/shared/dispatch-implementation.md
 </shared_policies>
 
 <objective>
@@ -47,6 +48,15 @@ comms:
 - `test-policy-auditor` (model: complex_reasoning)
 - `decision-aggregator` (model: complex_reasoning)
 </subagents>
+
+<subagent_artifact_map>
+| Subagent | Artifact | Dispatch | Model |
+|----------|----------|----------|-------|
+| traceability-auditor | (report.md only) | task | complex_reasoning |
+| dag-validator | (report.md only) | task | implementation |
+| test-policy-auditor | (report.md only) | task | complex_reasoning |
+| decision-aggregator | TASKS-CHECK.md | task | complex_reasoning |
+</subagent_artifact_map>
 
 <!-- ============================================================
      EXTENSION POINTS — command-specific logic injected into
@@ -140,6 +150,8 @@ Skill gate (mandatory when `skills.enabled=true`):
 </acceptance_criteria>
 
 <completion_guidance>
+Note: Inline audit now runs automatically during `spw:tasks-plan`. Use this command for re-validation after manual fixes or as a standalone CI gate.
+
 On PASS:
 - Confirm output path: `.spec-workflow/specs/<spec-name>/planning/TASKS-CHECK.md`.
 - Recommend next command: `spw:exec <spec-name> --batch-size <N>`.
