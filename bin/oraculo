@@ -20,7 +20,7 @@ Usage:
   oraculo install [--global]
   oraculo init
   oraculo skills
-  oraculo skills install [--elixir]
+  oraculo skills install
   oraculo status
   oraculo update
   oraculo doctor

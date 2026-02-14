@@ -29,7 +29,6 @@ func newSkillsCmd() *cobra.Command {
 
 			fmt.Println("[oraculo] Skills diagnosis:")
 			printDiagnosis("General", install.DiagnoseGeneralSkills(cwd))
-			printDiagnosis("Elixir", install.DiagnoseElixirSkills(cwd))
 			return nil
 		},
 	}
@@ -39,25 +38,15 @@ func newSkillsCmd() *cobra.Command {
 }
 
 func newSkillsInstallCmd() *cobra.Command {
-	var elixirFlag bool
-
-	cmd := &cobra.Command{
+	return &cobra.Command{
 		Use:   "install",
-		Short: "Install skills (general by default, --elixir for Elixir)",
+		Short: "Install general skills into .claude/skills",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cwd, _ := os.Getwd()
-
-			if elixirFlag {
-				install.InstallElixirSkills(cwd)
-			} else {
-				install.InstallGeneralSkills(cwd)
-			}
+			install.InstallGeneralSkills(cwd)
 			return nil
 		},
 	}
-
-	cmd.Flags().BoolVar(&elixirFlag, "elixir", false, "Install Elixir-specific skills and patch config")
-	return cmd
 }
 
 func printDiagnosis(label string, skills []install.SkillStatus) {

@@ -154,8 +154,7 @@ auto_install_defaults_on_oraculo_install = true
 enforce_required = true
 
 # Required skills for design phases.
-# Empty by default. Use `oraculo skills install --elixir` to add Elixir skills
-# (using-elixir-skills + elixir-anti-patterns) automatically.
+# Empty by default. Add project-specific skills as needed.
 required = []
 
 # Optional skills: if present, Oráculo can use them to increase rigor.
@@ -176,7 +175,7 @@ optional = [
 enforce_required = true
 
 # Required skills for implementation phases.
-# Use `oraculo skills install --elixir` to add Elixir skills automatically.
+# Add project-specific skills as needed.
 required = [
   "conventional-commits"
 ]

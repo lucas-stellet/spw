@@ -41,25 +41,12 @@ resolve_config_path() {
   fi
 }
 
-ELIXIR_SKILLS=(
-  "using-elixir-skills"
-  "elixir-thinking"
-  "elixir-anti-patterns"
-  "phoenix-thinking"
-  "ecto-thinking"
-  "otp-thinking"
-  "oban-thinking"
-)
-
 GENERAL_SKILLS=(
   "mermaid-architecture"
   "qa-validation-planning"
   "conventional-commits"
   "test-driven-development"
 )
-
-# All skills combined (backward compat for oraculo install)
-DEFAULT_SKILLS=("${GENERAL_SKILLS[@]}" "${ELIXIR_SKILLS[@]}")
 
 show_help() {
   cat <<'USAGE'
@@ -70,7 +57,7 @@ Usage:
   oraculo install [--global]
   oraculo init
   oraculo skills
-  oraculo skills install [--elixir]
+  oraculo skills install
   oraculo status
 
 Behavior:
@@ -80,8 +67,7 @@ Behavior:
 - init: initializes project-specific config, templates, snippets, and .gitattributes.
   Use with a global install — does NOT copy commands/workflows locally.
 - skills: shows installed/available/missing status for all skill sets.
-- skills install: installs general skills into .claude/skills (best effort).
-  --elixir: installs Elixir-specific skills and patches config required lists.
+- skills install: installs general skills into .claude/skills.
 - status: prints a quick summary of kit presence + default skills.
 
 Notes:
@@ -194,10 +180,6 @@ find_skill_source_dir() {
   return 1
 }
 
-install_default_skills() {
-  install_skill_set "all" "${DEFAULT_SKILLS[@]}"
-}
-
 install_skill_set() {
   local label="$1"
   shift
@@ -230,116 +212,13 @@ install_skill_set() {
   fi
 }
 
-patch_config_elixir_skills() {
-  resolve_config_path
-  if [ ! -f "$CONFIG_PATH" ]; then
-    echo "[oraculo-kit] No config file found; skipping Elixir config patch."
-    return 0
-  fi
-
-  local elixir_required=("using-elixir-skills" "elixir-anti-patterns")
-  local patched=false
-
-  for skill in "${elixir_required[@]}"; do
-    if ! grep -q "\"${skill}\"" "$CONFIG_PATH" 2>/dev/null; then
-      patched=true
-      break
-    fi
-  done
-
-  if [ "$patched" = "false" ]; then
-    echo "[oraculo-kit] Elixir skills already in config required lists."
-    return 0
-  fi
-
-  # Patch required arrays in [skills.design] and [skills.implementation]
-  local tmp; tmp="$(mktemp)"
-  awk '
-    BEGIN { in_target=0; in_array=0 }
-    /^\[skills\.design\]/ || /^\[skills\.implementation\]/ { in_target=1 }
-    /^\[/ && !/^\[skills\.design\]/ && !/^\[skills\.implementation\]/ { in_target=0 }
-
-    in_target && /^required[[:space:]]*=/ {
-      in_array=1
-      print
-      next
-    }
-
-    in_array && /\]/ {
-      # Insert missing skills before closing bracket
-      needs_using=1; needs_anti=1
-      # Check what is already present by scanning backwards in output
-    }
-
-    { print }
-  ' "$CONFIG_PATH" > "$tmp"
-
-  # Simpler approach: use sed to insert entries before the ] in each target section
-  rm -f "$tmp"
-  tmp="$(mktemp)"
-  cp "$CONFIG_PATH" "$tmp"
-
-  for skill in "${elixir_required[@]}"; do
-    if grep -q "\"${skill}\"" "$tmp"; then
-      continue
-    fi
-    # Insert skill into required arrays in [skills.design] and [skills.implementation].
-    # Handles both single-line (required = []) and multiline arrays.
-    awk -v skill="$skill" '
-      BEGIN { in_design=0; in_impl=0; in_req=0; done_design=0; done_impl=0 }
-      /^\[skills\.design\]/ { in_design=1; in_impl=0 }
-      /^\[skills\.implementation\]/ { in_impl=1; in_design=0 }
-      /^\[/ && !/^\[skills\.design\]/ && !/^\[skills\.implementation\]/ { in_design=0; in_impl=0 }
-
-      (in_design || in_impl) && /^required[[:space:]]*=/ {
-        # Single-line array: required = [] or required = ["existing"]
-        if ($0 ~ /\[.*\]/) {
-          if ((in_design && !done_design) || (in_impl && !done_impl)) {
-            # Replace closing ] with skill entry + ]
-            line = $0
-            sub(/\]/, "", line)
-            # Check if array has existing entries
-            if (line ~ /\[[[:space:]]*$/) {
-              # Empty array: required = [ → insert skill
-              printf "%s\"%s\"]\n", line, skill
-            } else {
-              # Has entries: required = ["x" → append with comma
-              printf "%s, \"%s\"]\n", line, skill
-            }
-            if (in_design) done_design=1
-            if (in_impl) done_impl=1
-            next
-          }
-        } else {
-          in_req=1
-        }
-      }
-
-      in_req && /\]/ {
-        if ((in_design && !done_design) || (in_impl && !done_impl)) {
-          printf "  \"%s\",\n", skill
-          if (in_design) done_design=1
-          if (in_impl) done_impl=1
-        }
-        in_req=0
-      }
-
-      { print }
-    ' "$tmp" > "${tmp}.2"
-    mv "${tmp}.2" "$tmp"
-  done
-
-  mv "$tmp" "$CONFIG_PATH"
-  echo "[oraculo-kit] Patched config: added using-elixir-skills and elixir-anti-patterns to required lists."
-}
-
 status_default_skills() {
   local target_skills_dir="${TARGET_ROOT}/.claude/skills"
   local installed=0
   local missing=()
 
   local skill
-  for skill in "${DEFAULT_SKILLS[@]}"; do
+  for skill in "${GENERAL_SKILLS[@]}"; do
     if [ -f "${target_skills_dir}/${skill}/SKILL.md" ]; then
       installed=$((installed + 1))
     else
@@ -347,7 +226,7 @@ status_default_skills() {
     fi
   done
 
-  echo "[oraculo-kit] Default skills: installed=${installed}, missing=${#missing[@]}"
+  echo "[oraculo-kit] General skills: installed=${installed}, missing=${#missing[@]}"
   if [ "${#missing[@]}" -gt 0 ]; then
     echo "[oraculo-kit] Missing in .claude/skills: ${missing[*]}"
   fi
@@ -402,7 +281,7 @@ cmd_install_global() {
     fi
   fi
 
-  # 4. General skills only → ~/.claude/skills/ (Elixir skills require --elixir flag)
+  # 4. General skills only → ~/.claude/skills/
   local saved_target_root="${TARGET_ROOT}"
   TARGET_ROOT="${global_root}"
   install_skill_set "general" "${GENERAL_SKILLS[@]}"
@@ -526,7 +405,7 @@ cmd_install() {
   resolve_config_path
   AUTO_INSTALL_SKILLS="$(toml_bool_value skills auto_install_defaults_on_oraculo_install true)"
   if [ "$AUTO_INSTALL_SKILLS" = "true" ]; then
-    install_default_skills
+    install_skill_set "general" "${GENERAL_SKILLS[@]}"
   else
     echo "[oraculo-kit] Skipping default skills install (auto_install_defaults_on_oraculo_install=false)."
   fi
@@ -600,40 +479,24 @@ cmd_skills() {
     "")
       echo "[oraculo-kit] Skills diagnosis:"
       diagnose_skill_set "General" "${GENERAL_SKILLS[@]}"
-      diagnose_skill_set "Elixir" "${ELIXIR_SKILLS[@]}"
       ;;
     *)
       echo "[oraculo-kit] Unknown skills subcommand: $subcmd" >&2
-      echo "Usage: oraculo skills | oraculo skills install [--elixir]" >&2
+      echo "Usage: oraculo skills | oraculo skills install" >&2
       exit 1
       ;;
   esac
 }
 
 cmd_skills_install() {
-  local mode="general"
-  while [ "$#" -gt 0 ]; do
-    case "$1" in
-      --elixir) mode="elixir"; shift ;;
-      *)
-        echo "[oraculo-kit] Unknown flag for skills install: $1" >&2
-        echo "Usage: oraculo skills install [--elixir]" >&2
-        exit 1
-        ;;
-    esac
-  done
+  if [ "$#" -gt 0 ]; then
+    echo "[oraculo-kit] Unknown flag for skills install: $1" >&2
+    echo "Usage: oraculo skills install" >&2
+    exit 1
+  fi
 
-  case "$mode" in
-    elixir)
-      echo "[oraculo-kit] Installing Elixir skills into: ${TARGET_ROOT}/.claude/skills"
-      install_skill_set "elixir" "${ELIXIR_SKILLS[@]}"
-      patch_config_elixir_skills
-      ;;
-    *)
-      echo "[oraculo-kit] Installing general skills into: ${TARGET_ROOT}/.claude/skills"
-      install_skill_set "general" "${GENERAL_SKILLS[@]}"
-      ;;
-  esac
+  echo "[oraculo-kit] Installing general skills into: ${TARGET_ROOT}/.claude/skills"
+  install_skill_set "general" "${GENERAL_SKILLS[@]}"
 }
 
 cmd_status() {

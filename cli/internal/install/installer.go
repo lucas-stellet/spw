@@ -97,7 +97,7 @@ func Run(opts Options) error {
 	// 8. Install default skills if configured (reload config for merged values)
 	cfg, _ = config.Load(root) //nolint:ineffassign
 	if cfg.Skills.AutoInstallDefaultsOnORACULOInstall {
-		InstallDefaultSkills(root)
+		InstallGeneralSkills(root)
 	} else {
 		fmt.Println("[oraculo] Skipping default skills install (auto_install_defaults_on_oraculo_install=false).")
 	}
@@ -205,7 +205,7 @@ func RunGlobal(opts Options) error {
 		return fmt.Errorf("writing settings: %w", err)
 	}
 
-	// 4. Install general skills → ~/.claude/skills/ (Elixir skills require --elixir flag)
+	// 4. Install general skills → ~/.claude/skills/
 	InstallGeneralSkills(home)
 
 	// 5. Overlay symlinks → noop by default (project controls activation)

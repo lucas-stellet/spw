@@ -178,7 +178,7 @@ oraculo init
 
 | `oraculo skills` | Status of installed/available/missing skills |
 
-| `oraculo skills install [--elixir]` | Installs general skills (or Elixir with the flag) |
+| `oraculo skills install` | Installs general skills |
 
 <details>
 <summary>Quick config reference (all sections)</summary>

@@ -82,11 +82,6 @@ graph TD
 ### E2E/UAT
 -
 
-## Elixir/Phoenix/Ecto/OTP Guardrails (when applicable)
-- Phoenix: avoid heavy queries in `mount`; prefer proper loading paths such as `handle_params` when relevant.
-- Ecto: keep clear context boundaries; avoid improper cross-context coupling.
-- OTP: do not introduce a GenServer without a runtime reason (state, concurrency, fault isolation).
-
 ## Risks and Mitigations
 - Risk:
 - Mitigation:

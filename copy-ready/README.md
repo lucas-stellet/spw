@@ -96,7 +96,7 @@ Default Oraculo skills are copied into `.claude/skills/` during install (best ef
 | `oraculo doctor` | Show current repo/ref/cache configuration |
 | `oraculo status` | Print a quick kit and skills summary |
 | `oraculo skills` | Show installed/available/missing skills status |
-| `oraculo skills install [--elixir]` | Install general skills (or Elixir with flag) |
+| `oraculo skills install` | Install general skills |
 
 #### Workflow tools (used by subagents and workflows)
 
