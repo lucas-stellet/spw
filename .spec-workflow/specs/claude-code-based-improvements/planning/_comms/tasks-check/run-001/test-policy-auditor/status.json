@@ -1,7 +1,0 @@
-{
-  "status": "pass",
-  "summary": "All 11 tasks satisfy test policy: test plans present, no-TDD exceptions justified, verification commands and DoD complete, design alignment confirmed. One non-blocking advisory on Task 1 verification command.",
-  "skills_used": [],
-  "skills_missing": [],
-  "model_override_reason": null
-}

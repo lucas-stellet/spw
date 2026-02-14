@@ -1,7 +1,0 @@
-{
-  "status": "pass",
-  "summary": "Wave 2 tasks (3, 4, 7) verified safe for parallel execution — no file, state, or resource conflicts",
-  "skills_used": ["effective-go"],
-  "skills_missing": [],
-  "model_override_reason": null
-}

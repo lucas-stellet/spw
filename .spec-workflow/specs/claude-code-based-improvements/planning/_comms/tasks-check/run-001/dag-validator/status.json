@@ -1,7 +1,0 @@
-{
-  "status": "pass",
-  "summary": "DAG validation complete: all 6 checks passed, graph is acyclic with valid dependencies",
-  "skills_used": ["graph-analysis", "dependency-validation"],
-  "skills_missing": [],
-  "model_override_reason": null
-}

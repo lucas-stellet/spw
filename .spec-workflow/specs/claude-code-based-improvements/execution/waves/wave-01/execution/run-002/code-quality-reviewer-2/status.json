@@ -1,7 +1,0 @@
-{
-  "status": "pass",
-  "summary": "Code quality review passed - maintainability, safety, regression risk, and test coverage all meet criteria",
-  "skills_used": [],
-  "skills_missing": [],
-  "model_override_reason": null
-}

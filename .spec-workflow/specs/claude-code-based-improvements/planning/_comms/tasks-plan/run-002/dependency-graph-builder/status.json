@@ -1,7 +1,0 @@
-{
-  "status": "pass",
-  "summary": "Wave 2 DAG validated: tasks 3, 4, 7 have all deps satisfied, no inter-deps, no cycles, no file conflicts. Future waves remain valid.",
-  "skills_used": [],
-  "skills_missing": [],
-  "model_override_reason": null
-}

@@ -1,7 +1,0 @@
-{
-  "status": "pass",
-  "summary": "All 4 traceability checks pass: full bidirectional coverage between 11 tasks and 7 requirements with consistent frontmatter",
-  "skills_used": [],
-  "skills_missing": [],
-  "model_override_reason": null
-}

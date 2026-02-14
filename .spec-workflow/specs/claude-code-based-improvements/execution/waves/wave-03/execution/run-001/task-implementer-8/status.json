@@ -1,7 +1,0 @@
-{
-  "status": "pass",
-  "summary": "Implemented validate prompts command with --json and --strict flags",
-  "skills_used": ["effective-go"],
-  "skills_missing": [],
-  "model_override_reason": null
-}

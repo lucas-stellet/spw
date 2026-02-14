@@ -1,7 +1,0 @@
-{
-  "status": "pass",
-  "summary": "Created validate package foundation with FieldRule, Violation, ValidationResult, ValidationStats types and helper functions",
-  "skills_used": ["effective-go"],
-  "skills_missing": [],
-  "model_override_reason": null
-}

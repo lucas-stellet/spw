@@ -1,7 +1,0 @@
-{
-  "status": "pass",
-  "summary": "Wave 2 confirmed: tasks 3, 4, 7 eligible — all dependencies satisfied, no scope adjustments needed",
-  "skills_used": ["effective-go"],
-  "skills_missing": [],
-  "model_override_reason": null
-}

@@ -1,7 +1,0 @@
-{
-  "status": "pass",
-  "summary": "Implemented CheckIterationLimit with _iteration_state.json persistence",
-  "skills_used": ["effective-go"],
-  "skills_missing": [],
-  "model_override_reason": null
-}
