@@ -7,7 +7,7 @@ Complete reference for all `spw` CLI commands. The Go binary is built from `cli/
 | Command | Description |
 |---------|-------------|
 | `spw install` | Install SPW kit into the current project |
-| `spw update` | Self-update the CLI binary from GitHub Releases, clear cache, fetch latest kit |
+| `spw update` | Self-update the CLI binary from GitHub Releases |
 | `spw doctor` | Check SPW installation health (version, config, hooks, commands, workflows, skills) |
 | `spw status` | Show SPW kit presence and spec summary |
 | `spw skills` | Show skills installation status |
@@ -27,7 +27,7 @@ Complete reference for all `spw` CLI commands. The Go binary is built from `cli/
 
 ## Task Inspection (`spw tasks`)
 
-Parse `tasks.md` body-first and resolve task state deterministically.
+Parse `tasks.md` body-first and resolve task state deterministically. All `tasks`, `wave`, and `spec` subcommands support `--raw` for machine-readable output.
 
 | Subcommand | Args | Description |
 |------------|------|-------------|
@@ -64,7 +64,7 @@ Inspect spec artifacts, lifecycle stage, prerequisites, and approvals.
 
 ## Workflow Tools (`spw tools`)
 
-Internal tools used by subagents and workflows. All support `--raw` flag.
+Internal tools used by subagents and workflows. All support `--raw` flag except `merge-config` and `merge-settings`.
 
 ### Config & Resolution
 
@@ -81,7 +81,7 @@ Internal tools used by subagents and workflows. All support `--raw` flag.
 | Command | Description |
 |---------|-------------|
 | `dispatch-init <command> <spec>` | Initialize a dispatch run directory. Flag: `--wave` |
-| `dispatch-setup <subagent> --run-dir R` | Create subagent directory with `brief.md` skeleton. Flag: `--model-alias` |
+| `dispatch-setup <subagent> --run-dir R` | Create subagent directory with `brief.md` skeleton. Flag: `--model-alias` (valid aliases: `web_research`, `complex_reasoning`, `implementation`) |
 | `dispatch-read-status <subagent> --run-dir R` | Read and validate subagent `status.json` |
 | `dispatch-handoff --run-dir R --command C` | Generate `_handoff.md` from subagent status files |
 | `dispatch-init-audit --run-dir R --type T` | Create audit subdirectory (`inline-audit` or `inline-checkpoint`). Flag: `--iteration` |
@@ -93,7 +93,7 @@ Internal tools used by subagents and workflows. All support `--raw` flag.
 | `verify-task <spec> --task-id N [--check-commit]` | Verify task has implementation log and optionally a commit |
 | `impl-log register <spec> --task-id N --wave NN --title T --files F --changes C [--tests T]` | Create implementation log for a completed task |
 | `impl-log check <spec> --task-ids 1,2,3` | Check if implementation logs exist for given task IDs |
-| `task-mark <spec> --task-id N --status S` | Update task checkbox (`in-progress`, `done`, `blocked`) |
+| `task-mark <spec> --task-id N --status S` | Update task checkbox (`done`, `in_progress`, `pending`) |
 
 ### Wave Management
 
@@ -136,3 +136,11 @@ All hooks read JSON from stdin. Exit codes: `0` = ok, `2` = block. Enforcement m
 | `guard-prompt` | UserPromptSubmit | Validates spec arg presence in SPW commands |
 | `guard-paths` | PreToolUse (Write/Edit) | Prevents writes outside spec-workflow paths |
 | `guard-stop` | Stop | Checks file-first handoff completeness in recent runs |
+
+### Hook behavior details
+
+- **statusline**: Uses 3 detection strategies (git diff, cache file, sticky spec) to find the active spec. Displays token/cost estimates when `show_token_cost = true`. Cache TTL controlled by `statusline.cache_ttl_seconds`. Current task detection shows in-progress task ID in the status bar.
+- **guard-prompt**: Blocks SPW slash commands that lack a spec argument. Controlled by `hooks.guard_prompt_require_spec`.
+- **guard-paths**: Prevents writes outside spec-workflow paths. Also enforces wave-NN directory format and blocks legacy `_agent-comms/` paths when `hooks.guard_wave_layout = true`. Controlled by `hooks.guard_paths`.
+- **guard-stop**: Scans recent runs within `hooks.recent_run_window_minutes` for missing handoff artifacts. Controlled by `hooks.guard_stop_handoff`.
+- **session-start**: Syncs the active tasks template variant (`tdd-on`/`tdd-off`) based on `[templates].tasks_template_mode`. Also auto-re-renders workflows when config changes are detected.

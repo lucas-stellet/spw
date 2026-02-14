@@ -72,6 +72,9 @@ Source files in this repo must stay in sync with their `copy-ready/` counterpart
 | `workflows/spw/overlays/active/*.md` | `copy-ready/.claude/workflows/spw/overlays/active/*.md` (symlinks) |
 | `templates/user-templates/` | `copy-ready/.spec-workflow/user-templates/` |
 | `config/spw-config.toml` | `copy-ready/.spec-workflow/spw-config.toml` |
+| `templates/claude-md-snippet.md` | `copy-ready/.claude.md.snippet` |
+| `templates/agents-md-snippet.md` | `copy-ready/.agents.md.snippet` |
+| `workflows/spw/shared/dispatch-implementation.md` | `copy-ready/.claude/workflows/spw/shared/dispatch-implementation.md` |
 
 `scripts/validate-thin-orchestrator.sh` enforces mirror integrity via `diff -rq`. Always update both sides in the same patch.
 
@@ -83,11 +86,11 @@ The Go CLI (`cli/cmd/spw/`) provides hooks, inspection commands, user-facing com
 
 All hooks are implemented in Go at `cli/internal/hook/` and invoked via `spw hook <event>`. Each reads JSON from stdin and follows the same exit-code contract: 0 = ok, 2 = block.
 
-- **`spw hook statusline`** — StatusLine: detects active spec from git diff/cache
-- **`spw hook guard-prompt`** — UserPromptSubmit: validates spec arg presence in SPW commands
-- **`spw hook guard-paths`** — PreToolUse (Write/Edit): prevents writes outside spec-workflow paths
-- **`spw hook guard-stop`** — Stop: checks file-first handoff completeness in recent runs
-- **`spw hook session-start`** — SessionStart: syncs active tasks template variant based on TDD config
+- **`spw hook statusline`** — StatusLine: displays context in the editor status bar. Uses 3 detection strategies (git diff, cache, sticky spec) to find the active spec. Shows token/cost estimates when `show_token_cost = true`. Cache TTL controlled by `statusline.cache_ttl_seconds`.
+- **`spw hook guard-prompt`** — UserPromptSubmit: validates spec arg presence in SPW commands. Controlled by `hooks.guard_prompt_require_spec`.
+- **`spw hook guard-paths`** — PreToolUse (Write/Edit): prevents writes outside spec-workflow paths. Also enforces wave-NN directory format and blocks legacy `_agent-comms/` paths when `hooks.guard_wave_layout = true`. Controlled by `hooks.guard_paths`.
+- **`spw hook guard-stop`** — Stop: checks file-first handoff completeness in recent runs. Scans runs within `hooks.recent_run_window_minutes`. Controlled by `hooks.guard_stop_handoff`.
+- **`spw hook session-start`** — SessionStart: syncs active tasks template variant based on TDD config. Also auto-re-renders workflows when config changes are detected.
 
 Hook enforcement mode is configured in `config/spw-config.toml` under `[hooks]`: `warn` (diagnostics only) or `block` (deny violating actions).
 
@@ -115,11 +118,27 @@ SPW stores structured data in SQLite databases (pure Go driver, no CGO, WAL mode
 
 ### CLI Wrapper (`bin/spw`)
 
-The `spw` CLI is a bash wrapper that caches the kit from GitHub and delegates to `copy-ready/install.sh`. Key commands: `spw install`, `spw update`, `spw doctor`, `spw status`, `spw skills`. Environment variables: `SPW_REPO`, `SPW_REF`, `SPW_HOME`, `SPW_KIT_DIR`, `SPW_AUTO_UPDATE`.
+The `spw` CLI is a bash wrapper that caches the kit from GitHub and delegates to `copy-ready/install.sh`. Key commands: `spw install`, `spw update`, `spw doctor`, `spw status`, `spw skills`. Environment variables: `SPW_REPO`, `SPW_REF`, `SPW_HOME`, `SPW_KIT_DIR`, `SPW_AUTO_UPDATE`, `INSTALL_DIR`.
+
+The installer injects snippet content into target `CLAUDE.md` and `AGENTS.md` using `<!-- SPW-KIT-START -->` / `<!-- SPW-KIT-END -->` markers. It also auto-merges SPW hook entries into `.claude/settings.json` via `spw tools merge-settings`.
 
 ### Runtime Config
 
-Canonical path: `.spec-workflow/spw-config.toml` (legacy fallback: `.spw/spw-config.toml`). This TOML controls model routing, execution gates (TDD, wave approval, commit-per-task tri-state, clean worktree), planning strategy (rolling-wave vs all-at-once), per-stage skill enforcement, hook behavior, and Agent Teams (with `exclude_phases` deny-list).
+Canonical path: `.spec-workflow/spw-config.toml` (legacy fallback: `.spw/spw-config.toml`). This TOML controls model routing, execution gates, planning strategy, per-stage skill enforcement, hook behavior, and Agent Teams. Config sections:
+
+| Section | Keys | Purpose |
+|---------|------|---------|
+| `[statusline]` | `cache_ttl_seconds`, `base_branches`, `sticky_spec`, `show_token_cost` | StatusLine hook behavior |
+| `[templates]` | `sync_tasks_template_on_session_start`, `tasks_template_mode` | Task template variant selection (auto/on/off) |
+| `[safety]` | `backup_before_overwrite` | Backup before overwriting spec files |
+| `[verification]` | `inline_audit_max_iterations` | Max inline audit retry iterations |
+| `[qa]` | `max_scenarios_per_wave` | QA execution wave sizing |
+| `[hooks]` | `verbose`, `recent_run_window_minutes`, `guard_prompt_require_spec`, `guard_paths`, `guard_wave_layout`, `guard_stop_handoff` | Per-guard hook toggles and enforcement |
+| `[execution]` | `require_clean_worktree_for_wave_pass`, `manual_tasks_require_human_handoff`, `tdd_default`, `commit_per_task`, `wave_approval` | Execution gates (TDD, clean worktree, commit tri-state) |
+| `[planning]` | `tasks_generation_strategy`, `max_wave_size` | Rolling-wave vs all-at-once, wave sizing |
+| `[post_mortem_memory]` | `enabled`, `max_entries_for_design` | Post-mortem lesson indexing |
+| `[skills.*]` | `enforce_required`, `required`, `optional` | Per-stage skill enforcement (design, implementation) |
+| `[agent_teams]` | `enabled`, `exclude_phases`, `require_delegate_mode` | Agent Teams toggle and deny-list |
 
 ### SPW Command Entry Points
 
@@ -134,6 +153,17 @@ Subagent handoffs use filesystem artifacts, not chat. Required files per subagen
 - `<run-dir>/_handoff.md`
 
 Stored under `.spec-workflow/specs/<spec-name>/<phase>/_comms/` within each phase directory.
+
+### User Guidelines
+
+Project-specific guidelines in `.spec-workflow/guidelines/*.md` are injected into rendered workflows. Builtin phase mapping:
+
+- `project.md` → all phases
+- `coding.md` → exec, checkpoint
+- `quality.md` → checkpoint, qa-check, post-mortem
+- `testing.md` → exec, qa, qa-check, qa-exec
+
+Custom files use YAML frontmatter `applies_to: [phase1, phase2]`. Files without frontmatter apply to all phases. Loaded by `spw render` and the `session-start` hook.
 
 ### Dispatch Categories
 
@@ -167,7 +197,7 @@ Artifacts are organized by **workflow phase**, not in flat dumps. Each phase dir
 ├── planning/                          ← TASKS-CHECK.md, SKILLS-EXEC.md
 │   └── _comms/{tasks-plan,tasks-check}/run-NNN/
 ├── execution/                         ← CHECKPOINT-REPORT.md, _implementation-logs/
-│   └── waves/wave-NN/{execution,checkpoint}/run-NNN/
+│   └── waves/wave-NN/{execution,checkpoint,post-check}/run-NNN/
 ├── qa/                                ← QA-TEST-PLAN.md, QA-CHECK.md, QA-*-REPORT.md
 │   ├── qa-artifacts/wave-NN/
 │   └── _comms/{qa,qa-check}/run-NNN/
@@ -189,5 +219,6 @@ Spec-workflow files are marked as `linguist-generated` via `.gitattributes` so G
 - Approval is MCP-only (via `spec-workflow-mcp`), never manual chat approval. `STATUS-SUMMARY.md` is output-only, not a source of truth.
 - `tasks.md` must follow dashboard compatibility: checkbox markers only on task lines with numeric IDs, `-` as list marker (never `*`), no nested checkboxes in metadata, `Files` in single line.
 - Unfinished runs must prompt user decision (`continue-unfinished` or `delete-and-restart`), never auto-restart.
-- `spw:exec` orchestrator never implements code directly — always dispatches subagents, even for single-task waves.
+- `spw:exec` orchestrator never implements code directly — always dispatches subagents, even for single-task waves. Exception: the orchestrator can apply a surgical fix of ≤3 lines when an audit critic returns BLOCKED with a mechanical fix; the fix must be logged in `_handoff.md`.
+- Complexity routing in `spw:exec`: the `complex_reasoning` model alias is triggered for tasks involving auth/security/payments, tasks touching >3 core files, or cross-context architecture decisions.
 - When modifying behavior, defaults, or guardrails, update `README.md`, `AGENTS.md`, `docs/SPW-WORKFLOW.md`, `hooks/README.md`, and `copy-ready/README.md` in the same patch.

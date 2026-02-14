@@ -174,7 +174,7 @@ Execute tests or checks without modifying code. Lighter gates between waves.
 
 | Command | Pattern | Notes |
 |---------|---------|-------|
-| `status` | Read-only | No subagents. Reads artifacts and produces STATUS-SUMMARY.md. |
+| `status` | Pipeline (3 subagents) | Dispatches `state-inspector`, `approval-auditor`, `next-step-planner` to gather state and produce STATUS-SUMMARY.md. |
 
 ---
 
@@ -193,7 +193,7 @@ Execute tests or checks without modifying code. Lighter gates between waves.
 | `checkpoint` | Audit | Code |
 | `exec` | Wave Execution | Implementation |
 | `qa-exec` | Wave Execution | Validation |
-| `status` | Utility | — |
+| `status` | Utility (Pipeline) | 3 subagents |
 
 ---
 

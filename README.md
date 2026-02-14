@@ -86,6 +86,8 @@ Optional:
 
 Default SPW skills are copied into `.claude/skills/` during install (best effort). The `test-driven-development` skill is in the default catalog; `qa-validation-planning` is available for QA phases. In implementation phases (`spw:exec`, `spw:checkpoint`), TDD is treated as required only when `[execution].tdd_default = true`.
 
+TDD template variants: `user-templates/variants/` contains `tasks-template.tdd-on.md` and `tasks-template.tdd-off.md`. The `[templates].tasks_template_mode` config key controls selection (`auto`, `on`, `off`). The SessionStart hook syncs the active variant on each session start.
+
 > **Legacy path:** SPW also checks `.spw/spw-config.toml` as a fallback if `.spec-workflow/spw-config.toml` is not found.
 
 ### CLI commands
@@ -93,11 +95,31 @@ Default SPW skills are copied into `.claude/skills/` during install (best effort
 | Command | Description |
 |---------|-------------|
 | `spw install` | Install SPW in the current project |
-| `spw update` | Self-update the CLI, clear cache, fetch latest kit |
-| `spw doctor` | Show current repo/ref/cache configuration |
+| `spw update` | Self-update the CLI binary from GitHub Releases |
+| `spw doctor` | Check SPW installation health (version, config, hooks, commands, workflows, skills) |
 | `spw status` | Print a quick kit and skills summary |
 | `spw skills` | Show installed/available/missing skills status |
 | `spw skills install [--elixir]` | Install general skills (or Elixir with flag) |
+
+<details>
+<summary>Config quick-reference (all sections)</summary>
+
+| Section | Key(s) | Description |
+|---------|--------|-------------|
+| `[statusline]` | `cache_ttl_seconds`, `base_branches`, `sticky_spec`, `show_token_cost` | StatusLine hook behavior |
+| `[templates]` | `sync_tasks_template_on_session_start`, `tasks_template_mode` | Task template variant selection |
+| `[safety]` | `backup_before_overwrite` | Backup before overwriting spec files |
+| `[verification]` | `inline_audit_max_iterations` | Max inline audit retries |
+| `[qa]` | `max_scenarios_per_wave` | QA execution wave sizing |
+| `[hooks]` | `verbose`, `recent_run_window_minutes`, `guard_prompt_require_spec`, `guard_paths`, `guard_wave_layout`, `guard_stop_handoff` | Per-guard hook toggles |
+| `[execution]` | `require_clean_worktree_for_wave_pass`, `manual_tasks_require_human_handoff`, `tdd_default` | Execution gates |
+| `[planning]` | `tasks_generation_strategy`, `max_wave_size` | Wave planning strategy |
+| `[post_mortem_memory]` | `enabled`, `max_entries_for_design` | Post-mortem lesson indexing |
+| `[agent_teams]` | `enabled`, `exclude_phases`, `require_delegate_mode` | Agent Teams toggle |
+
+See `.spec-workflow/spw-config.toml` comments for full documentation of each key.
+
+</details>
 | `spw finalizar <spec>` | Mark spec as completed, generate summary with YAML frontmatter |
 | `spw view <spec> [type]` | View spec artifacts in terminal or VS Code |
 | `spw search <query>` | Full-text search across indexed specs |
@@ -110,7 +132,7 @@ Default SPW skills are copied into `.claude/skills/` during install (best effort
 | `spw tools verify-task <spec> --task-id N [--check-commit]` | Verify task artifacts exist (impl log, optional commit check) |
 | `spw tools impl-log register <spec> --task-id N --wave NN --title T --files F --changes C` | Create implementation log for a completed task |
 | `spw tools impl-log check <spec> --task-ids 1,2,3` | Check if implementation logs exist for given task IDs |
-| `spw tools task-mark <spec> --task-id N --status done` | Update task checkbox status in tasks.md (`in-progress`, `done`, `blocked`) |
+| `spw tools task-mark <spec> --task-id N --status done` | Update task checkbox status in tasks.md (`done`, `in_progress`, `pending`) |
 | `spw tools wave-status <spec>` | Comprehensive wave state resolution (current wave, resume action, progress) |
 | `spw tools wave-update <spec> --wave NN --status pass --tasks 3,4,7` | Write wave summary and latest JSON files |
 | `spw tools dispatch-init-audit --run-dir R --type T` | Create nested audit directory inside a run (`_inline-audit/` or `_inline-checkpoint/`) |
@@ -141,7 +163,7 @@ SPW stores structured data in SQLite databases (pure Go driver, no CGO, WAL mode
 ## Command entry points
 
 - `spw:prd` -> zero-to-PRD requirements flow
-- `spw:plan` -> design/tasks planning from existing requirements (with MCP approval gate)
+- `spw:plan` -> design/tasks planning meta-orchestrator: chains design-research → design-draft → tasks-plan → tasks-check (with MCP approval gate)
 - `spw:tasks-plan` -> config-driven task generation (`rolling-wave` or `all-at-once`)
 - `spw:exec` -> batch execution with checkpoints
 - `spw:checkpoint` -> quality gate report (PASS/BLOCKED)
