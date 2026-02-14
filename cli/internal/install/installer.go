@@ -205,8 +205,8 @@ func RunGlobal(opts Options) error {
 		return fmt.Errorf("writing settings: %w", err)
 	}
 
-	// 4. Install default skills → ~/.claude/skills/
-	InstallDefaultSkills(home)
+	// 4. Install general skills → ~/.claude/skills/ (Elixir skills require --elixir flag)
+	InstallGeneralSkills(home)
 
 	// 5. Overlay symlinks → noop by default (project controls activation)
 	WriteOverlaySymlinks(home, false)

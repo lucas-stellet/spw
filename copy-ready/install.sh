@@ -402,10 +402,10 @@ cmd_install_global() {
     fi
   fi
 
-  # 4. Skills → ~/.claude/skills/
+  # 4. General skills only → ~/.claude/skills/ (Elixir skills require --elixir flag)
   local saved_target_root="${TARGET_ROOT}"
   TARGET_ROOT="${global_root}"
-  install_default_skills
+  install_skill_set "general" "${GENERAL_SKILLS[@]}"
   TARGET_ROOT="${saved_target_root}"
 
   # 5. Overlay symlinks → noop by default
