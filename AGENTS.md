@@ -31,7 +31,7 @@ Note:
 2. Canonical runtime config: `.spec-workflow/spw-config.toml` (with legacy fallback to `.spw/spw-config.toml`).
 3. Keep artifact locality: research/planning artifacts stay inside the active spec; supporting material goes in `.spec-workflow/specs/<spec-name>/research/`.
 4. Approval is MCP-only: check status via MCP; never substitute with manual chat approval.
-5. Preserve command contracts (`spw:prd`, `spw:plan`, `spw:tasks-plan`, `spw:exec`, `spw:checkpoint`, `spw:status`, `spw:post-mortem`, `spw:qa`, `spw:qa-check`, `spw:qa-exec`) and update docs if behavior changes.
+5. Preserve command contracts (`spw:prd`, `spw:plan`, `spw:tasks-plan`, `spw:exec`, `spw:checkpoint`, `spw:status`, `spw:post-mortem`, `spw:qa`, `spw:qa-check`, `spw:qa-exec`, `spw finalizar`, `spw view`, `spw search`, `spw summary`) and update docs if behavior changes.
 6. Thin-orchestrator pattern is mandatory: `commands/` are thin wrappers (max 60 lines) and detailed logic lives in `workflows/`.
 7. In `spw:tasks-plan`, maintain semantics + precedence:
    - `--mode initial`: generates only the initial executable wave
@@ -111,6 +111,13 @@ Spec-workflow files are marked as `linguist-generated` so GitHub collapses them 
 45. Wave state resolution uses `spw tools wave-status --spec <name>` for deterministic state (replaces AI interpretation of wave directories).
 46. Standalone check commands (`spw:tasks-check`, `spw:checkpoint`, `spw:qa-check`) remain available for re-validation after manual fixes, CI/CD pipelines, or when inline audit recommends them.
 
+## Local Storage (mandatory)
+
+47. `spec.db` (per-spec SQLite, WAL mode) is created automatically by `spw finalizar`. The dispatch-handoff dual-writes artifacts into the DB when the store is available.
+48. `.spw-index.db` (global FTS5 index) is updated by `spw finalizar` when registering a completed spec. `spw search` reads only from this index.
+49. The 3 MCP-managed files (`requirements.md`, `design.md`, `tasks.md`) remain on disk as source of truth for the dashboard. The DB is complementary, not a substitute.
+50. `spw finalizar` must be executed after completion of all waves and QA. It generates a completion summary with YAML frontmatter and indexes the spec in the global index.
+
 ## File-first comms (do not break)
 
 For commands that require file-based handoff, ensure the following files are present:
@@ -135,6 +142,13 @@ Absence of these files must result in `BLOCKED`.
 - `echo '{"cwd":"'"$(pwd)"'","tool_input":{"file_path":"README.md"}}' | spw hook guard-paths`
 - `echo '{}' | spw hook guard-stop`
 - `echo '{}' | spw hook session-start`
+- `spw finalizar --help`
+- `spw view --help`
+- `spw search --help`
+- `spw summary --help`
+- `spw tasks state --help`
+- `spw wave state --help`
+- `spw spec list --help`
 
 ## Documentation sync
 
@@ -145,3 +159,4 @@ When changing behavior, defaults, or guardrails, update in the same patch:
 - `docs/SPW-WORKFLOW.md` (pointer)
 - `hooks/README.md` (pointer)
 - `copy-ready/README.md` (pointer)
+- `.claude/docs/spw-cli-reference.md` (CLI reference)
