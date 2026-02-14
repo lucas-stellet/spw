@@ -1,5 +1,5 @@
 ---
-name: spw:post-mortem
+name: oraculo:post-mortem
 description: Analyze post-spec commits and generate reusable process learnings
 argument-hint: "<spec-name> [--since-commit <sha>] [--until-ref <ref>] [--tags <tag1,tag2>] [--topic <short-subject>]"
 ---
@@ -9,15 +9,15 @@ category: pipeline
 subcategory: synthesis
 phase: post-mortem
 comms_path: post-mortem/_comms
-policy: @.claude/workflows/spw/shared/dispatch-pipeline.md
+policy: @.claude/workflows/oraculo/shared/dispatch-pipeline.md
 </dispatch_pattern>
 
 <shared_policies>
-- @.claude/workflows/spw/shared/config-resolution.md
-- @.claude/workflows/spw/shared/file-handoff.md
-- @.claude/workflows/spw/shared/resume-policy.md
-- @.claude/workflows/spw/shared/skills-policy.md
-- @.claude/workflows/spw/shared/approval-reconciliation.md
+- @.claude/workflows/oraculo/shared/config-resolution.md
+- @.claude/workflows/oraculo/shared/file-handoff.md
+- @.claude/workflows/oraculo/shared/resume-policy.md
+- @.claude/workflows/oraculo/shared/skills-policy.md
+- @.claude/workflows/oraculo/shared/approval-reconciliation.md
 </shared_policies>
 
 <objective>
@@ -91,12 +91,12 @@ comms:
      ============================================================ -->
 
 <when_to_use>
-- Use after `spw:exec` + `spw:checkpoint` are done and follow-up commits changed behavior.
+- Use after `oraculo:exec` + `oraculo:checkpoint` are done and follow-up commits changed behavior.
 - Use when final delivery required manual corrections that were not captured by PRD/design/tasks/review/tests.
 </when_to_use>
 
 <model_policy>
-Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
+Resolve models from `.spec-workflow/oraculo.toml` `[models]`:
 - complex_reasoning -> default `opus`
 - implementation -> default `sonnet`
 </model_policy>
@@ -146,7 +146,7 @@ Post-mortem report must include:
      ============================================================ -->
 
 <agent_teams_policy>
-@.claude/workflows/spw/overlays/active/post-mortem.md
+@.claude/workflows/oraculo/overlays/active/post-mortem.md
 </agent_teams_policy>
 
 <!-- ============================================================
@@ -170,11 +170,11 @@ On success:
 - Confirm report path and analyzed commit range.
 - Confirm index update path.
 - Recommend next command:
-  - if planning a new cycle: `spw:prd <spec-name>` or `spw:plan <spec-name>`
-  - if only sharing learning: `spw:status <spec-name>`
+  - if planning a new cycle: `oraculo:prd <spec-name>` or `oraculo:plan <spec-name>`
+  - if only sharing learning: `oraculo:status <spec-name>`
 
 If blocked:
 - Show missing evidence (commit range ambiguity, missing artifacts, or missing subagent outputs).
 - If waiting on resume decision, ask user to choose `continue-unfinished` or `delete-and-restart`, then rerun.
-- Provide rerun command: `spw:post-mortem <spec-name> [--since-commit <sha>]`.
+- Provide rerun command: `oraculo:post-mortem <spec-name> [--since-commit <sha>]`.
 </completion_guidance>

@@ -17,14 +17,14 @@ import (
 func newUpdateCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "update",
-		Short: "Self-update spw binary from GitHub Releases",
+		Short: "Self-update oraculo binary from GitHub Releases",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runUpdate()
 		},
 	}
 }
 
-const releasesAPI = "https://api.github.com/repos/lucas-stellet/spw/releases/latest"
+const releasesAPI = "https://api.github.com/repos/lucas-stellet/oraculo/releases/latest"
 
 type ghRelease struct {
 	TagName string    `json:"tag_name"`
@@ -37,7 +37,7 @@ type ghAsset struct {
 }
 
 func runUpdate() error {
-	fmt.Println("[spw] Checking for updates...")
+	fmt.Println("[oraculo] Checking for updates...")
 
 	resp, err := http.Get(releasesAPI)
 	if err != nil {
@@ -55,11 +55,11 @@ func runUpdate() error {
 	}
 
 	if release.TagName == "" {
-		fmt.Println("[spw] No releases found.")
+		fmt.Println("[oraculo] No releases found.")
 		return nil
 	}
 
-	fmt.Printf("[spw] Latest release: %s\n", release.TagName)
+	fmt.Printf("[oraculo] Latest release: %s\n", release.TagName)
 
 	// Find matching asset
 	goos := runtime.GOOS
@@ -78,7 +78,7 @@ func runUpdate() error {
 		return fmt.Errorf("no binary found for %s/%s in release %s", goos, goarch, release.TagName)
 	}
 
-	fmt.Printf("[spw] Downloading %s/%s binary...\n", goos, goarch)
+	fmt.Printf("[oraculo] Downloading %s/%s binary...\n", goos, goarch)
 
 	self, err := os.Executable()
 	if err != nil {
@@ -95,7 +95,7 @@ func runUpdate() error {
 		return fmt.Errorf("download returned %d", dlResp.StatusCode)
 	}
 
-	tmp, err := os.CreateTemp("", "spw-update-*.tar.gz")
+	tmp, err := os.CreateTemp("", "oraculo-update-*.tar.gz")
 	if err != nil {
 		return fmt.Errorf("creating temp file: %w", err)
 	}
@@ -112,7 +112,7 @@ func runUpdate() error {
 		return fmt.Errorf("extracting update: %w", err)
 	}
 
-	fmt.Printf("[spw] Updated: %s\n", self)
+	fmt.Printf("[oraculo] Updated: %s\n", self)
 	return nil
 }
 
@@ -133,13 +133,13 @@ func extractAndReplace(tarPath, destPath string) error {
 	for {
 		hdr, err := tr.Next()
 		if err == io.EOF {
-			return fmt.Errorf("spw binary not found in tarball")
+			return fmt.Errorf("oraculo binary not found in tarball")
 		}
 		if err != nil {
 			return err
 		}
-		if hdr.Name == "spw" {
-			tmp, err := os.CreateTemp("", "spw-bin-*")
+		if hdr.Name == "oraculo" {
+			tmp, err := os.CreateTemp("", "oraculo-bin-*")
 			if err != nil {
 				return err
 			}

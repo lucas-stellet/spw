@@ -1,7 +1,7 @@
 package wave
 
 import (
-	"github.com/lucas-stellet/spw/internal/specdir"
+	"github.com/lucas-stellet/oraculo/internal/specdir"
 )
 
 // ScanWaves reads all wave directories and returns their states.

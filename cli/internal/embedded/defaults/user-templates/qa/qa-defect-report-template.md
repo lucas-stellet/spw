@@ -1,10 +1,10 @@
 ---
-spw:
+oraculo:
   schema: 1
   spec: "<spec-name>"
   doc: "qa-defect-report"
   status: "draft"
-  source: "spw:qa-exec"
+  source: "oraculo:qa-exec"
   updated_at: "YYYY-MM-DD"
   inputs:
     - ".spec-workflow/specs/<spec-name>/qa/QA-EXECUTION-REPORT.md"

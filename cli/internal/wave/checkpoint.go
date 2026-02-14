@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/lucas-stellet/spw/internal/specdir"
+	"github.com/lucas-stellet/oraculo/internal/specdir"
 )
 
 var runNumRe = regexp.MustCompile(`^run-(\d+)$`)

@@ -1,10 +1,10 @@
 ---
-spw:
+oraculo:
   schema: 1
   spec: "<spec-name>"
   doc: "qa-test-plan"
   status: "draft"
-  source: "spw:qa"
+  source: "oraculo:qa"
   updated_at: "YYYY-MM-DD"
   inputs:
     - ".spec-workflow/specs/<spec-name>/requirements.md"

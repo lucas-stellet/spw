@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/lucas-stellet/spw/internal/config"
-	"github.com/lucas-stellet/spw/internal/workspace"
+	"github.com/lucas-stellet/oraculo/internal/config"
+	"github.com/lucas-stellet/oraculo/internal/workspace"
 )
 
 // Dispatch routes a hook event name to the appropriate handler.
@@ -51,9 +51,9 @@ func newHookContext() hookContext {
 // emitViolation prints a violation message to stderr and exits.
 // In block mode, exits 2; in warn mode, exits 0.
 func emitViolation(cfg config.HooksConfig, title string, details []string) {
-	fmt.Fprintf(os.Stderr, "[spw-hook] %s\n", title)
+	fmt.Fprintf(os.Stderr, "[oraculo-hook] %s\n", title)
 	for _, d := range details {
-		fmt.Fprintf(os.Stderr, "[spw-hook] - %s\n", d)
+		fmt.Fprintf(os.Stderr, "[oraculo-hook] - %s\n", d)
 	}
 	if cfg.EnforcementMode == "block" {
 		os.Exit(2)
@@ -64,6 +64,6 @@ func emitViolation(cfg config.HooksConfig, title string, details []string) {
 // emitInfo prints a diagnostic message to stderr if verbose is on.
 func emitInfo(cfg config.HooksConfig, message string) {
 	if cfg.Verbose {
-		fmt.Fprintf(os.Stderr, "[spw-hook] %s\n", message)
+		fmt.Fprintf(os.Stderr, "[oraculo-hook] %s\n", message)
 	}
 }

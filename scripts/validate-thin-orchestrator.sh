@@ -9,10 +9,10 @@ fail() {
   exit 1
 }
 
-base_cmd_dir="commands/spw"
-base_wf_dir="workflows/spw"
-team_overlay_dir="workflows/spw/overlays/teams"
-active_overlay_dir="workflows/spw/overlays/active"
+base_cmd_dir="commands/oraculo"
+base_wf_dir="workflows/oraculo"
+team_overlay_dir="workflows/oraculo/overlays/teams"
+active_overlay_dir="workflows/oraculo/overlays/active"
 
 for file in "$base_cmd_dir"/*.md; do
   [ -f "$file" ] || continue
@@ -26,7 +26,7 @@ for file in "$base_cmd_dir"/*.md; do
     fail "Missing <execution_context> in wrapper: $file"
   fi
 
-  if ! rg -q "@\\.claude/workflows/spw/" "$file"; then
+  if ! rg -q "@\\.claude/workflows/oraculo/" "$file"; then
     fail "Wrapper does not reference workflow path: $file"
   fi
 
@@ -58,20 +58,20 @@ done
 
 # Mirror checks
 for dir in \
-  "commands/spw copy-ready/.claude/commands/spw"; do
+  "commands/oraculo copy-ready/.claude/commands/oraculo"; do
   src="${dir%% *}"
   dst="${dir##* }"
   diff -rq "$src" "$dst" >/dev/null || fail "Mirror mismatch: $src <-> $dst"
 done
 
 # Workflow mirror check (exclude overlays/active since symlink targets may differ)
-diff -rq --exclude=active "$base_wf_dir" "copy-ready/.claude/workflows/spw" >/dev/null \
-  || fail "Mirror mismatch: $base_wf_dir <-> copy-ready/.claude/workflows/spw"
+diff -rq --exclude=active "$base_wf_dir" "copy-ready/.claude/workflows/oraculo" >/dev/null \
+  || fail "Mirror mismatch: $base_wf_dir <-> copy-ready/.claude/workflows/oraculo"
 
 # Overlay symlink mirror: verify copy-ready active symlinks match source
 for link in "$active_overlay_dir"/*.md; do
   name="$(basename "$link")"
-  mirror_link="copy-ready/.claude/workflows/spw/overlays/active/$name"
+  mirror_link="copy-ready/.claude/workflows/oraculo/overlays/active/$name"
   [ -L "$mirror_link" ] || fail "Mirror missing symlink: $mirror_link"
   src_target="$(readlink "$link")"
   dst_target="$(readlink "$mirror_link")"
@@ -90,7 +90,7 @@ for pair in \
 done
 
 # Verify dispatch-implementation.md exists in both locations
-[ -f "workflows/spw/shared/dispatch-implementation.md" ] || fail "Missing: workflows/spw/shared/dispatch-implementation.md"
-[ -f "copy-ready/.claude/workflows/spw/shared/dispatch-implementation.md" ] || fail "Missing: copy-ready/.claude/workflows/spw/shared/dispatch-implementation.md"
+[ -f "workflows/oraculo/shared/dispatch-implementation.md" ] || fail "Missing: workflows/oraculo/shared/dispatch-implementation.md"
+[ -f "copy-ready/.claude/workflows/oraculo/shared/dispatch-implementation.md" ] || fail "Missing: copy-ready/.claude/workflows/oraculo/shared/dispatch-implementation.md"
 
 echo "[thin-orchestrator] OK"

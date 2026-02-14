@@ -1,5 +1,5 @@
 ---
-name: spw:status
+name: oraculo:status
 description: Summarize current spec stage, blockers, and exact next commands
 argument-hint: "[<spec-name>] [--all false|true]"
 ---
@@ -11,13 +11,13 @@ Show where the workflow stopped and what to run next, with explicit approval/exe
 <shared_policies>
 # Config Resolution
 
-Canonical runtime config path is `.spec-workflow/spw-config.toml`.
+Canonical runtime config path is `.spec-workflow/oraculo.toml`.
 
 Transitional compatibility:
-- If `.spec-workflow/spw-config.toml` is missing, fallback to `.spw/spw-config.toml`.
+- If `.spec-workflow/oraculo.toml` is missing, fallback to `.oraculo/oraculo.toml`.
 
 When shell logic is required, prefer:
-- `spw tools config-get <section.key> --default <value> [--raw]`
+- `oraculo tools config-get <section.key> --default <value> [--raw]`
 
 This keeps workflow behavior stable and avoids hardcoded path drift.
 
@@ -76,7 +76,7 @@ When `spec-status` is incomplete or ambiguous:
 </shared_policies>
 
 <model_policy>
-Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
+Resolve models from `.spec-workflow/oraculo.toml` `[models]`:
 - complex_reasoning -> default `opus`
 - implementation -> default `sonnet`
 </model_policy>
@@ -130,7 +130,7 @@ For each document (`requirements`, `design`, `tasks`):
    - wave comms state from:
      - `.spec-workflow/specs/<spec-name>/execution/waves/wave-<NN>/_latest.json`
      - `.spec-workflow/specs/<spec-name>/execution/waves/wave-<NN>/_wave-summary.md`
-   - legacy comms paths present (warn user to re-run spec with current SPW):
+   - legacy comms paths present (warn user to re-run spec with current Oraculo):
      - `.spec-workflow/specs/<spec-name>/_agent-comms/` (pre-2.0 layout; current layout uses `<phase>/_comms/`)
 3. Dispatch `approval-auditor`:
    - call `spec-status`
@@ -165,7 +165,7 @@ If status is clear:
 - Recommend exactly one immediate next command.
 
 If blocked:
-- Show exact unblock action and rerun command (`spw:status <spec-name>`).
+- Show exact unblock action and rerun command (`oraculo:status <spec-name>`).
 
 If multiple specs:
 - Recommend explicit spec target in next command (`<spec-name>`).

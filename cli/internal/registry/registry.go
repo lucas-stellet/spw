@@ -17,12 +17,12 @@ type CommandMeta struct {
 	Subcategory string   // dispatch subcategory (e.g. "research", "code", "implementation")
 	CommsPath   string   // template path with {wave} placeholder for wave-aware commands
 	Artifacts   []string // additional dirs to create under spec dir (e.g. "execution/_implementation-logs")
-	Policy      string   // policy @-reference (e.g. "@.claude/workflows/spw/shared/dispatch-wave.md")
+	Policy      string   // policy @-reference (e.g. "@.claude/workflows/oraculo/shared/dispatch-wave.md")
 	WaveAware   bool     // derived: true when CommsPath contains "{wave}"
 }
 
 // DispatchPolicy returns the dispatch policy identifier derived from the policy reference.
-// e.g. "@.claude/workflows/spw/shared/dispatch-wave.md" → "dispatch-wave"
+// e.g. "@.claude/workflows/oraculo/shared/dispatch-wave.md" → "dispatch-wave"
 func (m CommandMeta) DispatchPolicy() string {
 	base := filepath.Base(m.Policy)
 	return strings.TrimSuffix(base, filepath.Ext(base))

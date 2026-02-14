@@ -1,5 +1,5 @@
 ---
-name: spw:design-research
+name: oraculo:design-research
 description: Subagent-driven technical research to prepare design.md
 argument-hint: "<spec-name> [--focus <topic>] [--web-depth low|medium|high]"
 ---
@@ -97,13 +97,13 @@ Pipeline commands may inject logic at these points:
 <shared_policies>
 # Config Resolution
 
-Canonical runtime config path is `.spec-workflow/spw-config.toml`.
+Canonical runtime config path is `.spec-workflow/oraculo.toml`.
 
 Transitional compatibility:
-- If `.spec-workflow/spw-config.toml` is missing, fallback to `.spw/spw-config.toml`.
+- If `.spec-workflow/oraculo.toml` is missing, fallback to `.oraculo/oraculo.toml`.
 
 When shell logic is required, prefer:
-- `spw tools config-get <section.key> --default <value> [--raw]`
+- `oraculo tools config-get <section.key> --default <value> [--raw]`
 
 This keeps workflow behavior stable and avoids hardcoded path drift.
 
@@ -245,7 +245,7 @@ Apply `<prototype_url_policy>`: if scout target is an SPA or known prototype dom
 </preconditions>
 
 <model_policy>
-Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
+Resolve models from `.spec-workflow/oraculo.toml` `[models]`:
 - web_research -> default `haiku`
 - complex_reasoning -> default `opus`
 - implementation -> default `sonnet`
@@ -254,7 +254,7 @@ Multimodal override: when a `web-pattern-scout-*` must analyze images (screensho
 </model_policy>
 
 <post_mortem_memory>
-Resolve from `.spec-workflow/spw-config.toml` `[post_mortem_memory]`:
+Resolve from `.spec-workflow/oraculo.toml` `[post_mortem_memory]`:
 - `enabled` (default `true`)
 - `max_entries_for_design` (default `5`)
 
@@ -283,7 +283,7 @@ When a web scout fetches a URL that returns an SPA shell (minimal HTML with only
 </prototype_url_policy>
 
 <skills_policy>
-Resolve skill policy from `.spec-workflow/spw-config.toml`:
+Resolve skill policy from `.spec-workflow/oraculo.toml`:
 - `[skills].enabled`
 - `[skills.design].required`
 - `[skills.design].optional`
@@ -323,10 +323,10 @@ Skill gate (mandatory when `skills.enabled=true`):
 <completion_guidance>
 On success:
 - Confirm output path: `.spec-workflow/specs/<spec-name>/design/DESIGN-RESEARCH.md`.
-- Recommend next command: `spw:design-draft <spec-name>`.
+- Recommend next command: `oraculo:design-draft <spec-name>`.
 
 If blocked:
 - List missing inputs (requirements approval, steering docs, source failures).
 - If waiting on resume decision, ask user to choose `continue-unfinished` or `delete-and-restart`, then rerun.
-- Provide rerun command: `spw:design-research <spec-name>`.
+- Provide rerun command: `oraculo:design-research <spec-name>`.
 </completion_guidance>

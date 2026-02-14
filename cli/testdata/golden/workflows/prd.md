@@ -1,5 +1,5 @@
 ---
-name: spw:prd
+name: oraculo:prd
 description: Zero-to-PRD discovery flow with subagents to generate requirements.md
 argument-hint: "<spec-name> [--source <url-or-file.md>]"
 ---
@@ -97,13 +97,13 @@ Pipeline commands may inject logic at these points:
 <shared_policies>
 # Config Resolution
 
-Canonical runtime config path is `.spec-workflow/spw-config.toml`.
+Canonical runtime config path is `.spec-workflow/oraculo.toml`.
 
 Transitional compatibility:
-- If `.spec-workflow/spw-config.toml` is missing, fallback to `.spw/spw-config.toml`.
+- If `.spec-workflow/oraculo.toml` is missing, fallback to `.oraculo/oraculo.toml`.
 
 When shell logic is required, prefer:
-- `spw tools config-get <section.key> --default <value> [--raw]`
+- `oraculo tools config-get <section.key> --default <value> [--raw]`
 
 This keeps workflow behavior stable and avoids hardcoded path drift.
 
@@ -289,14 +289,14 @@ If resuming, always rerun `prd-critic` before final approval flow.
 </when_to_use>
 
 <model_policy>
-Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
+Resolve models from `.spec-workflow/oraculo.toml` `[models]`:
 - web_research -> default `haiku`
 - complex_reasoning -> default `opus`
 - implementation -> default `sonnet`
 </model_policy>
 
 <post_mortem_memory>
-Resolve from `.spec-workflow/spw-config.toml` `[post_mortem_memory]`:
+Resolve from `.spec-workflow/oraculo.toml` `[post_mortem_memory]`:
 - `enabled` (default `true`)
 - `max_entries_for_design` (default `5`)
 
@@ -447,12 +447,12 @@ Resolve requirements approval with MCP-first reconciliation:
 <completion_guidance>
 On success:
 - Confirm PRD approval status and show artifact paths.
-- Recommend next command: `spw:plan <spec-name>`.
-- Recommend running `/clear` before `spw:plan` to keep context clean.
+- Recommend next command: `oraculo:plan <spec-name>`.
+- Recommend running `/clear` before `oraculo:plan` to keep context clean.
 
 If blocked:
 - Show the blocking reason (approval pending/rejected, missing source context, quality gate failure).
 - If blocked by revision ambiguity, show pending clarification questions and do not edit artifacts until answered.
 - If waiting on resume decision, ask user to choose `continue-unfinished` or `delete-and-restart`, then rerun.
-- Provide exact fix action and the command to rerun: `spw:prd <spec-name>`.
+- Provide exact fix action and the command to rerun: `oraculo:prd <spec-name>`.
 </completion_guidance>

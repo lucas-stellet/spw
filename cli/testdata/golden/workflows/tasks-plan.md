@@ -1,5 +1,5 @@
 ---
-name: spw:tasks-plan
+name: oraculo:tasks-plan
 description: Subagent-driven tasks.md generation for waves, parallelism, and per-task TDD
 argument-hint: "<spec-name> [--mode initial|next-wave] [--max-wave-size <N>] [--allow-no-test-exception true|false]"
 ---
@@ -97,13 +97,13 @@ Pipeline commands may inject logic at these points:
 <shared_policies>
 # Config Resolution
 
-Canonical runtime config path is `.spec-workflow/spw-config.toml`.
+Canonical runtime config path is `.spec-workflow/oraculo.toml`.
 
 Transitional compatibility:
-- If `.spec-workflow/spw-config.toml` is missing, fallback to `.spw/spw-config.toml`.
+- If `.spec-workflow/oraculo.toml` is missing, fallback to `.oraculo/oraculo.toml`.
 
 When shell logic is required, prefer:
-- `spw tools config-get <section.key> --default <value> [--raw]`
+- `oraculo tools config-get <section.key> --default <value> [--raw]`
 
 This keeps workflow behavior stable and avoids hardcoded path drift.
 
@@ -239,7 +239,7 @@ comms:
      ============================================================ -->
 
 <planning_defaults>
-Resolve planning defaults from `.spec-workflow/spw-config.toml` `[planning]`:
+Resolve planning defaults from `.spec-workflow/oraculo.toml` `[planning]`:
 - `tasks_generation_strategy` (`rolling-wave|all-at-once`, default `rolling-wave`)
 - `max_wave_size` (default `3`)
 
@@ -269,13 +269,13 @@ If `--mode` is omitted:
 </mode_policy>
 
 <model_policy>
-Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
+Resolve models from `.spec-workflow/oraculo.toml` `[models]`:
 - complex_reasoning -> default `opus`
 - implementation -> default `sonnet`
 </model_policy>
 
 <post_mortem_memory>
-Resolve from `.spec-workflow/spw-config.toml` `[post_mortem_memory]`:
+Resolve from `.spec-workflow/oraculo.toml` `[post_mortem_memory]`:
 - `enabled` (default `true`)
 - `max_entries_for_design` (default `5`)
 
@@ -290,7 +290,7 @@ If index/report files are missing, continue with warning (non-blocking).
 </post_mortem_memory>
 
 <skills_policy>
-Resolve skill policy from `.spec-workflow/spw-config.toml`:
+Resolve skill policy from `.spec-workflow/oraculo.toml`:
 - `[skills].enabled`
 - `[skills.design].required`
 - `[skills.design].optional`
@@ -387,13 +387,13 @@ On success:
 - Confirm effective planning mode (`initial`, `next-wave`, or `all-at-once`).
 - Confirm effective `max_wave_size` source (CLI override or `[planning].max_wave_size`).
 - Confirm approval request status for tasks.
-- Recommend next command: `spw:tasks-check <spec-name>`.
+- Recommend next command: `oraculo:tasks-check <spec-name>`.
 
 If blocked:
 - Show mode/precondition/decomposition/dependency/conflict/test-policy failures.
 - If waiting on resume decision, ask user to choose `continue-unfinished` or `delete-and-restart`, then rerun.
 - Provide rerun command:
-  - default from config: `spw:tasks-plan <spec-name>`
-  - explicit rolling override: `spw:tasks-plan <spec-name> --mode initial --max-wave-size <N>`
-  - explicit rolling append: `spw:tasks-plan <spec-name> --mode next-wave --max-wave-size <N>`.
+  - default from config: `oraculo:tasks-plan <spec-name>`
+  - explicit rolling override: `oraculo:tasks-plan <spec-name> --mode initial --max-wave-size <N>`
+  - explicit rolling append: `oraculo:tasks-plan <spec-name> --mode next-wave --max-wave-size <N>`.
 </completion_guidance>

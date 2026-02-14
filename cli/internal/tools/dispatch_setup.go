@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/lucas-stellet/spw/internal/config"
-	"github.com/lucas-stellet/spw/internal/store"
+	"github.com/lucas-stellet/oraculo/internal/config"
+	"github.com/lucas-stellet/oraculo/internal/store"
 )
 
 func boolToOnOff(b bool) string {
@@ -58,7 +58,7 @@ func DispatchSetup(cwd, subagentName, runDir, modelAlias string, raw bool) {
 <!-- Fill file paths here — PATHS ONLY, never paste content -->
 
 ## Config Context
-<!-- Auto-resolved from spw-config.toml by dispatch-setup -->
+<!-- Auto-resolved from oraculo.toml by dispatch-setup -->
 - tdd_default: %s
 - max_wave_size: %d
 - require_test_per_task: true

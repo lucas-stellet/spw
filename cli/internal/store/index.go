@@ -9,7 +9,7 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-// IndexStore wraps the global cross-spec index database (.spw-index.db).
+// IndexStore wraps the global cross-spec index database (.oraculo-index.db).
 type IndexStore struct {
 	db *sql.DB
 }
@@ -58,9 +58,9 @@ CREATE TRIGGER IF NOT EXISTS documents_au AFTER UPDATE ON documents BEGIN
 END;
 `
 
-// OpenIndex opens (or creates) the global index database at .spec-workflow/.spw-index.db.
+// OpenIndex opens (or creates) the global index database at .spec-workflow/.oraculo-index.db.
 func OpenIndex(workspaceRoot string) (*IndexStore, error) {
-	dbPath := filepath.Join(workspaceRoot, ".spec-workflow", ".spw-index.db")
+	dbPath := filepath.Join(workspaceRoot, ".spec-workflow", ".oraculo-index.db")
 	db, err := sql.Open("sqlite", dbPath)
 	if err != nil {
 		return nil, fmt.Errorf("store: open index %s: %w", dbPath, err)

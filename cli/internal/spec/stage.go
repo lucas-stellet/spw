@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/lucas-stellet/spw/internal/specdir"
+	"github.com/lucas-stellet/oraculo/internal/specdir"
 )
 
 // ClassifyStage determines the current lifecycle stage of a spec based on

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/lucas-stellet/spw/internal/store"
-	"github.com/lucas-stellet/spw/internal/tools"
+	"github.com/lucas-stellet/oraculo/internal/store"
+	"github.com/lucas-stellet/oraculo/internal/tools"
 	"github.com/spf13/cobra"
 )
 
@@ -14,7 +14,7 @@ func newSearchCmd() *cobra.Command {
 		Use:   "search <query>",
 		Short: "Full-text search across indexed specs",
 		Long: `Search across all finalized spec documents using FTS5 full-text search.
-Requires specs to have been indexed via "spw finalizar".`,
+Requires specs to have been indexed via "oraculo finalizar".`,
 		Args: cobra.ExactArgs(1),
 		Run:  runSearch,
 	}
@@ -37,9 +37,9 @@ func runSearch(cmd *cobra.Command, args []string) {
 	ix, err := store.OpenIndex(cwd)
 	if err != nil {
 		if raw {
-			tools.Fail("index not found: run 'spw finalizar <spec>' to index specs first", raw)
+			tools.Fail("index not found: run 'oraculo finalizar <spec>' to index specs first", raw)
 		}
-		fmt.Fprintln(os.Stderr, "No search index found. Run 'spw finalizar <spec>' to index specs first.")
+		fmt.Fprintln(os.Stderr, "No search index found. Run 'oraculo finalizar <spec>' to index specs first.")
 		os.Exit(1)
 	}
 	defer ix.Close()

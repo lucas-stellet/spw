@@ -1,5 +1,5 @@
 ---
-name: spw:qa
+name: oraculo:qa
 description: Build a QA validation plan for a spec using Playwright MCP, Bruno CLI, or hybrid strategy
 argument-hint: "<spec-name> [--focus <what-to-validate>] [--tool auto|playwright|bruno|hybrid]"
 ---
@@ -97,13 +97,13 @@ Pipeline commands may inject logic at these points:
 <shared_policies>
 # Config Resolution
 
-Canonical runtime config path is `.spec-workflow/spw-config.toml`.
+Canonical runtime config path is `.spec-workflow/oraculo.toml`.
 
 Transitional compatibility:
-- If `.spec-workflow/spw-config.toml` is missing, fallback to `.spw/spw-config.toml`.
+- If `.spec-workflow/oraculo.toml` is missing, fallback to `.oraculo/oraculo.toml`.
 
 When shell logic is required, prefer:
-- `spw tools config-get <section.key> --default <value> [--raw]`
+- `oraculo tools config-get <section.key> --default <value> [--raw]`
 
 This keeps workflow behavior stable and avoids hardcoded path drift.
 
@@ -241,7 +241,7 @@ Skip this subagent if tool selection resolved to `playwright`.
 2. Verify all scenarios have concrete identifiers (per § concrete_selector_policy).
    Mark scenarios missing selectors as INCOMPLETE — does not block plan generation.
 3. Write `<run-dir>/_handoff.md` linking evidence, tool rationale, unresolved risks.
-4. Recommend next: `spw:qa-check <spec-name>` then `/clear`.
+4. Recommend next: `oraculo:qa-check <spec-name>` then `/clear`.
 </post_pipeline>
 
 </extensions>
@@ -325,7 +325,7 @@ Skill gate:
 <completion_guidance>
 On success:
 - Confirm output path: `.spec-workflow/specs/<spec-name>/qa/QA-TEST-PLAN.md`.
-- Recommend next command: `spw:qa-check <spec-name>` to validate selectors and traceability before execution.
+- Recommend next command: `oraculo:qa-check <spec-name>` to validate selectors and traceability before execution.
 - Recommend running `/clear` before validation.
 
 On BLOCKED:

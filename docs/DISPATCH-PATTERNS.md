@@ -1,6 +1,6 @@
 # Dispatch Patterns
 
-SPW commands follow a **thin-dispatch** model: the orchestrator (main agent) never accumulates subagent output in its own context. It dispatches subagents, reads only `status.json` after each, and passes filesystem paths — not content — between stages. This document defines the three dispatch categories, their subcategories, and the rules that apply to all of them.
+Oraculo commands follow a **thin-dispatch** model: the orchestrator (main agent) never accumulates subagent output in its own context. It dispatches subagents, reads only `status.json` after each, and passes filesystem paths — not content — between stages. This document defines the three dispatch categories, their subcategories, and the rules that apply to all of them.
 
 ## Core Rules (all categories)
 
@@ -10,7 +10,7 @@ SPW commands follow a **thin-dispatch** model: the orchestrator (main agent) nev
 4. **No codebase assertions.** Briefs instruct subagents to verify codebase facts rather than asserting them. Orchestrator findings go to `_orchestrator-context/`.
 5. **Synthesizers read from filesystem.** The final subagent in any command (synthesizer, aggregator, writer) receives a brief listing all relevant report paths and reads them directly from disk.
 6. **File-first handoff contract unchanged.** Every subagent writes `brief.md` (by orchestrator), `report.md`, and `status.json`. Every run writes `_handoff.md`.
-7. **CLI-enforced dispatch.** Use `spw tools dispatch-init`, `dispatch-setup`, `dispatch-read-status`, and `dispatch-handoff` to create directories and validate structure. Never create run dirs or subagent dirs manually.
+7. **CLI-enforced dispatch.** Use `oraculo tools dispatch-init`, `dispatch-setup`, `dispatch-read-status`, and `dispatch-handoff` to create directories and validate structure. Never create run dirs or subagent dirs manually.
 
 ---
 
@@ -150,7 +150,7 @@ Produce code changes. Require quality gates between waves and git hygiene.
 
 **Distinguishing traits:**
 - Side effects: code changes, git commits.
-- Mandatory checkpoint (`spw:checkpoint`) between waves.
+- Mandatory checkpoint (`oraculo:checkpoint`) between waves.
 - User authorization gate between waves (configurable).
 - Wave size from `[planning].max_wave_size`.
 
@@ -224,29 +224,29 @@ producer (tasks-plan / qa / exec):
 ```
 
 **CLI commands:**
-- `spw tools audit-iteration start --run-dir R --type T [--max N]` — initialize `_iteration-state.json`
-- `spw tools dispatch-init-audit --run-dir R --type T [--iteration N]` — create nested audit directory
-- `spw tools audit-iteration check --run-dir R --type T` — check if another retry is allowed
-- `spw tools audit-iteration advance --run-dir R --type T --result R` — increment iteration counter
+- `oraculo tools audit-iteration start --run-dir R --type T [--max N]` — initialize `_iteration-state.json`
+- `oraculo tools dispatch-init-audit --run-dir R --type T [--iteration N]` — create nested audit directory
+- `oraculo tools audit-iteration check --run-dir R --type T` — check if another retry is allowed
+- `oraculo tools audit-iteration advance --run-dir R --type T --result R` — increment iteration counter
 
 **Anti-self-heal rule:** The orchestrator must not fix artifacts directly on BLOCKED. It re-dispatches the writer subagent with the aggregator report path, preserving separation between production and validation.
 
-**Fallback:** When inline audit exhausts iterations, the orchestrator recommends the standalone check command (`spw:tasks-check`, `spw:qa-check`, or `spw:checkpoint`).
+**Fallback:** When inline audit exhausts iterations, the orchestrator recommends the standalone check command (`oraculo:tasks-check`, `oraculo:qa-check`, or `oraculo:checkpoint`).
 
-Full reference: `workflows/spw/shared/dispatch-inline-audit.md`.
+Full reference: `workflows/oraculo/shared/dispatch-inline-audit.md`.
 
 ---
 
 ## Shared Policy Reference
 
 The thin-dispatch rules are codified in four category-specific policies referenced by all command workflows via `<shared_policies>`:
-- `workflows/spw/shared/dispatch-pipeline.md` — pipeline sequencing (sequential chain → synthesizer)
-- `workflows/spw/shared/dispatch-audit.md` — audit parallelism (auditors → aggregator)
-- `workflows/spw/shared/dispatch-wave.md` — wave iteration (scout → waves → synthesizer)
-- `workflows/spw/shared/dispatch-inline-audit.md` — inline audit retry loop (producer → auditors → retry)
+- `workflows/oraculo/shared/dispatch-pipeline.md` — pipeline sequencing (sequential chain → synthesizer)
+- `workflows/oraculo/shared/dispatch-audit.md` — audit parallelism (auditors → aggregator)
+- `workflows/oraculo/shared/dispatch-wave.md` — wave iteration (scout → waves → synthesizer)
+- `workflows/oraculo/shared/dispatch-inline-audit.md` — inline audit retry loop (producer → auditors → retry)
 
-Step-by-step CLI implementation procedure: `workflows/spw/shared/dispatch-implementation.md`.
-The `spw tools dispatch-init` command enforces these category mappings deterministically.
+Step-by-step CLI implementation procedure: `workflows/oraculo/shared/dispatch-implementation.md`.
+The `oraculo tools dispatch-init` command enforces these category mappings deterministically.
 
 ---
 

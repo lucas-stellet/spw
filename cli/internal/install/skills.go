@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/lucas-stellet/spw/internal/config"
+	"github.com/lucas-stellet/oraculo/internal/config"
 )
 
 // ElixirSkills lists Elixir-specific skill names.
@@ -97,14 +97,14 @@ func InstallGeneralSkills(root string) {
 func InstallElixirSkills(root string) {
 	installSkillSet(root, ElixirSkills, "elixir")
 	if err := PatchConfigElixirSkills(root); err != nil {
-		fmt.Printf("[spw] Warning: could not patch config with Elixir skills: %v\n", err)
+		fmt.Printf("[oraculo] Warning: could not patch config with Elixir skills: %v\n", err)
 	}
 }
 
 func installSkillSet(root string, skills []string, label string) {
 	targetDir := filepath.Join(root, ".claude", "skills")
 	if err := os.MkdirAll(targetDir, 0755); err != nil {
-		fmt.Printf("[spw] Failed to create skills dir: %v\n", err)
+		fmt.Printf("[oraculo] Failed to create skills dir: %v\n", err)
 		return
 	}
 
@@ -131,19 +131,19 @@ func installSkillSet(root string, skills []string, label string) {
 		installed++
 	}
 
-	fmt.Printf("[spw] Skills (%s): installed=%d, existing=%d, missing=%d\n", label, installed, skipped, len(missing))
+	fmt.Printf("[oraculo] Skills (%s): installed=%d, existing=%d, missing=%d\n", label, installed, skipped, len(missing))
 	if len(missing) > 0 {
-		fmt.Printf("[spw] Missing local skill sources (non-blocking): %v\n", missing)
+		fmt.Printf("[oraculo] Missing local skill sources (non-blocking): %v\n", missing)
 	}
 }
 
 // PatchConfigElixirSkills adds using-elixir-skills and elixir-anti-patterns
 // to [skills.design].required and [skills.implementation].required in the
-// project's spw-config.toml, preserving comments and formatting.
+// project's oraculo.toml, preserving comments and formatting.
 func PatchConfigElixirSkills(root string) error {
 	configPath := config.ResolveConfigPath(root)
 	if _, err := os.Stat(configPath); err != nil {
-		fmt.Println("[spw] No config file found; skipping Elixir config patch.")
+		fmt.Println("[oraculo] No config file found; skipping Elixir config patch.")
 		return nil
 	}
 
@@ -157,7 +157,7 @@ func PatchConfigElixirSkills(root string) error {
 	implNeeds := missingSkills(cfg.Skills.Implementation.Required, ElixirRequiredSkills)
 
 	if len(designNeeds) == 0 && len(implNeeds) == 0 {
-		fmt.Println("[spw] Elixir skills already in config required lists.")
+		fmt.Println("[oraculo] Elixir skills already in config required lists.")
 		return nil
 	}
 
@@ -178,7 +178,7 @@ func PatchConfigElixirSkills(root string) error {
 		return err
 	}
 
-	fmt.Printf("[spw] Patched config: added %v to skills.design.required and skills.implementation.required\n", ElixirRequiredSkills)
+	fmt.Printf("[oraculo] Patched config: added %v to skills.design.required and skills.implementation.required\n", ElixirRequiredSkills)
 	return nil
 }
 
@@ -377,6 +377,6 @@ func SetupGitattributes(root string) {
 	defer f.Close()
 
 	fmt.Fprintln(f, rule)
-	fmt.Println("[spw] Added .gitattributes rule for PR review optimization.")
+	fmt.Println("[oraculo] Added .gitattributes rule for PR review optimization.")
 }
 

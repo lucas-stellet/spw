@@ -68,10 +68,10 @@ func TestDefaults(t *testing.T) {
 }
 
 func TestParseActualConfig(t *testing.T) {
-	// Find the actual spw-config.toml relative to the repo root
-	configPath := findRepoFile(t, "config/spw-config.toml")
+	// Find the actual oraculo.toml relative to the repo root
+	configPath := findRepoFile(t, "config/oraculo.toml")
 	if configPath == "" {
-		t.Skip("config/spw-config.toml not found")
+		t.Skip("config/oraculo.toml not found")
 	}
 
 	cfg, err := LoadFromPath(configPath)
@@ -119,8 +119,8 @@ func TestParseActualConfig(t *testing.T) {
 	if cfg.Skills.Enabled != true {
 		t.Error("Skills.Enabled should be true")
 	}
-	if cfg.Skills.AutoInstallDefaultsOnSPWInstall != true {
-		t.Error("Skills.AutoInstallDefaultsOnSPWInstall should be true")
+	if cfg.Skills.AutoInstallDefaultsOnORACULOInstall != true {
+		t.Error("Skills.AutoInstallDefaultsOnORACULOInstall should be true")
 	}
 	if cfg.Skills.Design.EnforceRequired != true {
 		t.Error("Skills.Design.EnforceRequired should be true")
@@ -170,11 +170,11 @@ func TestLoadMissingFile(t *testing.T) {
 
 func TestLoadLegacyPath(t *testing.T) {
 	tmp := t.TempDir()
-	legacyDir := filepath.Join(tmp, ".spw")
+	legacyDir := filepath.Join(tmp, ".oraculo")
 	if err := os.MkdirAll(legacyDir, 0755); err != nil {
 		t.Fatal(err)
 	}
-	legacyConfig := filepath.Join(legacyDir, "spw-config.toml")
+	legacyConfig := filepath.Join(legacyDir, "oraculo.toml")
 	if err := os.WriteFile(legacyConfig, []byte(`[models]
 web_research = "custom-haiku"
 `), 0644); err != nil {
@@ -197,7 +197,7 @@ func TestMissingSectionsUseDefaults(t *testing.T) {
 		t.Fatal(err)
 	}
 	// Only provide models section
-	if err := os.WriteFile(filepath.Join(configDir, "spw-config.toml"), []byte(`[models]
+	if err := os.WriteFile(filepath.Join(configDir, "oraculo.toml"), []byte(`[models]
 web_research = "custom"
 `), 0644); err != nil {
 		t.Fatal(err)
@@ -369,7 +369,7 @@ required = [
 ]
 optional = ["opt-1", "opt-2"]
 `
-	if err := os.WriteFile(filepath.Join(configDir, "spw-config.toml"), []byte(config), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(configDir, "oraculo.toml"), []byte(config), 0644); err != nil {
 		t.Fatal(err)
 	}
 

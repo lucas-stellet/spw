@@ -1,5 +1,5 @@
 ---
-name: spw:post-mortem
+name: oraculo:post-mortem
 description: Analyze post-spec commits and generate reusable process learnings
 argument-hint: "<spec-name> [--since-commit <sha>] [--until-ref <ref>] [--tags <tag1,tag2>] [--topic <short-subject>]"
 ---
@@ -97,13 +97,13 @@ Pipeline commands may inject logic at these points:
 <shared_policies>
 # Config Resolution
 
-Canonical runtime config path is `.spec-workflow/spw-config.toml`.
+Canonical runtime config path is `.spec-workflow/oraculo.toml`.
 
 Transitional compatibility:
-- If `.spec-workflow/spw-config.toml` is missing, fallback to `.spw/spw-config.toml`.
+- If `.spec-workflow/oraculo.toml` is missing, fallback to `.oraculo/oraculo.toml`.
 
 When shell logic is required, prefer:
-- `spw tools config-get <section.key> --default <value> [--raw]`
+- `oraculo tools config-get <section.key> --default <value> [--raw]`
 
 This keeps workflow behavior stable and avoids hardcoded path drift.
 
@@ -232,12 +232,12 @@ comms:
      ============================================================ -->
 
 <when_to_use>
-- Use after `spw:exec` + `spw:checkpoint` are done and follow-up commits changed behavior.
+- Use after `oraculo:exec` + `oraculo:checkpoint` are done and follow-up commits changed behavior.
 - Use when final delivery required manual corrections that were not captured by PRD/design/tasks/review/tests.
 </when_to_use>
 
 <model_policy>
-Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
+Resolve models from `.spec-workflow/oraculo.toml` `[models]`:
 - complex_reasoning -> default `opus`
 - implementation -> default `sonnet`
 </model_policy>
@@ -310,11 +310,11 @@ On success:
 - Confirm report path and analyzed commit range.
 - Confirm index update path.
 - Recommend next command:
-  - if planning a new cycle: `spw:prd <spec-name>` or `spw:plan <spec-name>`
-  - if only sharing learning: `spw:status <spec-name>`
+  - if planning a new cycle: `oraculo:prd <spec-name>` or `oraculo:plan <spec-name>`
+  - if only sharing learning: `oraculo:status <spec-name>`
 
 If blocked:
 - Show missing evidence (commit range ambiguity, missing artifacts, or missing subagent outputs).
 - If waiting on resume decision, ask user to choose `continue-unfinished` or `delete-and-restart`, then rerun.
-- Provide rerun command: `spw:post-mortem <spec-name> [--since-commit <sha>]`.
+- Provide rerun command: `oraculo:post-mortem <spec-name> [--since-commit <sha>]`.
 </completion_guidance>

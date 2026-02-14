@@ -1,5 +1,5 @@
 ---
-name: spw:prd
+name: oraculo:prd
 description: Zero-to-PRD discovery flow with subagents to generate requirements.md
 argument-hint: "<spec-name> [--source <url-or-file.md>]"
 ---
@@ -9,15 +9,15 @@ category: pipeline
 subcategory: research
 phase: prd
 comms_path: prd/_comms
-policy: @.claude/workflows/spw/shared/dispatch-pipeline.md
+policy: @.claude/workflows/oraculo/shared/dispatch-pipeline.md
 </dispatch_pattern>
 
 <shared_policies>
-- @.claude/workflows/spw/shared/config-resolution.md
-- @.claude/workflows/spw/shared/file-handoff.md
-- @.claude/workflows/spw/shared/resume-policy.md
-- @.claude/workflows/spw/shared/skills-policy.md
-- @.claude/workflows/spw/shared/approval-reconciliation.md
+- @.claude/workflows/oraculo/shared/config-resolution.md
+- @.claude/workflows/oraculo/shared/file-handoff.md
+- @.claude/workflows/oraculo/shared/resume-policy.md
+- @.claude/workflows/oraculo/shared/skills-policy.md
+- @.claude/workflows/oraculo/shared/approval-reconciliation.md
 </shared_policies>
 
 <objective>
@@ -148,14 +148,14 @@ If resuming, always rerun `prd-critic` before final approval flow.
 </when_to_use>
 
 <model_policy>
-Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
+Resolve models from `.spec-workflow/oraculo.toml` `[models]`:
 - web_research -> default `haiku`
 - complex_reasoning -> default `opus`
 - implementation -> default `sonnet`
 </model_policy>
 
 <post_mortem_memory>
-Resolve from `.spec-workflow/spw-config.toml` `[post_mortem_memory]`:
+Resolve from `.spec-workflow/oraculo.toml` `[post_mortem_memory]`:
 - `enabled` (default `true`)
 - `max_entries_for_design` (default `5`)
 
@@ -282,7 +282,7 @@ Resolve requirements approval with MCP-first reconciliation:
      ============================================================ -->
 
 <agent_teams_policy>
-@.claude/workflows/spw/overlays/active/prd.md
+@.claude/workflows/oraculo/overlays/active/prd.md
 </agent_teams_policy>
 
 <!-- ============================================================
@@ -307,12 +307,12 @@ Resolve requirements approval with MCP-first reconciliation:
 <completion_guidance>
 On success:
 - Confirm PRD approval status and show artifact paths.
-- Recommend next command: `spw:plan <spec-name>`.
-- Recommend running `/clear` before `spw:plan` to keep context clean.
+- Recommend next command: `oraculo:plan <spec-name>`.
+- Recommend running `/clear` before `oraculo:plan` to keep context clean.
 
 If blocked:
 - Show the blocking reason (approval pending/rejected, missing source context, quality gate failure).
 - If blocked by revision ambiguity, show pending clarification questions and do not edit artifacts until answered.
 - If waiting on resume decision, ask user to choose `continue-unfinished` or `delete-and-restart`, then rerun.
-- Provide exact fix action and the command to rerun: `spw:prd <spec-name>`.
+- Provide exact fix action and the command to rerun: `oraculo:prd <spec-name>`.
 </completion_guidance>

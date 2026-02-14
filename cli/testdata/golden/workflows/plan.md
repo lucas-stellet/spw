@@ -1,5 +1,5 @@
 ---
-name: spw:plan
+name: oraculo:plan
 description: Technical planning from existing requirements, orchestrated by subagents
 argument-hint: "<spec-name> [--max-wave-size <N>]"
 ---
@@ -11,13 +11,13 @@ Run the full technical planning flow for a spec with existing `requirements.md`,
 <shared_policies>
 # Config Resolution
 
-Canonical runtime config path is `.spec-workflow/spw-config.toml`.
+Canonical runtime config path is `.spec-workflow/oraculo.toml`.
 
 Transitional compatibility:
-- If `.spec-workflow/spw-config.toml` is missing, fallback to `.spw/spw-config.toml`.
+- If `.spec-workflow/oraculo.toml` is missing, fallback to `.oraculo/oraculo.toml`.
 
 When shell logic is required, prefer:
-- `spw tools config-get <section.key> --default <value> [--raw]`
+- `oraculo tools config-get <section.key> --default <value> [--raw]`
 
 This keeps workflow behavior stable and avoids hardcoded path drift.
 
@@ -81,19 +81,19 @@ When `spec-status` is incomplete or ambiguous:
 </when_to_use>
 
 <model_policy>
-Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
+Resolve models from `.spec-workflow/oraculo.toml` `[models]`:
 - web_research -> default `haiku`
 - complex_reasoning -> default `opus`
 - implementation -> default `sonnet`
 </model_policy>
 
 <planning_defaults>
-Resolve planning defaults from `.spec-workflow/spw-config.toml` `[planning]`:
+Resolve planning defaults from `.spec-workflow/oraculo.toml` `[planning]`:
 - `tasks_generation_strategy` (`rolling-wave|all-at-once`, default `rolling-wave`)
 - `max_wave_size` (default `3`)
 
 Rule:
-- Call `spw:tasks-plan` without forcing `--mode`/`--max-wave-size`, unless user explicitly asked for overrides.
+- Call `oraculo:tasks-plan` without forcing `--mode`/`--max-wave-size`, unless user explicitly asked for overrides.
 </planning_defaults>
 
 <subagents>
@@ -105,7 +105,7 @@ Rule:
 
 <preconditions>
 - `requirements.md` exists for `<spec-name>`.
-- If it does not exist, stop with BLOCKED and instruct: `run /spw:prd <spec-name>`.
+- If it does not exist, stop with BLOCKED and instruct: `run /oraculo:prd <spec-name>`.
 - Do not assume approval from file existence; validate approval via MCP.
 </preconditions>
 
@@ -134,14 +134,14 @@ Rule:
 - Always do this sequence:
   1) call `spec-status`
   2) if status is approved: proceed immediately (never re-request approval)
-  3) if status is needs revision: stop BLOCKED and route to `spw:prd <spec-name>` revision protocol (never request approval first)
+  3) if status is needs revision: stop BLOCKED and route to `oraculo:prd <spec-name>` revision protocol (never request approval first)
   4) if status is pending: stop with `WAITING_FOR_APPROVAL` and instruct UI approval + rerun
   5) only if status is not requested:
      - call `request-approval` (idempotent)
      - call `get-approval-status` once
      - if approved: proceed
      - if pending: stop with `WAITING_FOR_APPROVAL`
-     - if needs revision: stop BLOCKED and route to `spw:prd <spec-name>`
+     - if needs revision: stop BLOCKED and route to `oraculo:prd <spec-name>`
 - If status is `pending`, do not poll in a loop; instruct user to approve in Spec Workflow UI and rerun the command.
 </approval_protocol>
 
@@ -149,10 +149,10 @@ Rule:
 0. Dispatch `requirements-approval-gate`:
    - run the approval protocol above
 1. Dispatch `planning-stage-orchestrator` for:
-   - `spw:design-research <spec-name>`
-   - `spw:design-draft <spec-name>`
-   - `spw:tasks-plan <spec-name>`
-   - `spw:tasks-check <spec-name>`
+   - `oraculo:design-research <spec-name>`
+   - `oraculo:design-draft <spec-name>`
+   - `oraculo:tasks-plan <spec-name>`
+   - `oraculo:tasks-check <spec-name>`
 2. If `tasks-check` is BLOCKED, revise and repeat stage 1 as needed.
 </pipeline>
 
@@ -176,7 +176,7 @@ Do not generate planning/research artifacts under generic folders like `docs/`.
 </artifact_boundary>
 
 <rules>
-- Mandatory gate: requirements without MCP approval blocks `spw:plan`.
+- Mandatory gate: requirements without MCP approval blocks `oraculo:plan`.
 - Do not infer requirements in this command.
 - Do not start execution before design/tasks are approved.
 - Enforce `<ui_approval_docs_policy>` for stage outputs before advancing.
@@ -186,12 +186,12 @@ Do not generate planning/research artifacts under generic folders like `docs/`.
 On success:
 - Summarize generated artifacts (`design/DESIGN-RESEARCH.md`, `design.md`, `tasks.md`, `planning/TASKS-CHECK.md`).
 - Confirm approval state for design/tasks.
-- Recommend next command: `spw:exec <spec-name> --batch-size <N>`.
-- Recommend running `/clear` before `spw:exec` for fresh execution context.
+- Recommend next command: `oraculo:exec <spec-name> --batch-size <N>`.
+- Recommend running `/clear` before `oraculo:exec` for fresh execution context.
 
 If blocked:
 - Show exactly which stage blocked (approval gate, design, tasks-plan, tasks-check).
-- If waiting on approval, explicitly state: "Approve in Spec Workflow UI, then rerun `/spw:plan <spec-name>`."
-- If requirements are `changes-requested`/`rejected`, route to `spw:prd <spec-name>` revision protocol before planning.
-- Provide corrective action and rerun command (`spw:plan <spec-name>` or specific stage command).
+- If waiting on approval, explicitly state: "Approve in Spec Workflow UI, then rerun `/oraculo:plan <spec-name>`."
+- If requirements are `changes-requested`/`rejected`, route to `oraculo:prd <spec-name>` revision protocol before planning.
+- Provide corrective action and rerun command (`oraculo:plan <spec-name>` or specific stage command).
 </completion_guidance>

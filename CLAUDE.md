@@ -2,15 +2,15 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## What is SPW
+## What is Oraculo
 
-SPW is a command/template kit for `spec-workflow-mcp` that provides stricter agent execution patterns (planning gates, waves, checkpoints) with subagent-first orchestration and model routing (haiku for web scouting, opus for complex reasoning, sonnet for implementation).
+Oraculo is a command/template kit for `spec-workflow-mcp` that provides stricter agent execution patterns (planning gates, waves, checkpoints) with subagent-first orchestration and model routing (haiku for web scouting, opus for complex reasoning, sonnet for implementation).
 
 ## Canonical Sources (read order)
 
 1. `README.md` — installation, usage, workflow reference
 2. `AGENTS.md` — operational rules for agents and contributors (Portuguese)
-3. `config/spw-config.toml` — runtime defaults
+3. `config/oraculo.toml` — runtime defaults
 
 ## Validation & Testing
 
@@ -18,9 +18,9 @@ There are no unit tests or a test framework. Validation is done via a checklist 
 
 ```bash
 # Validate all shell scripts parse correctly
-bash -n bin/spw
+bash -n bin/oraculo
 bash -n scripts/bootstrap.sh
-bash -n scripts/install-spw-bin.sh
+bash -n scripts/install-oraculo-bin.sh
 bash -n scripts/validate-thin-orchestrator.sh
 bash -n copy-ready/install.sh
 
@@ -28,26 +28,26 @@ bash -n copy-ready/install.sh
 scripts/validate-thin-orchestrator.sh
 
 # Build and smoke-test Go CLI
-go build -o /tmp/spw ./cli/cmd/spw && PATH="/tmp:$PATH"
+go build -o /tmp/oraculo ./cli/cmd/oraculo && PATH="/tmp:$PATH"
 
 # Hooks (each reads JSON from stdin)
-echo '{"workspace":{"current_dir":"'"$(pwd)"'"}}' | spw hook statusline
-echo '{"prompt":"/spw:plan"}' | spw hook guard-prompt
-echo '{"cwd":"'"$(pwd)"'","tool_input":{"file_path":"README.md"}}' | spw hook guard-paths
-echo '{}' | spw hook guard-stop
-echo '{}' | spw hook session-start
+echo '{"workspace":{"current_dir":"'"$(pwd)"'"}}' | oraculo hook statusline
+echo '{"prompt":"/oraculo:plan"}' | oraculo hook guard-prompt
+echo '{"cwd":"'"$(pwd)"'","tool_input":{"file_path":"README.md"}}' | oraculo hook guard-paths
+echo '{}' | oraculo hook guard-stop
+echo '{}' | oraculo hook session-start
 
 # User-facing commands
-spw finalizar --help
-spw view --help
-spw search --help
-spw summary --help
-spw init --help
+oraculo finalizar --help
+oraculo view --help
+oraculo search --help
+oraculo summary --help
+oraculo init --help
 
 # Inspection commands
-spw tasks state --help
-spw wave state --help
-spw spec list --help
+oraculo tasks state --help
+oraculo wave state --help
+oraculo spec list --help
 ```
 
 ## Architecture
@@ -56,10 +56,10 @@ spw spec list --help
 
 Commands and workflows are separated into two layers:
 
-- **`commands/spw/*.md`** — Thin wrappers (max 60 lines) that define frontmatter metadata and point to a workflow via `<execution_context>` referencing `@.claude/workflows/spw/<command>.md`. These are what Claude Code slash commands (`/spw:exec`, `/spw:prd`, etc.) invoke.
-- **`workflows/spw/*.md`** — Full orchestration logic: subagent definitions, policies, gates, state machines. Shared policy fragments live in `workflows/spw/shared/` (config resolution, file handoff, resume policy, skills policy, approval reconciliation).
+- **`commands/oraculo/*.md`** — Thin wrappers (max 60 lines) that define frontmatter metadata and point to a workflow via `<execution_context>` referencing `@.claude/workflows/oraculo/<command>.md`. These are what Claude Code slash commands (`/oraculo:exec`, `/oraculo:prd`, etc.) invoke.
+- **`workflows/oraculo/*.md`** — Full orchestration logic: subagent definitions, policies, gates, state machines. Shared policy fragments live in `workflows/oraculo/shared/` (config resolution, file handoff, resume policy, skills policy, approval reconciliation).
 
-Agent Teams uses base + overlay via symlinks: each command references `workflows/spw/overlays/active/<command>.md`, which is a symlink pointing to `../noop.md` (teams off) or `../teams/<command>.md` (teams on). The installer switches symlinks; no separate command directory needed.
+Agent Teams uses base + overlay via symlinks: each command references `workflows/oraculo/overlays/active/<command>.md`, which is a symlink pointing to `../noop.md` (teams off) or `../teams/<command>.md` (teams on). The installer switches symlinks; no separate command directory needed.
 
 ### Mirror System
 
@@ -67,75 +67,75 @@ Source files in this repo must stay in sync with their `copy-ready/` counterpart
 
 | Source | Mirror |
 |--------|--------|
-| `commands/spw/` | `copy-ready/.claude/commands/spw/` |
-| `workflows/spw/` | `copy-ready/.claude/workflows/spw/` |
-| `workflows/spw/overlays/noop.md` | `copy-ready/.claude/workflows/spw/overlays/noop.md` |
-| `workflows/spw/overlays/active/*.md` | `copy-ready/.claude/workflows/spw/overlays/active/*.md` (symlinks) |
+| `commands/oraculo/` | `copy-ready/.claude/commands/oraculo/` |
+| `workflows/oraculo/` | `copy-ready/.claude/workflows/oraculo/` |
+| `workflows/oraculo/overlays/noop.md` | `copy-ready/.claude/workflows/oraculo/overlays/noop.md` |
+| `workflows/oraculo/overlays/active/*.md` | `copy-ready/.claude/workflows/oraculo/overlays/active/*.md` (symlinks) |
 | `templates/user-templates/` | `copy-ready/.spec-workflow/user-templates/` |
-| `config/spw-config.toml` | `copy-ready/.spec-workflow/spw-config.toml` |
+| `config/oraculo.toml` | `copy-ready/.spec-workflow/oraculo.toml` |
 | `templates/claude-md-snippet.md` | `copy-ready/.claude.md.snippet` |
 | `templates/agents-md-snippet.md` | `copy-ready/.agents.md.snippet` |
-| `workflows/spw/shared/dispatch-implementation.md` | `copy-ready/.claude/workflows/spw/shared/dispatch-implementation.md` |
+| `workflows/oraculo/shared/dispatch-implementation.md` | `copy-ready/.claude/workflows/oraculo/shared/dispatch-implementation.md` |
 
 `scripts/validate-thin-orchestrator.sh` enforces mirror integrity via `diff -rq`. Always update both sides in the same patch.
 
 ### Go CLI (`cli/`)
 
-The Go CLI (`cli/cmd/spw/`) provides hooks, inspection commands, user-facing commands, and workflow tools. Full CLI reference: `.claude/docs/spw-cli-reference.md`.
+The Go CLI (`cli/cmd/oraculo/`) provides hooks, inspection commands, user-facing commands, and workflow tools. Full CLI reference: `.claude/docs/oraculo-cli-reference.md`.
 
 #### Hooks
 
-All hooks are implemented in Go at `cli/internal/hook/` and invoked via `spw hook <event>`. Each reads JSON from stdin and follows the same exit-code contract: 0 = ok, 2 = block.
+All hooks are implemented in Go at `cli/internal/hook/` and invoked via `oraculo hook <event>`. Each reads JSON from stdin and follows the same exit-code contract: 0 = ok, 2 = block.
 
-- **`spw hook statusline`** — StatusLine: displays context in the editor status bar. Uses 3 detection strategies (git diff, cache, sticky spec) to find the active spec. Shows token/cost estimates when `show_token_cost = true`. Cache TTL controlled by `statusline.cache_ttl_seconds`.
-- **`spw hook guard-prompt`** — UserPromptSubmit: validates spec arg presence in SPW commands. Controlled by `hooks.guard_prompt_require_spec`.
-- **`spw hook guard-paths`** — PreToolUse (Write/Edit): prevents writes outside spec-workflow paths. Also enforces wave-NN directory format and blocks legacy `_agent-comms/` paths when `hooks.guard_wave_layout = true`. Controlled by `hooks.guard_paths`.
-- **`spw hook guard-stop`** — Stop: checks file-first handoff completeness in recent runs. Scans runs within `hooks.recent_run_window_minutes`. Controlled by `hooks.guard_stop_handoff`.
-- **`spw hook session-start`** — SessionStart: syncs active tasks template variant based on TDD config. Also auto-re-renders workflows when config changes are detected.
+- **`oraculo hook statusline`** — StatusLine: displays context in the editor status bar. Uses 3 detection strategies (git diff, cache, sticky spec) to find the active spec. Shows token/cost estimates when `show_token_cost = true`. Cache TTL controlled by `statusline.cache_ttl_seconds`.
+- **`oraculo hook guard-prompt`** — UserPromptSubmit: validates spec arg presence in Oraculo commands. Controlled by `hooks.guard_prompt_require_spec`.
+- **`oraculo hook guard-paths`** — PreToolUse (Write/Edit): prevents writes outside spec-workflow paths. Also enforces wave-NN directory format and blocks legacy `_agent-comms/` paths when `hooks.guard_wave_layout = true`. Controlled by `hooks.guard_paths`.
+- **`oraculo hook guard-stop`** — Stop: checks file-first handoff completeness in recent runs. Scans runs within `hooks.recent_run_window_minutes`. Controlled by `hooks.guard_stop_handoff`.
+- **`oraculo hook session-start`** — SessionStart: syncs active tasks template variant based on TDD config. Also auto-re-renders workflows when config changes are detected.
 
-Hook enforcement mode is configured in `config/spw-config.toml` under `[hooks]`: `warn` (diagnostics only) or `block` (deny violating actions).
+Hook enforcement mode is configured in `config/oraculo.toml` under `[hooks]`: `warn` (diagnostics only) or `block` (deny violating actions).
 
 #### Local Storage
 
-SPW stores structured data in SQLite databases (pure Go driver, no CGO, WAL mode):
+Oraculo stores structured data in SQLite databases (pure Go driver, no CGO, WAL mode):
 
 - **`spec.db`** — Per-spec database at `.spec-workflow/specs/<spec-name>/spec.db`. The dispatch-handoff dual-writes subagent artifacts (briefs, reports, status) into the DB when the store is available. Three MCP-managed files remain on disk as source of truth: `requirements.md`, `design.md`, `tasks.md`.
-- **`.spw-index.db`** — Global index at `.spec-workflow/.spw-index.db` with FTS5 full-text search across all specs. Updated by `spw finalizar` and queried by `spw search`.
+- **`.oraculo-index.db`** — Global index at `.spec-workflow/.oraculo-index.db` with FTS5 full-text search across all specs. Updated by `oraculo finalizar` and queried by `oraculo search`.
 
 #### User-Facing Commands
 
 | Command | Description |
 |---------|-------------|
-| `spw finalizar <spec>` | Mark spec as completed, harvest artifacts, generate summary with YAML frontmatter, index in global FTS5 |
-| `spw view <spec> [type]` | View spec artifacts (`overview`, `report`, `brief`, `checkpoint`, `implementation-log`, `wave-summary`, `completion-summary`) |
-| `spw search <query>` | FTS5 full-text search across indexed specs |
-| `spw summary <spec>` | Generate on-demand progress summary |
+| `oraculo finalizar <spec>` | Mark spec as completed, harvest artifacts, generate summary with YAML frontmatter, index in global FTS5 |
+| `oraculo view <spec> [type]` | View spec artifacts (`overview`, `report`, `brief`, `checkpoint`, `implementation-log`, `wave-summary`, `completion-summary`) |
+| `oraculo search <query>` | FTS5 full-text search across indexed specs |
+| `oraculo summary <spec>` | Generate on-demand progress summary |
 
 #### Inspection Commands
 
-- **`spw tasks`** — Task state resolution: `state`, `next`, `mark`, `count`, `files`, `validate`, `complexity`
-- **`spw wave`** — Wave inspection: `state`, `summary`, `checkpoint`, `resume`
-- **`spw spec`** — Spec lifecycle: `artifacts`, `stage`, `prereqs`, `approval`, `list`
+- **`oraculo tasks`** — Task state resolution: `state`, `next`, `mark`, `count`, `files`, `validate`, `complexity`
+- **`oraculo wave`** — Wave inspection: `state`, `summary`, `checkpoint`, `resume`
+- **`oraculo spec`** — Spec lifecycle: `artifacts`, `stage`, `prereqs`, `approval`, `list`
 
-### CLI Wrapper (`bin/spw`)
+### CLI Wrapper (`bin/oraculo`)
 
-The `spw` CLI is a bash wrapper that caches the kit from GitHub and delegates to `copy-ready/install.sh`. Key commands: `spw install`, `spw install --global`, `spw init`, `spw update`, `spw doctor`, `spw status`, `spw skills`. Environment variables: `SPW_REPO`, `SPW_REF`, `SPW_HOME`, `SPW_KIT_DIR`, `SPW_AUTO_UPDATE`, `INSTALL_DIR`.
+The `oraculo` CLI is a bash wrapper that caches the kit from GitHub and delegates to `copy-ready/install.sh`. Key commands: `oraculo install`, `oraculo install --global`, `oraculo init`, `oraculo update`, `oraculo doctor`, `oraculo status`, `oraculo skills`. Environment variables: `ORACULO_REPO`, `ORACULO_REF`, `ORACULO_HOME`, `ORACULO_KIT_DIR`, `ORACULO_AUTO_UPDATE`, `INSTALL_DIR`.
 
 #### Two-Tier Installation
 
 | Mode | Command | What it installs | Where |
 |------|---------|------------------|-------|
-| **Global** | `spw install --global` | Commands, workflows, hooks, skills | `~/.claude/` |
-| **Project Init** | `spw init` | Config, templates, snippets, .gitattributes | `.spec-workflow/`, `CLAUDE.md`, `AGENTS.md` |
-| **Full (default)** | `spw install` | Everything (unchanged behavior) | `.claude/` + `.spec-workflow/` |
+| **Global** | `oraculo install --global` | Commands, workflows, hooks, skills | `~/.claude/` |
+| **Project Init** | `oraculo init` | Config, templates, snippets, .gitattributes | `.spec-workflow/`, `CLAUDE.md`, `AGENTS.md` |
+| **Full (default)** | `oraculo install` | Everything (unchanged behavior) | `.claude/` + `.spec-workflow/` |
 
 Coexistence: if a project has a local install, it takes precedence over the global (Claude Code native path resolution).
 
-The installer injects snippet content into target `CLAUDE.md` and `AGENTS.md` using `<!-- SPW-KIT-START -->` / `<!-- SPW-KIT-END -->` markers. It also auto-merges SPW hook entries into `.claude/settings.json` via `spw tools merge-settings`.
+The installer injects snippet content into target `CLAUDE.md` and `AGENTS.md` using `<!-- ORACULO-KIT-START -->` / `<!-- ORACULO-KIT-END -->` markers. It also auto-merges Oraculo hook entries into `.claude/settings.json` via `oraculo tools merge-settings`.
 
 ### Runtime Config
 
-Canonical path: `.spec-workflow/spw-config.toml` (legacy fallback: `.spw/spw-config.toml`). This TOML controls model routing, execution gates, planning strategy, per-stage skill enforcement, hook behavior, and Agent Teams. Config sections:
+Canonical path: `.spec-workflow/oraculo.toml` (legacy fallback: `.spw/spw-config.toml`). This TOML controls model routing, execution gates, planning strategy, per-stage skill enforcement, hook behavior, and Agent Teams. Config sections:
 
 | Section | Keys | Purpose |
 |---------|------|---------|
@@ -151,11 +151,11 @@ Canonical path: `.spec-workflow/spw-config.toml` (legacy fallback: `.spw/spw-con
 | `[skills.*]` | `enforce_required`, `required`, `optional` | Per-stage skill enforcement (design, implementation) |
 | `[agent_teams]` | `enabled`, `exclude_phases`, `require_delegate_mode` | Agent Teams toggle and deny-list |
 
-### SPW Command Entry Points
+### Oraculo Command Entry Points
 
-`spw:prd` (requirements) → `spw:plan` (design+tasks) → `spw:design-research` → `spw:design-draft` → `spw:tasks-plan` → `spw:tasks-check` → `spw:exec` (implementation) → `spw:checkpoint` (quality gate) → `spw:post-mortem` → `spw:qa` (validation planning) → `spw:qa-check` (plan validation) → `spw:qa-exec` (test execution) → `spw:status` (resume guidance)
+`oraculo:prd` (requirements) → `oraculo:plan` (design+tasks) → `oraculo:design-research` → `oraculo:design-draft` → `oraculo:tasks-plan` → `oraculo:tasks-check` → `oraculo:exec` (implementation) → `oraculo:checkpoint` (quality gate) → `oraculo:post-mortem` → `oraculo:qa` (validation planning) → `oraculo:qa-check` (plan validation) → `oraculo:qa-exec` (test execution) → `oraculo:status` (resume guidance)
 
-These slash commands are complemented by CLI commands for post-workflow operations (`spw finalizar`, `spw view`, `spw search`, `spw summary`) and state inspection (`spw tasks`, `spw wave`, `spw spec`). See `.claude/docs/spw-cli-reference.md` for the full reference.
+These slash commands are complemented by CLI commands for post-workflow operations (`oraculo finalizar`, `oraculo view`, `oraculo search`, `oraculo summary`) and state inspection (`oraculo tasks`, `oraculo wave`, `oraculo spec`). See `.claude/docs/oraculo-cli-reference.md` for the full reference.
 
 ### File-First Subagent Communication
 
@@ -174,7 +174,7 @@ Project-specific guidelines in `.spec-workflow/guidelines/*.md` are injected int
 - `quality.md` → checkpoint, qa-check, post-mortem
 - `testing.md` → exec, qa, qa-check, qa-exec
 
-Custom files use YAML frontmatter `applies_to: [phase1, phase2]`. Files without frontmatter apply to all phases. Loaded by `spw render` and the `session-start` hook.
+Custom files use YAML frontmatter `applies_to: [phase1, phase2]`. Files without frontmatter apply to all phases. Loaded by `oraculo render` and the `session-start` hook.
 
 ### Dispatch Categories
 
@@ -219,7 +219,7 @@ Artifacts are organized by **workflow phase**, not in flat dumps. Each phase dir
 
 ### PR Review Optimization
 
-Spec-workflow files are marked as `linguist-generated` via `.gitattributes` so GitHub collapses them by default in PR diffs. Reviewers see only feature code changes; spec artifacts are expandable on demand. The installer adds the rule automatically during `spw install`. See `docs/PR-REVIEW-OPTIMIZATION.md`.
+Spec-workflow files are marked as `linguist-generated` via `.gitattributes` so GitHub collapses them by default in PR diffs. Reviewers see only feature code changes; spec artifacts are expandable on demand. The installer adds the rule automatically during `oraculo install`. See `docs/PR-REVIEW-OPTIMIZATION.md`.
 
 ```gitattributes
 .spec-workflow/specs/** linguist-generated=true
@@ -230,6 +230,6 @@ Spec-workflow files are marked as `linguist-generated` via `.gitattributes` so G
 - Approval is MCP-only (via `spec-workflow-mcp`), never manual chat approval. `STATUS-SUMMARY.md` is output-only, not a source of truth.
 - `tasks.md` must follow dashboard compatibility: checkbox markers only on task lines with numeric IDs, `-` as list marker (never `*`), no nested checkboxes in metadata, `Files` in single line.
 - Unfinished runs must prompt user decision (`continue-unfinished` or `delete-and-restart`), never auto-restart.
-- `spw:exec` orchestrator never implements code directly — always dispatches subagents, even for single-task waves. Exception: the orchestrator can apply a surgical fix of ≤3 lines when an audit critic returns BLOCKED with a mechanical fix; the fix must be logged in `_handoff.md`.
-- Complexity routing in `spw:exec`: the `complex_reasoning` model alias is triggered for tasks involving auth/security/payments, tasks touching >3 core files, or cross-context architecture decisions.
-- When modifying behavior, defaults, or guardrails, update `README.md`, `AGENTS.md`, `docs/SPW-WORKFLOW.md`, `hooks/README.md`, and `copy-ready/README.md` in the same patch.
+- `oraculo:exec` orchestrator never implements code directly — always dispatches subagents, even for single-task waves. Exception: the orchestrator can apply a surgical fix of ≤3 lines when an audit critic returns BLOCKED with a mechanical fix; the fix must be logged in `_handoff.md`.
+- Complexity routing in `oraculo:exec`: the `complex_reasoning` model alias is triggered for tasks involving auth/security/payments, tasks touching >3 core files, or cross-context architecture decisions.
+- When modifying behavior, defaults, or guardrails, update `README.md`, `AGENTS.md`, `docs/ORACULO-WORKFLOW.md`, `hooks/README.md`, and `copy-ready/README.md` in the same patch.

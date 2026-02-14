@@ -5,9 +5,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/lucas-stellet/spw/internal/config"
-	"github.com/lucas-stellet/spw/internal/render"
-	"github.com/lucas-stellet/spw/internal/workspace"
+	"github.com/lucas-stellet/oraculo/internal/config"
+	"github.com/lucas-stellet/oraculo/internal/render"
+	"github.com/lucas-stellet/oraculo/internal/workspace"
 	"github.com/spf13/cobra"
 )
 
@@ -53,7 +53,7 @@ func newRenderCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().Bool("all", false, "Render all 13 commands to .claude/workflows/spw/")
+	cmd.Flags().Bool("all", false, "Render all 13 commands to .claude/workflows/oraculo/")
 
 	return cmd
 }
@@ -73,7 +73,7 @@ func renderAll(engine *render.Engine, cwd string) error {
 		return err
 	}
 
-	outDir := filepath.Join(cwd, ".claude", "workflows", "spw")
+	outDir := filepath.Join(cwd, ".claude", "workflows", "oraculo")
 	if err := os.MkdirAll(outDir, 0o755); err != nil {
 		return fmt.Errorf("creating output dir: %w", err)
 	}
@@ -83,7 +83,7 @@ func renderAll(engine *render.Engine, cwd string) error {
 		if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
 			return fmt.Errorf("writing %s: %w", cmd, err)
 		}
-		fmt.Printf("[spw] rendered %s\n", path)
+		fmt.Printf("[oraculo] rendered %s\n", path)
 	}
 	return nil
 }

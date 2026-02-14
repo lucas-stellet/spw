@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/lucas-stellet/spw/internal/specdir"
+	"github.com/lucas-stellet/oraculo/internal/specdir"
 )
 
 // taskMarkResult performs the task marking logic and returns the result.

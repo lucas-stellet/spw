@@ -1,10 +1,10 @@
 # PR Review Optimization
 
-SPW generates dozens of spec-workflow files alongside feature code (PRDs, design research, QA plans, agent communications, etc.). Without mitigation, these files bury the actual code changes in pull request diffs, making review harder.
+Oraculo generates dozens of spec-workflow files alongside feature code (PRDs, design research, QA plans, agent communications, etc.). Without mitigation, these files bury the actual code changes in pull request diffs, making review harder.
 
 ## Problem
 
-A typical feature PR after a full SPW pipeline (`prd → design → tasks → exec → qa`) might show:
+A typical feature PR after a full Oraculo pipeline (`prd → design → tasks → exec → qa`) might show:
 
 ```
 Files changed (47)  +2,340 -180
@@ -65,7 +65,7 @@ This marks all files under any spec directory as generated. Dashboard files (`re
 
 ### Installer integration
 
-The `copy-ready/install.sh` script adds this rule automatically during `spw install`:
+The `copy-ready/install.sh` script adds this rule automatically during `oraculo install`:
 
 ```bash
 setup_gitattributes() {
@@ -73,7 +73,7 @@ setup_gitattributes() {
   local gitattributes="${TARGET_ROOT}/.gitattributes"
   if [ ! -f "$gitattributes" ] || ! grep -qF "$rule" "$gitattributes"; then
     echo "$rule" >> "$gitattributes"
-    echo "[spw-kit] Added .gitattributes rule for PR review optimization."
+    echo "[oraculo-kit] Added .gitattributes rule for PR review optimization."
   fi
 }
 ```
@@ -86,8 +86,8 @@ The function:
 ### What is NOT marked as generated
 
 - Feature code (`lib/`, `src/`, `test/`, etc.) — always visible in PR diffs
-- SPW config (`.spec-workflow/spw-config.toml`) — not under `specs/`, so not affected
-- SPW templates (`.spec-workflow/user-templates/`) — not under `specs/`, so not affected
+- Oraculo config (`.spec-workflow/oraculo.toml`) — not under `specs/`, so not affected
+- Oraculo templates (`.spec-workflow/user-templates/`) — not under `specs/`, so not affected
 
 ## Scope
 

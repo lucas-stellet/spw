@@ -6,8 +6,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/lucas-stellet/spw/internal/config"
-	"github.com/lucas-stellet/spw/internal/workspace"
+	"github.com/lucas-stellet/oraculo/internal/config"
+	"github.com/lucas-stellet/oraculo/internal/workspace"
 )
 
 var (
@@ -33,9 +33,9 @@ func HandleGuardPaths() error {
 	if ctx.cfg.Hooks.GuardPaths {
 		isSpecLocal := strings.Contains(relPath, ".spec-workflow/specs/")
 		if isManagedArtifactFile(baseName) && !isSpecLocal {
-			emitViolation(ctx.cfg.Hooks, "SPW artifact path violation", []string{
+			emitViolation(ctx.cfg.Hooks, "ORACULO artifact path violation", []string{
 				"File: " + relPath,
-				"Managed SPW artifacts must stay under .spec-workflow/specs/<spec-name>/",
+				"Managed ORACULO artifacts must stay under .spec-workflow/specs/<spec-name>/",
 			})
 		}
 	}

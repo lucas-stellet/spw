@@ -139,7 +139,7 @@ func WaveLatestPath(specDir string, waveNum int) string {
 	return filepath.Join(WavePath(specDir, waveNum), LatestJSON)
 }
 
-// CommsPath returns the canonical _comms path for a given SPW command.
+// CommsPath returns the canonical _comms path for a given ORACULO command.
 // For wave-aware commands, waveNum must be provided (>0).
 func CommsPath(specDir, command string, waveNum int) string {
 	switch command {

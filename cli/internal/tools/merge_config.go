@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/lucas-stellet/spw/internal/config"
+	"github.com/lucas-stellet/oraculo/internal/config"
 )
 
 // MergeConfig merges a template TOML with a user TOML, writing the result to outputPath.

@@ -1,9 +1,9 @@
 package cli
 
 import (
-	"github.com/lucas-stellet/spw/internal/spec"
-	"github.com/lucas-stellet/spw/internal/specdir"
-	"github.com/lucas-stellet/spw/internal/tools"
+	"github.com/lucas-stellet/oraculo/internal/spec"
+	"github.com/lucas-stellet/oraculo/internal/specdir"
+	"github.com/lucas-stellet/oraculo/internal/tools"
 	"github.com/spf13/cobra"
 )
 
@@ -83,7 +83,7 @@ func newSpecStageCmd() *cobra.Command {
 func newSpecPrereqsCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "prereqs <spec-name> <command>",
-		Short: "Check prerequisites for an SPW command",
+		Short: "Check prerequisites for an ORACULO command",
 		Args:  cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
 			raw, _ := cmd.Flags().GetBool("raw")

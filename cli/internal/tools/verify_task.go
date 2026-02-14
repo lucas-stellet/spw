@@ -4,7 +4,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/lucas-stellet/spw/internal/specdir"
+	"github.com/lucas-stellet/oraculo/internal/specdir"
 )
 
 // verifyTaskResult builds the verification result without Output/Fail side effects.

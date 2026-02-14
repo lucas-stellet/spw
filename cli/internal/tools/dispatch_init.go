@@ -8,10 +8,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/lucas-stellet/spw/internal/config"
-	"github.com/lucas-stellet/spw/internal/embedded"
-	"github.com/lucas-stellet/spw/internal/registry"
-	"github.com/lucas-stellet/spw/internal/store"
+	"github.com/lucas-stellet/oraculo/internal/config"
+	"github.com/lucas-stellet/oraculo/internal/embedded"
+	"github.com/lucas-stellet/oraculo/internal/registry"
+	"github.com/lucas-stellet/oraculo/internal/store"
 )
 
 var runNumRe = regexp.MustCompile(`^run-(\d+)$`)

@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/lucas-stellet/spw/internal/config"
+	"github.com/lucas-stellet/oraculo/internal/config"
 )
 
 // SkillsEffectiveSet resolves the effective skill set for a stage.
@@ -51,7 +51,7 @@ func SkillsEffectiveSet(cwd, stage string, raw bool) {
 
 	rel, _ := filepath.Rel(cwd, configPath)
 	source := "canonical"
-	if strings.Contains(configPath, ".spw/") {
+	if strings.Contains(configPath, ".oraculo/") {
 		source = "fallback"
 	}
 

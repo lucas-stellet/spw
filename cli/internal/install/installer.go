@@ -1,4 +1,4 @@
-// Package install handles deploying SPW kit files into a project.
+// Package install handles deploying ORACULO kit files into a project.
 package install
 
 import (
@@ -8,20 +8,20 @@ import (
 	"path/filepath"
 	"text/template"
 
-	"github.com/lucas-stellet/spw/internal/config"
-	"github.com/lucas-stellet/spw/internal/embedded"
-	"github.com/lucas-stellet/spw/internal/render"
-	"github.com/lucas-stellet/spw/internal/workspace"
+	"github.com/lucas-stellet/oraculo/internal/config"
+	"github.com/lucas-stellet/oraculo/internal/embedded"
+	"github.com/lucas-stellet/oraculo/internal/render"
+	"github.com/lucas-stellet/oraculo/internal/workspace"
 )
 
-// CommandMeta describes an SPW command for stub generation.
+// CommandMeta describes an ORACULO command for stub generation.
 type CommandMeta struct {
 	Name         string
 	Description  string
 	ArgumentHint string
 }
 
-// AllCommands returns metadata for all 13 SPW commands.
+// AllCommands returns metadata for all 13 ORACULO commands.
 func AllCommands() []CommandMeta {
 	return []CommandMeta{
 		{"prd", "Zero-to-PRD discovery flow with subagents to generate requirements.md", "<spec-name> [--source <url-or-file.md>]"},
@@ -45,10 +45,10 @@ type Options struct {
 	WorkspaceRoot string
 }
 
-// Run performs the full SPW install.
+// Run performs the full ORACULO install.
 func Run(opts Options) error {
 	root := opts.WorkspaceRoot
-	fmt.Printf("[spw] Installing into project: %s\n", root)
+	fmt.Printf("[oraculo] Installing into project: %s\n", root)
 
 	// 1. Backup user config before overwrite
 	configPath := config.ResolveConfigPath(root)
@@ -67,7 +67,7 @@ func Run(opts Options) error {
 		if err := mergeConfig(root, configPath, configBackup); err != nil {
 			return fmt.Errorf("merging config: %w", err)
 		}
-		fmt.Println("[spw] Config merged: user values preserved, new keys added.")
+		fmt.Println("[oraculo] Config merged: user values preserved, new keys added.")
 	}
 
 	// 4. Generate command stubs
@@ -81,7 +81,7 @@ func Run(opts Options) error {
 		return fmt.Errorf("rendering workflows: %w", err)
 	}
 
-	// 5b. Inject SPW dispatch instructions into CLAUDE.md and AGENTS.md
+	// 5b. Inject ORACULO dispatch instructions into CLAUDE.md and AGENTS.md
 	if err := injectProjectSnippets(root); err != nil {
 		return fmt.Errorf("injecting snippets: %w", err)
 	}
@@ -96,14 +96,14 @@ func Run(opts Options) error {
 
 	// 8. Install default skills if configured (reload config for merged values)
 	cfg, _ = config.Load(root) //nolint:ineffassign
-	if cfg.Skills.AutoInstallDefaultsOnSPWInstall {
+	if cfg.Skills.AutoInstallDefaultsOnORACULOInstall {
 		InstallDefaultSkills(root)
 	} else {
-		fmt.Println("[spw] Skipping default skills install (auto_install_defaults_on_spw_install=false).")
+		fmt.Println("[oraculo] Skipping default skills install (auto_install_defaults_on_oraculo_install=false).")
 	}
 
-	fmt.Println("[spw] Installation complete.")
-	fmt.Println("[spw] Next step: adjust .spec-workflow/spw-config.toml")
+	fmt.Println("[oraculo] Installation complete.")
+	fmt.Println("[oraculo] Next step: adjust .spec-workflow/oraculo.toml")
 	return nil
 }
 
@@ -114,7 +114,7 @@ func writeDefaults(root string) error {
 		}
 
 		// Map embedded path to target path
-		// defaults/spw-config.toml → .spec-workflow/spw-config.toml
+		// defaults/oraculo.toml → .spec-workflow/oraculo.toml
 		// defaults/user-templates/... → .spec-workflow/user-templates/...
 		rel, _ := filepath.Rel("defaults", path)
 		target := filepath.Join(root, ".spec-workflow", rel)
@@ -133,7 +133,7 @@ func writeDefaults(root string) error {
 
 func mergeConfig(_, configPath string, backup []byte) error {
 	// Write backup to temp file for merge
-	tmp, err := os.CreateTemp("", "spw-config-backup-*.toml")
+	tmp, err := os.CreateTemp("", "oraculo-config-backup-*.toml")
 	if err != nil {
 		return err
 	}
@@ -159,7 +159,7 @@ func writeCommandStubs(root string) error {
 		return fmt.Errorf("parsing stub template: %w", err)
 	}
 
-	cmdsDir := filepath.Join(root, ".claude", "commands", "spw")
+	cmdsDir := filepath.Join(root, ".claude", "commands", "oraculo")
 	if err := os.MkdirAll(cmdsDir, 0755); err != nil {
 		return err
 	}
@@ -177,18 +177,18 @@ func writeCommandStubs(root string) error {
 		f.Close()
 	}
 
-	fmt.Printf("[spw] Generated %d command stubs.\n", len(AllCommands()))
+	fmt.Printf("[oraculo] Generated %d command stubs.\n", len(AllCommands()))
 	return nil
 }
 
-// RunGlobal performs a global SPW install to ~/.claude/.
+// RunGlobal performs a global ORACULO install to ~/.claude/.
 // Commands, workflows, hooks, skills, and overlay symlinks are installed globally.
 // No project-specific config, templates, or snippets are touched.
 func RunGlobal(opts Options) error {
 	home := opts.WorkspaceRoot
-	fmt.Printf("[spw] Installing globally into: %s\n", home)
+	fmt.Printf("[oraculo] Installing globally into: %s\n", home)
 
-	// 1. Generate command stubs → ~/.claude/commands/spw/
+	// 1. Generate command stubs → ~/.claude/commands/oraculo/
 	if err := writeCommandStubs(home); err != nil {
 		return fmt.Errorf("writing command stubs: %w", err)
 	}
@@ -211,8 +211,8 @@ func RunGlobal(opts Options) error {
 	// 5. Overlay symlinks → noop by default (project controls activation)
 	WriteOverlaySymlinks(home, false)
 
-	fmt.Println("[spw] Global installation complete.")
-	fmt.Println("[spw] Use 'spw init' in each project to set up project-specific config.")
+	fmt.Println("[oraculo] Global installation complete.")
+	fmt.Println("[oraculo] Use 'oraculo init' in each project to set up project-specific config.")
 	return nil
 }
 
@@ -221,7 +221,7 @@ func RunGlobal(opts Options) error {
 // Commands and workflows are expected to come from a global install.
 func RunInit(opts Options) error {
 	root := opts.WorkspaceRoot
-	fmt.Printf("[spw] Initializing project: %s\n", root)
+	fmt.Printf("[oraculo] Initializing project: %s\n", root)
 
 	// 1. Write default config and templates
 	if err := writeDefaults(root); err != nil {
@@ -239,16 +239,16 @@ func RunInit(opts Options) error {
 	// 4. Diagnose global install presence
 	home, err := os.UserHomeDir()
 	if err == nil {
-		globalCmds := filepath.Join(home, ".claude", "commands", "spw")
+		globalCmds := filepath.Join(home, ".claude", "commands", "oraculo")
 		if entries, err := os.ReadDir(globalCmds); err == nil && len(entries) > 0 {
-			fmt.Printf("[spw] Global install detected: %d commands in ~/.claude/commands/spw/\n", len(entries))
+			fmt.Printf("[oraculo] Global install detected: %d commands in ~/.claude/commands/oraculo/\n", len(entries))
 		} else {
-			fmt.Println("[spw] No global install detected. Run 'spw install --global' or 'spw install' for a full local install.")
+			fmt.Println("[oraculo] No global install detected. Run 'oraculo install --global' or 'oraculo install' for a full local install.")
 		}
 	}
 
-	fmt.Println("[spw] Project initialized.")
-	fmt.Println("[spw] Next step: adjust .spec-workflow/spw-config.toml")
+	fmt.Println("[oraculo] Project initialized.")
+	fmt.Println("[oraculo] Next step: adjust .spec-workflow/oraculo.toml")
 	return nil
 }
 
@@ -256,14 +256,14 @@ func RunInit(opts Options) error {
 // When teamsEnabled is true, symlinks point to ../teams/<cmd>.md;
 // when false, they point to ../noop.md.
 func WriteOverlaySymlinks(root string, teamsEnabled bool) {
-	activeDir := filepath.Join(root, ".claude", "workflows", "spw", "overlays", "active")
+	activeDir := filepath.Join(root, ".claude", "workflows", "oraculo", "overlays", "active")
 	if err := os.MkdirAll(activeDir, 0755); err != nil {
-		fmt.Fprintf(os.Stderr, "[spw] Failed to create overlay active dir: %v\n", err)
+		fmt.Fprintf(os.Stderr, "[oraculo] Failed to create overlay active dir: %v\n", err)
 		return
 	}
 
 	// Also ensure noop.md exists
-	noopPath := filepath.Join(root, ".claude", "workflows", "spw", "overlays", "noop.md")
+	noopPath := filepath.Join(root, ".claude", "workflows", "oraculo", "overlays", "noop.md")
 	if _, err := os.Stat(noopPath); os.IsNotExist(err) {
 		os.MkdirAll(filepath.Dir(noopPath), 0755)
 		os.WriteFile(noopPath, []byte("<!-- noop overlay -->\n"), 0644)
@@ -280,14 +280,14 @@ func WriteOverlaySymlinks(root string, teamsEnabled bool) {
 			target = "../noop.md"
 		}
 		if err := os.Symlink(target, linkPath); err != nil {
-			fmt.Fprintf(os.Stderr, "[spw] Failed to create symlink %s: %v\n", linkPath, err)
+			fmt.Fprintf(os.Stderr, "[oraculo] Failed to create symlink %s: %v\n", linkPath, err)
 		}
 	}
 
 	if teamsEnabled {
-		fmt.Println("[spw] Activated team overlays via symlinks.")
+		fmt.Println("[oraculo] Activated team overlays via symlinks.")
 	} else {
-		fmt.Println("[spw] Overlay symlinks set to noop (teams disabled).")
+		fmt.Println("[oraculo] Overlay symlinks set to noop (teams disabled).")
 	}
 }
 
@@ -317,7 +317,7 @@ func writeRenderedWorkflows(root string, cfg config.Config) error {
 		return err
 	}
 
-	wfDir := filepath.Join(root, ".claude", "workflows", "spw")
+	wfDir := filepath.Join(root, ".claude", "workflows", "oraculo")
 	if err := os.MkdirAll(wfDir, 0o755); err != nil {
 		return err
 	}
@@ -329,6 +329,6 @@ func writeRenderedWorkflows(root string, cfg config.Config) error {
 		}
 	}
 
-	fmt.Printf("[spw] Rendered %d workflows.\n", len(results))
+	fmt.Printf("[oraculo] Rendered %d workflows.\n", len(results))
 	return nil
 }

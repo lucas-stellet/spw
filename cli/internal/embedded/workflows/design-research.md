@@ -1,5 +1,5 @@
 ---
-name: spw:design-research
+name: oraculo:design-research
 description: Subagent-driven technical research to prepare design.md
 argument-hint: "<spec-name> [--focus <topic>] [--web-depth low|medium|high]"
 ---
@@ -9,15 +9,15 @@ category: pipeline
 subcategory: research
 phase: design
 comms_path: design/_comms/design-research
-policy: @.claude/workflows/spw/shared/dispatch-pipeline.md
+policy: @.claude/workflows/oraculo/shared/dispatch-pipeline.md
 </dispatch_pattern>
 
 <shared_policies>
-- @.claude/workflows/spw/shared/config-resolution.md
-- @.claude/workflows/spw/shared/file-handoff.md
-- @.claude/workflows/spw/shared/resume-policy.md
-- @.claude/workflows/spw/shared/skills-policy.md
-- @.claude/workflows/spw/shared/approval-reconciliation.md
+- @.claude/workflows/oraculo/shared/config-resolution.md
+- @.claude/workflows/oraculo/shared/file-handoff.md
+- @.claude/workflows/oraculo/shared/resume-policy.md
+- @.claude/workflows/oraculo/shared/skills-policy.md
+- @.claude/workflows/oraculo/shared/approval-reconciliation.md
 </shared_policies>
 
 <objective>
@@ -104,7 +104,7 @@ Apply `<prototype_url_policy>`: if scout target is an SPA or known prototype dom
 </preconditions>
 
 <model_policy>
-Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
+Resolve models from `.spec-workflow/oraculo.toml` `[models]`:
 - web_research -> default `haiku`
 - complex_reasoning -> default `opus`
 - implementation -> default `sonnet`
@@ -113,7 +113,7 @@ Multimodal override: when a `web-pattern-scout-*` must analyze images (screensho
 </model_policy>
 
 <post_mortem_memory>
-Resolve from `.spec-workflow/spw-config.toml` `[post_mortem_memory]`:
+Resolve from `.spec-workflow/oraculo.toml` `[post_mortem_memory]`:
 - `enabled` (default `true`)
 - `max_entries_for_design` (default `5`)
 
@@ -142,7 +142,7 @@ When a web scout fetches a URL that returns an SPA shell (minimal HTML with only
 </prototype_url_policy>
 
 <skills_policy>
-Resolve skill policy from `.spec-workflow/spw-config.toml`:
+Resolve skill policy from `.spec-workflow/oraculo.toml`:
 - `[skills].enabled`
 - `[skills.design].required`
 - `[skills.design].optional`
@@ -163,7 +163,7 @@ Skill gate (mandatory when `skills.enabled=true`):
      ============================================================ -->
 
 <agent_teams_policy>
-@.claude/workflows/spw/overlays/active/design-research.md
+@.claude/workflows/oraculo/overlays/active/design-research.md
 </agent_teams_policy>
 
 <!-- ============================================================
@@ -183,10 +183,10 @@ Skill gate (mandatory when `skills.enabled=true`):
 <completion_guidance>
 On success:
 - Confirm output path: `.spec-workflow/specs/<spec-name>/design/DESIGN-RESEARCH.md`.
-- Recommend next command: `spw:design-draft <spec-name>`.
+- Recommend next command: `oraculo:design-draft <spec-name>`.
 
 If blocked:
 - List missing inputs (requirements approval, steering docs, source failures).
 - If waiting on resume decision, ask user to choose `continue-unfinished` or `delete-and-restart`, then rerun.
-- Provide rerun command: `spw:design-research <spec-name>`.
+- Provide rerun command: `oraculo:design-research <spec-name>`.
 </completion_guidance>

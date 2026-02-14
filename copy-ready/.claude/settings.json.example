@@ -1,7 +1,7 @@
 {
   "statusLine": {
     "type": "command",
-    "command": "spw hook statusline"
+    "command": "oraculo hook statusline"
   },
   "hooks": {
     "SessionStart": [
@@ -10,7 +10,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "spw hook session-start"
+            "command": "oraculo hook session-start"
           }
         ]
       }
@@ -21,7 +21,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "spw hook guard-prompt"
+            "command": "oraculo hook guard-prompt"
           }
         ]
       }
@@ -32,7 +32,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "spw hook guard-paths"
+            "command": "oraculo hook guard-paths"
           }
         ]
       }
@@ -43,7 +43,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "spw hook guard-stop"
+            "command": "oraculo hook guard-stop"
           }
         ]
       }

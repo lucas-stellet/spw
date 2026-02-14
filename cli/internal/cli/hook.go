@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"github.com/lucas-stellet/spw/internal/hook"
+	"github.com/lucas-stellet/oraculo/internal/hook"
 	"github.com/spf13/cobra"
 )
 

@@ -1,4 +1,4 @@
-MODULE := github.com/lucas-stellet/spw
+MODULE := github.com/lucas-stellet/oraculo
 VERSION ?= dev
 COMMIT  := $(shell git rev-parse --short HEAD 2>/dev/null || echo "none")
 DATE    := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -10,7 +10,7 @@ LDFLAGS := -s -w \
 .PHONY: build test lint clean snapshot install
 
 build:
-	go build -ldflags '$(LDFLAGS)' -o bin/spw ./cmd/spw/
+	go build -ldflags '$(LDFLAGS)' -o bin/oraculo ./cmd/oraculo/
 
 test:
 	go test ./...
@@ -26,4 +26,4 @@ snapshot:
 	goreleaser release --snapshot --clean
 
 install: build
-	cp bin/spw $(GOPATH)/bin/spw 2>/dev/null || cp bin/spw /usr/local/bin/spw
+	cp bin/oraculo $(GOPATH)/bin/oraculo 2>/dev/null || cp bin/oraculo /usr/local/bin/oraculo

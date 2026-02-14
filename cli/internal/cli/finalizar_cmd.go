@@ -9,11 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lucas-stellet/spw/internal/specdir"
-	"github.com/lucas-stellet/spw/internal/store"
-	"github.com/lucas-stellet/spw/internal/summary"
-	"github.com/lucas-stellet/spw/internal/tasks"
-	"github.com/lucas-stellet/spw/internal/wave"
+	"github.com/lucas-stellet/oraculo/internal/specdir"
+	"github.com/lucas-stellet/oraculo/internal/store"
+	"github.com/lucas-stellet/oraculo/internal/summary"
+	"github.com/lucas-stellet/oraculo/internal/tasks"
+	"github.com/lucas-stellet/oraculo/internal/wave"
 	"github.com/spf13/cobra"
 )
 
@@ -127,7 +127,7 @@ func runFinalizar(cmd *cobra.Command, args []string) {
 	_ = s.SetMeta("stage", "complete")
 	_ = s.SetMeta("completed_at", nowStr)
 
-	// 12. Index in global .spw-index.db.
+	// 12. Index in global .oraculo-index.db.
 	var docsIndexed int
 	ix, ixErr := store.OpenIndex(cwd)
 	if ixErr == nil {

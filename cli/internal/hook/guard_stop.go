@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lucas-stellet/spw/internal/workspace"
+	"github.com/lucas-stellet/oraculo/internal/workspace"
 )
 
 var runDirRe = regexp.MustCompile(`^run-\d{3}$`)

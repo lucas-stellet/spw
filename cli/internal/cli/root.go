@@ -8,9 +8,9 @@ import (
 
 func NewRootCmd(version, commit, date string) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "spw",
-		Short: "SPW — spec-workflow command kit",
-		Long:  "SPW is a command/template kit for spec-workflow-mcp that provides stricter agent execution patterns with subagent-first orchestration and model routing.",
+		Use:   "oraculo",
+		Short: "ORACULO — spec-workflow command kit",
+		Long:  "ORACULO is a command/template kit for spec-workflow-mcp that provides stricter agent execution patterns with subagent-first orchestration and model routing.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return cmd.Help()
 		},
@@ -44,7 +44,7 @@ func newVersionCmd(version, commit, date string) *cobra.Command {
 		Use:   "version",
 		Short: "Print version information",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Printf("spw %s (commit: %s, built: %s)\n", version, commit, date)
+			fmt.Printf("oraculo %s (commit: %s, built: %s)\n", version, commit, date)
 		},
 	}
 }

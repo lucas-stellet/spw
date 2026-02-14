@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/lucas-stellet/spw/internal/embedded"
+	"github.com/lucas-stellet/oraculo/internal/embedded"
 )
 
 // InjectSnippet injects or replaces a marker-delimited snippet block in targetFile.
@@ -16,8 +16,8 @@ import (
 // If targetFile exists but has no marker, the snippet is appended.
 // If targetFile does not exist, it is created with the snippet content.
 func InjectSnippet(targetFile string, snippet []byte) error {
-	markerStart := []byte("<!-- SPW-KIT-START")
-	markerEnd := []byte("<!-- SPW-KIT-END -->")
+	markerStart := []byte("<!-- ORACULO-KIT-START")
+	markerEnd := []byte("<!-- ORACULO-KIT-END -->")
 
 	existing, err := os.ReadFile(targetFile)
 	if err != nil && !os.IsNotExist(err) {
@@ -80,6 +80,6 @@ func injectProjectSnippets(root string) error {
 			return fmt.Errorf("injecting snippet into %s: %w", filepath.Base(t.file), err)
 		}
 	}
-	fmt.Println("[spw] Updated CLAUDE.md and AGENTS.md with SPW dispatch instructions.")
+	fmt.Println("[oraculo] Updated CLAUDE.md and AGENTS.md with ORACULO dispatch instructions.")
 	return nil
 }

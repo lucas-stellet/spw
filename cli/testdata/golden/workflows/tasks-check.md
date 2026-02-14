@@ -1,5 +1,5 @@
 ---
-name: spw:tasks-check
+name: oraculo:tasks-check
 description: Subagent-driven tasks.md validation (traceability, dependencies, tests)
 argument-hint: "<spec-name>"
 ---
@@ -74,13 +74,13 @@ Audit commands may inject logic at these points:
 <shared_policies>
 # Config Resolution
 
-Canonical runtime config path is `.spec-workflow/spw-config.toml`.
+Canonical runtime config path is `.spec-workflow/oraculo.toml`.
 
 Transitional compatibility:
-- If `.spec-workflow/spw-config.toml` is missing, fallback to `.spw/spw-config.toml`.
+- If `.spec-workflow/oraculo.toml` is missing, fallback to `.oraculo/oraculo.toml`.
 
 When shell logic is required, prefer:
-- `spw tools config-get <section.key> --default <value> [--raw]`
+- `oraculo tools config-get <section.key> --default <value> [--raw]`
 
 This keeps workflow behavior stable and avoids hardcoded path drift.
 
@@ -176,7 +176,7 @@ comms:
 <!-- pre_pipeline: verify tasks.md exists, skills, resume ......... -->
 <pre_pipeline>
 1. Resolve `SPEC_DIR=.spec-workflow/specs/<spec-name>`.
-2. Verify `tasks.md` exists in SPEC_DIR; stop BLOCKED if missing → recommend `spw:tasks-plan <spec-name>`.
+2. Verify `tasks.md` exists in SPEC_DIR; stop BLOCKED if missing → recommend `oraculo:tasks-plan <spec-name>`.
 3. Apply skills policy: run design skills preflight and write `SKILLS-TASKS-CHECK.md`.
 4. Load post-mortem memory inputs via `<post_mortem_memory>`.
 5. Inspect existing tasks-check run dirs and apply resume decision gate.
@@ -198,13 +198,13 @@ comms:
      ============================================================ -->
 
 <model_policy>
-Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
+Resolve models from `.spec-workflow/oraculo.toml` `[models]`:
 - complex_reasoning -> default `opus`
 - implementation -> default `sonnet`
 </model_policy>
 
 <post_mortem_memory>
-Resolve from `.spec-workflow/spw-config.toml` `[post_mortem_memory]`:
+Resolve from `.spec-workflow/oraculo.toml` `[post_mortem_memory]`:
 - `enabled` (default `true`)
 - `max_entries_for_design` (default `5`)
 
@@ -219,7 +219,7 @@ If index/report files are missing, continue with warning (non-blocking).
 </post_mortem_memory>
 
 <skills_policy>
-Resolve skill policy from `.spec-workflow/spw-config.toml`:
+Resolve skill policy from `.spec-workflow/oraculo.toml`:
 - `[skills].enabled`
 - `[skills.design].required`
 - `[skills.design].optional`
@@ -259,11 +259,11 @@ Skill gate (mandatory when `skills.enabled=true`):
 <completion_guidance>
 On PASS:
 - Confirm output path: `.spec-workflow/specs/<spec-name>/planning/TASKS-CHECK.md`.
-- Recommend next command: `spw:exec <spec-name> --batch-size <N>`.
+- Recommend next command: `oraculo:exec <spec-name> --batch-size <N>`.
 - Recommend running `/clear` before execution.
 
 On BLOCKED:
 - Show findings by severity and required fixes.
 - If waiting on resume decision, ask user to choose `continue-unfinished` or `delete-and-restart`, then rerun.
-- Recommend fix path: update `tasks.md`, then rerun `spw:tasks-check <spec-name>`.
+- Recommend fix path: update `tasks.md`, then rerun `oraculo:tasks-check <spec-name>`.
 </completion_guidance>

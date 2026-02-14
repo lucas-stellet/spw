@@ -1,4 +1,4 @@
-// Package embedded provides go:embed access to all SPW assets.
+// Package embedded provides go:embed access to all ORACULO assets.
 //
 // These files are the canonical source for workflows, shared policies,
 // dispatch patterns, team overlays, command stub templates, and default
@@ -38,7 +38,7 @@ var Overlays embed.FS
 var Stubs embed.FS
 
 // Defaults contains default user-facing files
-// (spw-config.toml, user-templates/).
+// (oraculo.toml, user-templates/).
 //
 //go:embed all:defaults
 var Defaults embed.FS
@@ -105,7 +105,7 @@ func (c *CompositeFS) ReadDir(name string) ([]fs.DirEntry, error) {
 	return nil, &fs.PathError{Op: "readdir", Path: name, Err: fs.ErrNotExist}
 }
 
-// AllWorkflowNames lists the 13 SPW command names in pipeline order.
+// AllWorkflowNames lists the 13 ORACULO command names in pipeline order.
 var AllWorkflowNames = []string{
 	"prd",
 	"plan",

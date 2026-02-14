@@ -1,5 +1,5 @@
 ---
-name: spw:exec
+name: oraculo:exec
 description: Subagent-driven task execution in batches with mandatory checkpoints
 argument-hint: "<spec-name> [--batch-size 3] [--strict true|false]"
 ---
@@ -89,13 +89,13 @@ Wave execution commands may inject logic at these points:
 <shared_policies>
 # Config Resolution
 
-Canonical runtime config path is `.spec-workflow/spw-config.toml`.
+Canonical runtime config path is `.spec-workflow/oraculo.toml`.
 
 Transitional compatibility:
-- If `.spec-workflow/spw-config.toml` is missing, fallback to `.spw/spw-config.toml`.
+- If `.spec-workflow/oraculo.toml` is missing, fallback to `.oraculo/oraculo.toml`.
 
 When shell logic is required, prefer:
-- `spw tools config-get <section.key> --default <value> [--raw]`
+- `oraculo tools config-get <section.key> --default <value> [--raw]`
 
 This keeps workflow behavior stable and avoids hardcoded path drift.
 
@@ -200,7 +200,7 @@ comms:
    - if missing, list available specs and stop BLOCKED.
 2. Apply skills policy: run implementation skills preflight and write `SKILLS-EXEC.md`.
 3. Dispatch `execution-state-scout` and require compact handoff contract.
-   - if `tasks.md` is missing, stop BLOCKED → instruct `spw:tasks-plan <spec-name>`.
+   - if `tasks.md` is missing, stop BLOCKED → instruct `oraculo:tasks-plan <spec-name>`.
 4. Resolve resume state from scout handoff.
 5. Resolve current wave ID and ensure canonical wave comms folder exists.
 6. Read only task-scoped context required for selected task IDs.
@@ -208,7 +208,7 @@ comms:
 
 <!-- inter_wave: checkpoint + user authorization .................. -->
 <inter_wave>
-1. At end of batch, run `spw:checkpoint <spec-name>`.
+1. At end of batch, run `oraculo:checkpoint <spec-name>`.
 2. If checkpoint BLOCKED, stop.
 3. If checkpoint PASS:
    - if `require_clean_worktree_for_wave_pass=true` and worktree is dirty: stop BLOCKED
@@ -233,7 +233,7 @@ comms:
 <post_pipeline>
 1. After full execution success:
    - If `tasks_generation_strategy=rolling-wave` and no further waves, recommend:
-     `spw:tasks-plan <spec-name>` then `spw:tasks-check <spec-name>`.
+     `oraculo:tasks-plan <spec-name>` then `oraculo:tasks-check <spec-name>`.
    - If `tasks_generation_strategy=all-at-once`, recommend final validation only.
 2. Write `<run-dir>/_handoff.md` with execution summary.
 </post_pipeline>
@@ -251,13 +251,13 @@ comms:
 </execution_mode>
 
 <model_policy>
-Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
+Resolve models from `.spec-workflow/oraculo.toml` `[models]`:
 - complex_reasoning -> default `opus`
 - implementation -> default `sonnet`
 </model_policy>
 
 <skills_policy>
-Resolve skill policy from `.spec-workflow/spw-config.toml`:
+Resolve skill policy from `.spec-workflow/oraculo.toml`:
 - `[skills].enabled`
 - `[skills.implementation].required`
 - `[skills.implementation].optional`
@@ -319,7 +319,7 @@ Rules:
 </wave_comms_layout>
 
 <wave_authorization>
-Resolve from `.spec-workflow/spw-config.toml` `[execution].require_user_approval_between_waves` (default `true`).
+Resolve from `.spec-workflow/oraculo.toml` `[execution].require_user_approval_between_waves` (default `true`).
 
 If `true`:
 - After each checkpoint PASS, if there is at least one remaining wave, ask explicit user authorization.
@@ -332,7 +332,7 @@ If `true`:
 </wave_authorization>
 
 <manual_task_policy>
-Resolve from `.spec-workflow/spw-config.toml` `[execution].manual_tasks_require_human_handoff` (default `true`).
+Resolve from `.spec-workflow/oraculo.toml` `[execution].manual_tasks_require_human_handoff` (default `true`).
 
 When enabled, if the next task is manual/human-gated:
 - do not auto-mark `[ ] -> [-]`
@@ -342,7 +342,7 @@ When enabled, if the next task is manual/human-gated:
 </manual_task_policy>
 
 <tasks_planning_strategy>
-Resolve from `.spec-workflow/spw-config.toml` `[planning].tasks_generation_strategy` (default `rolling-wave`).
+Resolve from `.spec-workflow/oraculo.toml` `[planning].tasks_generation_strategy` (default `rolling-wave`).
 
 Post-execution behavior:
 - `rolling-wave`: after current waves finish, recommend planning the next executable wave.
@@ -350,14 +350,14 @@ Post-execution behavior:
 </tasks_planning_strategy>
 
 <git_hygiene>
-Resolve from `.spec-workflow/spw-config.toml` `[execution]`:
+Resolve from `.spec-workflow/oraculo.toml` `[execution]`:
 - `commit_per_task` (`"auto"|"manual"|"none"`, default `"auto"`)
 - `require_clean_worktree_for_wave_pass` (default `true`)
 
 Rules:
 - If `commit_per_task="auto"` or `"manual"`: for each completed implementation task, create an atomic commit before moving forward.
 - Commit must include task-scoped code changes plus task status artifacts (`tasks.md`).
-- Implementation logs should be recorded during execution, but missing logs are enforced only at `spw:checkpoint`.
+- Implementation logs should be recorded during execution, but missing logs are enforced only at `oraculo:checkpoint`.
 - Commit message must follow Conventional Commits:
   - `<type>(<spec-name>): task <task-id> - <short-title>`
   - type guidance: `feat|fix|refactor|test|docs|chore`
@@ -432,8 +432,8 @@ If waiting on manual task:
 
 After full execution success:
 - If no further executable waves are planned and `tasks_generation_strategy=rolling-wave`, recommend:
-  - `spw:tasks-plan <spec-name>`
-  - then `spw:tasks-check <spec-name>`
+  - `oraculo:tasks-plan <spec-name>`
+  - then `oraculo:tasks-check <spec-name>`
 - If no further executable waves are planned and `tasks_generation_strategy=all-at-once`, skip forced re-planning and recommend final validation only.
 - Recommend final validation review and optionally `/clear` before any new planning cycle.
 

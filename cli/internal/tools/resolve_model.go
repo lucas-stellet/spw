@@ -1,7 +1,7 @@
 package tools
 
 import (
-	"github.com/lucas-stellet/spw/internal/config"
+	"github.com/lucas-stellet/oraculo/internal/config"
 )
 
 // ResolveModel maps a model alias to the resolved model name from config.

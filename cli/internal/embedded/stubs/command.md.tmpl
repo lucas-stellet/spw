@@ -1,5 +1,5 @@
 ---
-name: spw:{{.Name}}
+name: oraculo:{{.Name}}
 description: {{.Description}}
 argument-hint: "{{.ArgumentHint}}"
 ---
@@ -9,10 +9,10 @@ argument-hint: "{{.ArgumentHint}}"
 </objective>
 
 <execution_context>
-@.claude/workflows/spw/{{.Name}}.md
+@.claude/workflows/oraculo/{{.Name}}.md
 </execution_context>
 
 <process>
-Follow the workflow from `@.claude/workflows/spw/{{.Name}}.md` end-to-end.
+Follow the workflow from `@.claude/workflows/oraculo/{{.Name}}.md` end-to-end.
 Preserve existing guardrails, gates, and output contracts.
 </process>

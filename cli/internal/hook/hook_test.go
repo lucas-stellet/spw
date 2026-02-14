@@ -6,41 +6,41 @@ import (
 	"testing"
 	"time"
 
-	"github.com/lucas-stellet/spw/internal/workspace"
+	"github.com/lucas-stellet/oraculo/internal/workspace"
 )
 
-func TestFirstSpwCommand(t *testing.T) {
+func TestFirstOraculoCommand(t *testing.T) {
 	tests := []struct {
 		input   string
 		wantCmd string
 		wantArg string
 	}{
-		{"/spw:exec my-spec", "exec", "my-spec"},
-		{"/spw:plan my-spec --mode rolling-wave", "plan", "my-spec --mode rolling-wave"},
-		{"/spw:status", "status", ""},
-		{"/spw:prd my-spec --source url", "prd", "my-spec --source url"},
+		{"/oraculo:exec my-spec", "exec", "my-spec"},
+		{"/oraculo:plan my-spec --mode rolling-wave", "plan", "my-spec --mode rolling-wave"},
+		{"/oraculo:status", "status", ""},
+		{"/oraculo:prd my-spec --source url", "prd", "my-spec --source url"},
 		{"hello world", "", ""},
 		{"", "", ""},
-		{"some text\n/spw:exec test-spec\nmore text", "exec", "test-spec"},
+		{"some text\n/oraculo:exec test-spec\nmore text", "exec", "test-spec"},
 	}
 
 	for _, tt := range tests {
-		parsed := firstSpwCommand(tt.input)
+		parsed := firstOraculoCommand(tt.input)
 		if tt.wantCmd == "" {
 			if parsed != nil {
-				t.Errorf("firstSpwCommand(%q) = %+v, want nil", tt.input, parsed)
+				t.Errorf("firstOraculoCommand(%q) = %+v, want nil", tt.input, parsed)
 			}
 			continue
 		}
 		if parsed == nil {
-			t.Errorf("firstSpwCommand(%q) = nil, want command=%q", tt.input, tt.wantCmd)
+			t.Errorf("firstOraculoCommand(%q) = nil, want command=%q", tt.input, tt.wantCmd)
 			continue
 		}
 		if parsed.command != tt.wantCmd {
-			t.Errorf("firstSpwCommand(%q).command = %q, want %q", tt.input, parsed.command, tt.wantCmd)
+			t.Errorf("firstOraculoCommand(%q).command = %q, want %q", tt.input, parsed.command, tt.wantCmd)
 		}
 		if parsed.argsLine != tt.wantArg {
-			t.Errorf("firstSpwCommand(%q).argsLine = %q, want %q", tt.input, parsed.argsLine, tt.wantArg)
+			t.Errorf("firstOraculoCommand(%q).argsLine = %q, want %q", tt.input, parsed.argsLine, tt.wantArg)
 		}
 	}
 }

@@ -3,12 +3,12 @@ package registry
 import (
 	"testing"
 
-	"github.com/lucas-stellet/spw/internal/embedded"
+	"github.com/lucas-stellet/oraculo/internal/embedded"
 )
 
 func TestParseDispatchPattern(t *testing.T) {
 	content := `---
-name: spw:test
+name: oraculo:test
 description: Test command
 ---
 
@@ -17,7 +17,7 @@ category: pipeline
 subcategory: research
 phase: prd
 comms_path: prd/_comms
-policy: @.claude/workflows/spw/shared/dispatch-pipeline.md
+policy: @.claude/workflows/oraculo/shared/dispatch-pipeline.md
 </dispatch_pattern>
 
 Some other content here.
@@ -40,7 +40,7 @@ Some other content here.
 	if meta.CommsPath != "prd/_comms" {
 		t.Errorf("CommsPath = %q, want %q", meta.CommsPath, "prd/_comms")
 	}
-	if meta.Policy != "@.claude/workflows/spw/shared/dispatch-pipeline.md" {
+	if meta.Policy != "@.claude/workflows/oraculo/shared/dispatch-pipeline.md" {
 		t.Errorf("Policy = %q, want dispatch-pipeline ref", meta.Policy)
 	}
 	if meta.WaveAware {
@@ -58,7 +58,7 @@ subcategory: implementation
 phase: execution
 comms_path: execution/waves/wave-{wave}/execution
 artifacts: execution/_implementation-logs
-policy: @.claude/workflows/spw/shared/dispatch-wave.md
+policy: @.claude/workflows/oraculo/shared/dispatch-wave.md
 </dispatch_pattern>`
 
 	meta, ok := parseDispatchPattern(content)
@@ -87,7 +87,7 @@ subcategory: code
 phase: execution
 comms_path: execution/waves/wave-{wave}/checkpoint
 artifacts: execution/_implementation-logs, execution/_review-notes
-policy: @.claude/workflows/spw/shared/dispatch-audit.md
+policy: @.claude/workflows/oraculo/shared/dispatch-audit.md
 </dispatch_pattern>`
 
 	meta, ok := parseDispatchPattern(content)
@@ -108,7 +108,7 @@ policy: @.claude/workflows/spw/shared/dispatch-audit.md
 
 func TestParseDispatchPatternNoSection(t *testing.T) {
 	content := `---
-name: spw:plan
+name: oraculo:plan
 ---
 
 Some content without dispatch_pattern.
@@ -125,7 +125,7 @@ func TestParseDispatchPatternMissingCommsPath(t *testing.T) {
 category: pipeline
 subcategory: research
 phase: prd
-policy: @.claude/workflows/spw/shared/dispatch-pipeline.md
+policy: @.claude/workflows/oraculo/shared/dispatch-pipeline.md
 </dispatch_pattern>`
 
 	_, ok := parseDispatchPattern(content)
@@ -139,9 +139,9 @@ func TestDispatchPolicy(t *testing.T) {
 		policy string
 		want   string
 	}{
-		{"@.claude/workflows/spw/shared/dispatch-pipeline.md", "dispatch-pipeline"},
-		{"@.claude/workflows/spw/shared/dispatch-audit.md", "dispatch-audit"},
-		{"@.claude/workflows/spw/shared/dispatch-wave.md", "dispatch-wave"},
+		{"@.claude/workflows/oraculo/shared/dispatch-pipeline.md", "dispatch-pipeline"},
+		{"@.claude/workflows/oraculo/shared/dispatch-audit.md", "dispatch-audit"},
+		{"@.claude/workflows/oraculo/shared/dispatch-wave.md", "dispatch-wave"},
 	}
 
 	for _, tt := range tests {

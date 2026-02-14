@@ -8,7 +8,7 @@ Those files define RULES. This file defines HOW via CLI.
 ### 1. Init run (once per command invocation)
 
 ```
-spw tools dispatch-init <command> <spec-name> [--wave NN]
+oraculo tools dispatch-init <command> <spec-name> [--wave NN]
 ```
 
 Returns: run_dir, run_id, phase, category, subcategory, dispatch_policy, models.
@@ -39,7 +39,7 @@ These files become inputs in subsequent briefs (referenced by path).
 
 a) Setup:
 ```
-spw tools dispatch-setup <name> --run-dir <RUN_DIR> --model-alias <alias>
+oraculo tools dispatch-setup <name> --run-dir <RUN_DIR> --model-alias <alias>
 ```
 Returns: subagent_dir, brief_path, report_path, status_path, resolved model.
 
@@ -52,7 +52,7 @@ c) Dispatch Task tool with:
 
 d) Read status:
 ```
-spw tools dispatch-read-status <name> --run-dir <RUN_DIR>
+oraculo tools dispatch-read-status <name> --run-dir <RUN_DIR>
 ```
 **CRITICAL:** Always use `dispatch-read-status` to read subagent status. Never infer status from TaskOutput text, task-notification content, or any other source. `dispatch-read-status` is the single source of truth — it reads and validates `status.json` from the filesystem.
 
@@ -71,7 +71,7 @@ When a subagent needs session-scoped MCP tools (Linear, Playwright, etc.):
 ### 4. Finalize
 
 ```
-spw tools dispatch-handoff --run-dir <RUN_DIR> [--command <cmd>]
+oraculo tools dispatch-handoff --run-dir <RUN_DIR> [--command <cmd>]
 ```
 
 Generates _handoff.md from all subagent status.json files.

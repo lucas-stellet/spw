@@ -1,11 +1,11 @@
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 version: 2
 
-project_name: spw
+project_name: oraculo
 
 builds:
-  - main: ./cmd/spw/
-    binary: spw
+  - main: ./cmd/oraculo/
+    binary: oraculo
     env:
       - CGO_ENABLED=0
     ldflags:
@@ -41,9 +41,9 @@ changelog:
 
 # Uncomment after creating HOMEBREW_TAP_TOKEN secret and homebrew-tap repo:
 # brews:
-#   - name: spw
-#     description: "SPW — spec-workflow command kit for Claude Code"
-#     homepage: "https://github.com/lucas-stellet/spw"
+#   - name: oraculo
+#     description: "Oráculo — spec-workflow command kit for Claude Code"
+#     homepage: "https://github.com/lucas-stellet/oraculo"
 #     license: "MIT"
 #     repository:
 #       owner: lucas-stellet
@@ -53,6 +53,6 @@ changelog:
 #       name: lucas-stellet
 #       email: lustepe@gmail.com
 #     install: |
-#       bin.install "spw"
+#       bin.install "oraculo"
 #     test: |
-#       system "#{bin}/spw", "version"
+#       system "#{bin}/oraculo", "version"

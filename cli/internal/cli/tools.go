@@ -3,7 +3,7 @@ package cli
 import (
 	"os"
 
-	"github.com/lucas-stellet/spw/internal/tools"
+	"github.com/lucas-stellet/oraculo/internal/tools"
 	"github.com/spf13/cobra"
 )
 
@@ -212,7 +212,7 @@ func newToolsDispatchHandoffCmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().String("run-dir", "", "Run directory path")
-	cmd.Flags().String("command", "", "SPW command name (for category lookup)")
+	cmd.Flags().String("command", "", "ORACULO command name (for category lookup)")
 	cmd.Flags().Bool("raw", false, "Output raw value without JSON wrapping")
 	_ = cmd.MarkFlagRequired("run-dir")
 	return cmd
@@ -246,7 +246,7 @@ func newToolsMergeConfigCmd() *cobra.Command {
 func newToolsMergeSettingsCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "merge-settings",
-		Short: "Merge SPW hooks into .claude/settings.json, preserving non-SPW entries",
+		Short: "Merge ORACULO hooks into .claude/settings.json, preserving non-ORACULO entries",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			global, _ := cmd.Flags().GetBool("global")

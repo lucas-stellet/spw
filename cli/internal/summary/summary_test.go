@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/lucas-stellet/spw/internal/tasks"
-	"github.com/lucas-stellet/spw/internal/wave"
+	"github.com/lucas-stellet/oraculo/internal/tasks"
+	"github.com/lucas-stellet/oraculo/internal/wave"
 	"gopkg.in/yaml.v3"
 )
 

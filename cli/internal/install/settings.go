@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/lucas-stellet/spw/internal/config"
+	"github.com/lucas-stellet/oraculo/internal/config"
 )
 
 // settingsJSON is the Claude Code settings structure.
@@ -36,14 +36,14 @@ func NewSettings() settingsJSON {
 	return settingsJSON{
 		StatusLine: statusLineEntry{
 			Type:    "command",
-			Command: "spw hook statusline",
+			Command: "oraculo hook statusline",
 		},
 		Hooks: map[string][]hookMatcher{
 			"SessionStart": {
 				{
 					Matcher: "startup|resume|clear|compact",
 					Hooks: []hookEntry{
-						{Type: "command", Command: "spw hook session-start"},
+						{Type: "command", Command: "oraculo hook session-start"},
 					},
 				},
 			},
@@ -51,7 +51,7 @@ func NewSettings() settingsJSON {
 				{
 					Matcher: ".*",
 					Hooks: []hookEntry{
-						{Type: "command", Command: "spw hook guard-prompt"},
+						{Type: "command", Command: "oraculo hook guard-prompt"},
 					},
 				},
 			},
@@ -59,7 +59,7 @@ func NewSettings() settingsJSON {
 				{
 					Matcher: "Write|Edit|MultiEdit",
 					Hooks: []hookEntry{
-						{Type: "command", Command: "spw hook guard-paths"},
+						{Type: "command", Command: "oraculo hook guard-paths"},
 					},
 				},
 			},
@@ -67,7 +67,7 @@ func NewSettings() settingsJSON {
 				{
 					Matcher: ".*",
 					Hooks: []hookEntry{
-						{Type: "command", Command: "spw hook guard-stop"},
+						{Type: "command", Command: "oraculo hook guard-stop"},
 					},
 				},
 			},
@@ -76,7 +76,7 @@ func NewSettings() settingsJSON {
 }
 
 // WriteSettings creates .claude/settings.json if it doesn't exist, or merges
-// SPW hooks into the existing file. It also manages Agent Teams settings based
+// ORACULO hooks into the existing file. It also manages Agent Teams settings based
 // on the provided configuration.
 func WriteSettings(root string, agentTeams config.AgentTeamsConfig) error {
 	settingsPath := filepath.Join(root, ".claude", "settings.json")
@@ -89,8 +89,8 @@ func WriteSettings(root string, agentTeams config.AgentTeamsConfig) error {
 		return err
 	}
 
-	spw := NewSettings()
-	data, err := json.MarshalIndent(spw, "", "  ")
+	cfg := NewSettings()
+	data, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {
 		return err
 	}
@@ -111,12 +111,12 @@ func WriteSettings(root string, agentTeams config.AgentTeamsConfig) error {
 		return err
 	}
 
-	fmt.Println("[spw] Created .claude/settings.json with hook registrations.")
+	fmt.Println("[oraculo] Created .claude/settings.json with hook registrations.")
 	return nil
 }
 
-// MergeSettings reads an existing .claude/settings.json, merges SPW hooks into
-// it (preserving all non-SPW hooks and other settings), manages Agent Teams
+// MergeSettings reads an existing .claude/settings.json, merges ORACULO hooks into
+// it (preserving all non-ORACULO hooks and other settings), manages Agent Teams
 // settings, and writes it back.
 func MergeSettings(root string, agentTeams config.AgentTeamsConfig) error {
 	settingsPath := filepath.Join(root, ".claude", "settings.json")
@@ -131,14 +131,14 @@ func MergeSettings(root string, agentTeams config.AgentTeamsConfig) error {
 		return fmt.Errorf("parse settings.json: %w", err)
 	}
 
-	spw := NewSettings()
+	cfg := NewSettings()
 
-	// Merge statusLine: overwrite only if absent or already an SPW statusline.
-	mergeStatusLine(existing, spw)
+	// Merge statusLine: overwrite only if absent or already an ORACULO statusline.
+	mergeStatusLine(existing, cfg)
 
-	// Merge hooks: for each SPW event, remove old SPW entries, append new ones,
-	// preserve all non-SPW entries.
-	mergeHooks(existing, spw)
+	// Merge hooks: for each ORACULO event, remove old ORACULO entries, append new ones,
+	// preserve all non-ORACULO entries.
+	mergeHooks(existing, cfg)
 
 	// Merge Agent Teams settings.
 	mergeAgentTeams(existing, agentTeams)
@@ -152,33 +152,33 @@ func MergeSettings(root string, agentTeams config.AgentTeamsConfig) error {
 		return fmt.Errorf("write settings.json: %w", err)
 	}
 
-	fmt.Println("[spw] Hooks merged into .claude/settings.json.")
+	fmt.Println("[oraculo] Hooks merged into .claude/settings.json.")
 	return nil
 }
 
-// isSPWCommand returns true if the command string is an SPW hook command.
-func isSPWCommand(cmd string) bool {
-	return strings.HasPrefix(cmd, "spw hook ")
+// isORACULOCommand returns true if the command string is an ORACULO hook command.
+func isORACULOCommand(cmd string) bool {
+	return strings.HasPrefix(cmd, "oraculo hook ")
 }
 
-func mergeStatusLine(existing map[string]any, spw settingsJSON) {
+func mergeStatusLine(existing map[string]any, cfg settingsJSON) {
 	shouldSet := false
 	if _, ok := existing["statusLine"]; !ok {
 		shouldSet = true
 	} else if sl, ok := existing["statusLine"].(map[string]any); ok {
-		if cmd, ok := sl["command"].(string); ok && isSPWCommand(cmd) {
+		if cmd, ok := sl["command"].(string); ok && isORACULOCommand(cmd) {
 			shouldSet = true
 		}
 	}
 	if shouldSet {
 		existing["statusLine"] = map[string]any{
-			"type":    spw.StatusLine.Type,
-			"command": spw.StatusLine.Command,
+			"type":    cfg.StatusLine.Type,
+			"command": cfg.StatusLine.Command,
 		}
 	}
 }
 
-func mergeHooks(existing map[string]any, spw settingsJSON) {
+func mergeHooks(existing map[string]any, cfg settingsJSON) {
 	hooksAny, ok := existing["hooks"]
 	if !ok {
 		hooksAny = map[string]any{}
@@ -188,7 +188,7 @@ func mergeHooks(existing map[string]any, spw settingsJSON) {
 		hooks = map[string]any{}
 	}
 
-	for event, spwMatchers := range spw.Hooks {
+	for event, cfgMatchers := range cfg.Hooks {
 		var existingMatchers []any
 		if raw, ok := hooks[event]; ok {
 			if arr, ok := raw.([]any); ok {
@@ -196,7 +196,7 @@ func mergeHooks(existing map[string]any, spw settingsJSON) {
 			}
 		}
 
-		// Filter out old SPW entries from existing matchers.
+		// Filter out old ORACULO entries from existing matchers.
 		var kept []any
 		for _, m := range existingMatchers {
 			mMap, ok := m.(map[string]any)
@@ -204,13 +204,13 @@ func mergeHooks(existing map[string]any, spw settingsJSON) {
 				kept = append(kept, m)
 				continue
 			}
-			if !matcherHasOnlySPWHooks(mMap) {
+			if !matcherHasOnlyORACULOHooks(mMap) {
 				kept = append(kept, m)
 			}
 		}
 
-		// Append SPW matchers.
-		for _, sm := range spwMatchers {
+		// Append ORACULO matchers.
+		for _, sm := range cfgMatchers {
 			entry := map[string]any{
 				"matcher": sm.Matcher,
 				"hooks":   hookEntriesToAny(sm.Hooks),
@@ -224,9 +224,9 @@ func mergeHooks(existing map[string]any, spw settingsJSON) {
 	existing["hooks"] = hooks
 }
 
-// matcherHasOnlySPWHooks returns true if all hook commands in the matcher are
-// SPW commands (meaning the whole matcher should be replaced during merge).
-func matcherHasOnlySPWHooks(m map[string]any) bool {
+// matcherHasOnlyORACULOHooks returns true if all hook commands in the matcher are
+// ORACULO commands (meaning the whole matcher should be replaced during merge).
+func matcherHasOnlyORACULOHooks(m map[string]any) bool {
 	hooksRaw, ok := m["hooks"]
 	if !ok {
 		return false
@@ -244,7 +244,7 @@ func matcherHasOnlySPWHooks(m map[string]any) bool {
 			return false
 		}
 		cmd, ok := hMap["command"].(string)
-		if !ok || !isSPWCommand(cmd) {
+		if !ok || !isORACULOCommand(cmd) {
 			return false
 		}
 	}
@@ -271,9 +271,9 @@ func DetectOldInstall(root string) bool {
 	}
 
 	// Look for old-style node hook references
-	return containsBytes(data, []byte("node ./.claude/hooks/spw-")) ||
-		containsBytes(data, []byte("spw-statusline.js")) ||
-		containsBytes(data, []byte("spw-guard-"))
+	return containsBytes(data, []byte("node ./.claude/hooks/oraculo-")) ||
+		containsBytes(data, []byte("oraculo-statusline.js")) ||
+		containsBytes(data, []byte("oraculo-guard-"))
 }
 
 func containsBytes(haystack, needle []byte) bool {
@@ -310,7 +310,7 @@ func mergeAgentTeams(existing map[string]any, agentTeams config.AgentTeamsConfig
 		}
 		existing["teammateMode"] = mode
 
-		fmt.Printf("[spw] Enabled Agent Teams in settings.json (teammateMode=%s).\n", mode)
+		fmt.Printf("[oraculo] Enabled Agent Teams in settings.json (teammateMode=%s).\n", mode)
 	} else {
 		// Remove Agent Teams keys if present.
 		if env, ok := existing["env"].(map[string]any); ok {

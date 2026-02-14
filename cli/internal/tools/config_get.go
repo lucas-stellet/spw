@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/lucas-stellet/spw/internal/config"
+	"github.com/lucas-stellet/oraculo/internal/config"
 )
 
 // ConfigGet reads a config value by section.key path.
@@ -24,7 +24,7 @@ func ConfigGet(cwd string, key string, defaultValue string, raw bool) {
 
 	rel, _ := filepath.Rel(cwd, configPath)
 	source := "canonical"
-	if strings.Contains(configPath, ".spw/") {
+	if strings.Contains(configPath, ".oraculo/") {
 		source = "fallback"
 	}
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {

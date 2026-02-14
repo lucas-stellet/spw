@@ -1,5 +1,5 @@
 ---
-name: spw:checkpoint
+name: oraculo:checkpoint
 description: Subagent-driven quality gate between execution batches/waves
 argument-hint: "<spec-name> [--scope batch|wave|phase]"
 ---
@@ -74,13 +74,13 @@ Audit commands may inject logic at these points:
 <shared_policies>
 # Config Resolution
 
-Canonical runtime config path is `.spec-workflow/spw-config.toml`.
+Canonical runtime config path is `.spec-workflow/oraculo.toml`.
 
 Transitional compatibility:
-- If `.spec-workflow/spw-config.toml` is missing, fallback to `.spw/spw-config.toml`.
+- If `.spec-workflow/oraculo.toml` is missing, fallback to `.oraculo/oraculo.toml`.
 
 When shell logic is required, prefer:
-- `spw tools config-get <section.key> --default <value> [--raw]`
+- `oraculo tools config-get <section.key> --default <value> [--raw]`
 
 This keeps workflow behavior stable and avoids hardcoded path drift.
 
@@ -212,13 +212,13 @@ Wave container:
      ============================================================ -->
 
 <model_policy>
-Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
+Resolve models from `.spec-workflow/oraculo.toml` `[models]`:
 - complex_reasoning -> default `opus`
 - implementation -> default `sonnet`
 </model_policy>
 
 <skills_policy>
-Resolve skill policy from `.spec-workflow/spw-config.toml`:
+Resolve skill policy from `.spec-workflow/oraculo.toml`:
 - `[skills].enabled`
 - `[skills.implementation].required`
 - `[skills.implementation].optional`
@@ -237,7 +237,7 @@ Skill gate (mandatory when `skills.enabled=true`):
 </skills_policy>
 
 <git_gate>
-Resolve from `.spec-workflow/spw-config.toml` `[execution].require_clean_worktree_for_wave_pass` (default `true`).
+Resolve from `.spec-workflow/oraculo.toml` `[execution].require_clean_worktree_for_wave_pass` (default `true`).
 
 If enabled:
 - include `git status --porcelain` evidence in the report
@@ -283,10 +283,10 @@ If status is BLOCKED, do not proceed to the next batch/wave.
 
 <completion_guidance>
 On PASS:
-- Show concise go/no-go summary and recommend next command: `spw:exec <spec-name>` (next batch/wave).
+- Show concise go/no-go summary and recommend next command: `oraculo:exec <spec-name>` (next batch/wave).
 
 On BLOCKED:
 - Show critical issues first, with exact corrective actions.
 - If waiting on resume decision, ask user to choose `continue-unfinished` or `delete-and-restart`, then rerun.
-- Recommend remediation command(s) and rerun: `spw:checkpoint <spec-name>`.
+- Recommend remediation command(s) and rerun: `oraculo:checkpoint <spec-name>`.
 </completion_guidance>

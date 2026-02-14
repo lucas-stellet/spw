@@ -1,11 +1,11 @@
-# SPW
+# Oráculo
 
 ![Version](https://img.shields.io/badge/version-2.0-blue)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
 ## Table of Contents
 
-- [What is SPW?](#what-is-spw)
+- [What is Oraculo?](#what-is-oraculo)
 - [Quick Start](#quick-start)
 - [Where to start](#where-to-start)
 - [Installation](#installation)
@@ -16,20 +16,20 @@
 - [QA Validation (3-Phase)](#qa-validation-3-phase)
 - [Glossary](#glossary)
 
-## What is SPW?
+## What is Oraculo?
 
-SPW is a toolkit that adds structured workflow orchestration to Claude Code projects. Instead of letting an agent tackle an entire feature in one shot, SPW breaks work into phases -- requirements, design, planning, implementation, and QA -- each with its own quality gates and approval checkpoints.
+Oraculo is a toolkit that adds structured workflow orchestration to Claude Code projects. Instead of letting an agent tackle an entire feature in one shot, Oráculo breaks work into phases -- requirements, design, planning, implementation, and QA -- each with its own quality gates and approval checkpoints.
 
-Every phase dispatches specialized subagents with model routing: haiku handles lightweight web scouting, opus drives complex reasoning, and sonnet does the implementation drafting. Agents communicate through filesystem artifacts (not chat), so handoffs are reproducible and auditable. You drive the whole process through slash commands in Claude Code (e.g., `/spw:prd`, `/spw:exec`) while `spec-workflow-mcp` serves as the source of truth for artifacts and approvals.
+Every phase dispatches specialized subagents with model routing: haiku handles lightweight web scouting, opus drives complex reasoning, and sonnet does the implementation drafting. Agents communicate through filesystem artifacts (not chat), so handoffs are reproducible and auditable. You drive the whole process through slash commands in Claude Code (e.g., `/oraculo:prd`, `/oraculo:exec`) while `spec-workflow-mcp` serves as the source of truth for artifacts and approvals.
 
 ## Quick Start
 
 After [installing](#installation), run these commands inside a Claude Code session:
 
-1. `/spw:prd my-feature` -- Generate a requirements document from your feature description
-2. `/spw:plan my-feature` -- Create a design document and break it into executable tasks
-3. `/spw:exec my-feature` -- Implement tasks in waves with automatic checkpoints
-4. `/spw:qa my-feature` -- Build and run a QA validation plan
+1. `/oraculo:prd my-feature` -- Generate a requirements document from your feature description
+2. `/oraculo:plan my-feature` -- Create a design document and break it into executable tasks
+3. `/oraculo:exec my-feature` -- Implement tasks in waves with automatic checkpoints
+4. `/oraculo:qa my-feature` -- Build and run a QA validation plan
 
 Each command handles subagent dispatch, file handoff, and quality gates automatically. Between steps, artifacts are stored under `.spec-workflow/specs/my-feature/` and approvals flow through `spec-workflow-mcp`.
 
@@ -37,113 +37,113 @@ Each command handles subagent dispatch, file handoff, and quality gates automati
 
 - This file is the main source of truth for usage and operations.
 - Agent/contributor operational rules are in `AGENTS.md`.
-- Keep `docs/SPW-WORKFLOW.md`, `hooks/README.md`, and `copy-ready/README.md` as lightweight pointers to this README.
+- Keep `docs/ORACULO-WORKFLOW.md`, `hooks/README.md`, and `copy-ready/README.md` as lightweight pointers to this README.
 
 ## Installation
 
 ### 1. Install the CLI
 
-The bootstrap script downloads the compiled Go binary from the latest GitHub Release and installs it to `~/.local/bin/spw`. Requires `curl` and `tar`.
+The bootstrap script downloads the compiled Go binary from the latest GitHub Release and installs it to `~/.local/bin/oraculo`. Requires `curl` and `tar`.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/lucas-stellet/spw/main/scripts/bootstrap.sh | bash
+curl -fsSL https://raw.githubusercontent.com/lucas-stellet/oraculo/main/scripts/bootstrap.sh | bash
 ```
 
 **From a local clone (build from source):**
 
 ```bash
-cd cli && go build -o ~/.local/bin/spw ./cmd/spw/
+cd cli && go build -o ~/.local/bin/oraculo ./cmd/oraculo/
 ```
 
-Run `spw` with no arguments to see available commands. Use `spw update` to self-update from the latest release.
+Run `oraculo` with no arguments to see available commands. Use `oraculo update` to self-update from the latest release.
 
 ### 2. Install in your project
 
 From your project root:
 
 ```bash
-spw install
+oraculo install
 ```
 
-This copies commands, workflows, hooks, config, and skills into your project. For a manual install, you can also run `cp -R /path/to/spw/copy-ready/. .` instead.
+This copies commands, workflows, hooks, config, and skills into your project. For a manual install, you can also run `cp -R /path/to/oraculo/copy-ready/. .` instead.
 
 ### 3. Post-install checklist
 
 Required:
 1. Merge `.claude/settings.json.example` into your `.claude/settings.json` (if needed).
-2. Review `.spec-workflow/spw-config.toml`, especially `[planning].tasks_generation_strategy` and `[planning].max_wave_size`.
+2. Review `.spec-workflow/oraculo.toml`, especially `[planning].tasks_generation_strategy` and `[planning].max_wave_size`.
 3. Start a new Claude Code session so the SessionStart hook can sync the active tasks template.
 
 Optional:
-- Set per-stage skill enforcement: `skills.design.enforce_required` and `skills.implementation.enforce_required` in `spw-config.toml`.
-- Enable SPW statusline (see `.claude/settings.json.example`).
-- Enable enforcement hooks with `hooks.enforcement_mode = "warn"` or `"block"` in `spw-config.toml`.
+- Set per-stage skill enforcement: `skills.design.enforce_required` and `skills.implementation.enforce_required` in `oraculo.toml`.
+- Enable Oraculo statusline (see `.claude/settings.json.example`).
+- Enable enforcement hooks with `hooks.enforcement_mode = "warn"` or `"block"` in `oraculo.toml`.
 - For QA browser validation and URL exploration in planning stages, add Playwright MCP:
   ```
   claude mcp add playwright -- npx @playwright/mcp@latest --headless --isolated
   ```
 
-Default SPW skills are copied into `.claude/skills/` during install (best effort). The `test-driven-development` skill is in the default catalog; `qa-validation-planning` is available for QA phases. In implementation phases (`spw:exec`, `spw:checkpoint`), TDD is treated as required only when `[execution].tdd_default = true`.
+Default Oraculo skills are copied into `.claude/skills/` during install (best effort). The `test-driven-development` skill is in the default catalog; `qa-validation-planning` is available for QA phases. In implementation phases (`oraculo:exec`, `oraculo:checkpoint`), TDD is treated as required only when `[execution].tdd_default = true`.
 
-> **Legacy path:** SPW also checks `.spw/spw-config.toml` as a fallback if `.spec-workflow/spw-config.toml` is not found.
+> **Legacy path:** Oraculo also checks `.spw/spw-config.toml` as a fallback if `.spec-workflow/oraculo.toml` is not found.
 
 ### CLI commands
 
 | Command | Description |
 |---------|-------------|
-| `spw install` | Install SPW in the current project |
-| `spw update` | Self-update the CLI, clear cache, fetch latest kit |
-| `spw doctor` | Show current repo/ref/cache configuration |
-| `spw status` | Print a quick kit and skills summary |
-| `spw skills` | Show installed/available/missing skills status |
-| `spw skills install [--elixir]` | Install general skills (or Elixir with flag) |
+| `oraculo install` | Install Oráculo in the current project |
+| `oraculo update` | Self-update the CLI, clear cache, fetch latest kit |
+| `oraculo doctor` | Show current repo/ref/cache configuration |
+| `oraculo status` | Print a quick kit and skills summary |
+| `oraculo skills` | Show installed/available/missing skills status |
+| `oraculo skills install [--elixir]` | Install general skills (or Elixir with flag) |
 
 #### Workflow tools (used by subagents and workflows)
 
 | Command | Description |
 |---------|-------------|
-| `spw tools verify-task <spec> --task-id N [--check-commit]` | Verify task artifacts exist (impl log, optional commit check) |
-| `spw tools impl-log register <spec> --task-id N --wave NN --title T --files F --changes C` | Create implementation log for a completed task |
-| `spw tools impl-log check <spec> --task-ids 1,2,3` | Check if implementation logs exist for given task IDs |
-| `spw tools task-mark <spec> --task-id N --status done` | Update task checkbox status in tasks.md (`in-progress`, `done`, `blocked`) |
-| `spw tools wave-status <spec>` | Comprehensive wave state resolution (current wave, resume action, progress) |
-| `spw tools wave-update <spec> --wave NN --status pass --tasks 3,4,7` | Write wave summary and latest JSON files |
-| `spw tools dispatch-init-audit --run-dir R --type T` | Create nested audit directory inside a run (`_inline-audit/` or `_inline-checkpoint/`) |
-| `spw tools audit-iteration start --run-dir R --type T [--max N]` | Initialize inline audit iteration tracking |
-| `spw tools audit-iteration check --run-dir R --type T` | Check if another audit retry is allowed |
-| `spw tools audit-iteration advance --run-dir R --type T --result R` | Increment audit iteration counter and record result |
+| `oraculo tools verify-task <spec> --task-id N [--check-commit]` | Verify task artifacts exist (impl log, optional commit check) |
+| `oraculo tools impl-log register <spec> --task-id N --wave NN --title T --files F --changes C` | Create implementation log for a completed task |
+| `oraculo tools impl-log check <spec> --task-ids 1,2,3` | Check if implementation logs exist for given task IDs |
+| `oraculo tools task-mark <spec> --task-id N --status done` | Update task checkbox status in tasks.md (`in-progress`, `done`, `blocked`) |
+| `oraculo tools wave-status <spec>` | Comprehensive wave state resolution (current wave, resume action, progress) |
+| `oraculo tools wave-update <spec> --wave NN --status pass --tasks 3,4,7` | Write wave summary and latest JSON files |
+| `oraculo tools dispatch-init-audit --run-dir R --type T` | Create nested audit directory inside a run (`_inline-audit/` or `_inline-checkpoint/`) |
+| `oraculo tools audit-iteration start --run-dir R --type T [--max N]` | Initialize inline audit iteration tracking |
+| `oraculo tools audit-iteration check --run-dir R --type T` | Check if another audit retry is allowed |
+| `oraculo tools audit-iteration advance --run-dir R --type T --result R` | Increment audit iteration counter and record result |
 
 ### Agent Teams (optional)
 
-Agent Teams is disabled by default. To enable it, set `[agent_teams].enabled = true` in `spw-config.toml`. The installer (`spw install`) reads this setting and switches symlinks in `.claude/workflows/spw/overlays/active/` from `../noop.md` to `../teams/<cmd>.md` accordingly.
+Agent Teams is disabled by default. To enable it, set `[agent_teams].enabled = true` in `oraculo.toml`. The installer (`oraculo install`) reads this setting and switches symlinks in `.claude/workflows/oraculo/overlays/active/` from `../noop.md` to `../teams/<cmd>.md` accordingly.
 
 Additional setup (done automatically by the installer):
 - `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1"` in `.claude/settings.json`
 - `teammateMode = "in-process"` (change to `"tmux"` manually if desired)
-- Overlay symlinks: `cd .claude/workflows/spw/overlays/active && ln -sf ../teams/<cmd>.md <cmd>.md`
+- Overlay symlinks: `cd .claude/workflows/oraculo/overlays/active && ln -sf ../teams/<cmd>.md <cmd>.md`
 
-When enabled, SPW creates a team for any phase not listed in `[agent_teams].exclude_phases` (all phases are eligible by default). `spw:exec` enforces delegate mode when `[agent_teams].require_delegate_mode = true`. Team overlays are available for all subagent-first entrypoints: `spw:prd`, `spw:plan`, `spw:design-research`, `spw:design-draft`, `spw:tasks-plan`, `spw:tasks-check`, `spw:exec`, `spw:checkpoint`, `spw:post-mortem`, `spw:qa`, `spw:qa-check`, `spw:qa-exec`, `spw:status`.
+When enabled, Oraculo creates a team for any phase not listed in `[agent_teams].exclude_phases` (all phases are eligible by default). `oraculo:exec` enforces delegate mode when `[agent_teams].require_delegate_mode = true`. Team overlays are available for all subagent-first entrypoints: `oraculo:prd`, `oraculo:plan`, `oraculo:design-research`, `oraculo:design-draft`, `oraculo:tasks-plan`, `oraculo:tasks-check`, `oraculo:exec`, `oraculo:checkpoint`, `oraculo:post-mortem`, `oraculo:qa`, `oraculo:qa-check`, `oraculo:qa-exec`, `oraculo:status`.
 
 ## Command entry points
 
-- `spw:prd` -> zero-to-PRD requirements flow
-- `spw:plan` -> design/tasks planning from existing requirements (with MCP approval gate)
-- `spw:tasks-plan` -> config-driven task generation (`rolling-wave` or `all-at-once`)
-- `spw:exec` -> batch execution with checkpoints
-- `spw:checkpoint` -> quality gate report (PASS/BLOCKED)
-- `spw:status` -> summarize where workflow stopped + next commands
-- `spw:post-mortem` -> analyze post-spec commits and write reusable lessons
-- `spw:qa` -> asks validation target and builds a QA test plan with concrete selectors (Playwright MCP/Bruno CLI/hybrid strategy)
-- `spw:qa-check` -> validates test plan selectors, traceability, and data feasibility against actual code
-- `spw:qa-exec` -> executes validated test plan using verified selectors (never reads source files)
+- `oraculo:prd` -> zero-to-PRD requirements flow
+- `oraculo:plan` -> design/tasks planning from existing requirements (with MCP approval gate)
+- `oraculo:tasks-plan` -> config-driven task generation (`rolling-wave` or `all-at-once`)
+- `oraculo:exec` -> batch execution with checkpoints
+- `oraculo:checkpoint` -> quality gate report (PASS/BLOCKED)
+- `oraculo:status` -> summarize where workflow stopped + next commands
+- `oraculo:post-mortem` -> analyze post-spec commits and write reusable lessons
+- `oraculo:qa` -> asks validation target and builds a QA test plan with concrete selectors (Playwright MCP/Bruno CLI/hybrid strategy)
+- `oraculo:qa-check` -> validates test plan selectors, traceability, and data feasibility against actual code
+- `oraculo:qa-exec` -> executes validated test plan using verified selectors (never reads source files)
 
 ## Thin-Orchestrator Architecture
 
-SPW uses thin orchestrators with a dispatch pattern system:
-- command wrappers live in `.claude/commands/spw/*.md`
-- detailed orchestration workflows live in `.claude/workflows/spw/*.md`
-- shared dispatch policies live in `.claude/workflows/spw/shared/dispatch-{pipeline,audit,wave}.md`
-- shared cross-cutting policies live in `.claude/workflows/spw/shared/*.md`
+Oráculo uses thin orchestrators with a dispatch pattern system:
+- command wrappers live in `.claude/commands/oraculo/*.md`
+- detailed orchestration workflows live in `.claude/workflows/oraculo/*.md`
+- shared dispatch policies live in `.claude/workflows/oraculo/shared/dispatch-{pipeline,audit,wave}.md`
+- shared cross-cutting policies live in `.claude/workflows/oraculo/shared/*.md`
 
 ### Dispatch Categories
 
@@ -159,7 +159,7 @@ Checkpoint guardrails (audit commands):
 - Orchestrators are read-only observers — they MUST NOT create/modify/delete artifacts outside comms to resolve a BLOCKED auditor (anti-self-heal).
 - If ANY auditor returns `blocked`, the final verdict MUST be BLOCKED (handoff consistency).
 - Briefs must never assert codebase facts — instruct auditors to verify instead.
-- `spw:exec` must stop and instruct the user to run `spw:checkpoint` in a separate session (session isolation).
+- `oraculo:exec` must stop and instruct the user to run `oraculo:checkpoint` in a separate session (session isolation).
 
 All categories enforce the 5 core thin-dispatch rules:
 1. Orchestrator reads only `status.json` after dispatch (never `report.md` on pass).
@@ -173,19 +173,19 @@ Command-specific logic is injected via `<extensions>` at named points (`pre_pipe
 ### Agent Teams
 
 Agent Teams uses base + overlay via symlinks:
-- base workflow: `.claude/workflows/spw/<command>.md`
-- active overlay: `.claude/workflows/spw/overlays/active/<command>.md` (symlink)
+- base workflow: `.claude/workflows/oraculo/<command>.md`
+- active overlay: `.claude/workflows/oraculo/overlays/active/<command>.md` (symlink)
 - teams off: symlink -> `../noop.md` (empty placeholder)
 - teams on: symlink -> `../teams/<command>.md`
 
 Wrappers stay intentionally thin and delegate 100% of detailed logic to workflows.
 
-Execution context guardrail (`spw:exec`):
+Execution context guardrail (`oraculo:exec`):
 - Before broad reads, dispatch `execution-state-scout` (implementation model, default `sonnet`).
 - Scout returns only compact resume state: checkpoint status, task `[-]` in progress, next executable tasks, and required action (`resume|wait-user-authorization|manual-handoff|done|blocked`).
 - Orchestrator then reads only task-scoped files for the selected IDs (avoid full `requirements.md`/`design.md` unless needed for blockers).
 
-Planning defaults are configured in `.spec-workflow/spw-config.toml` (legacy fallback: `.spw/spw-config.toml`):
+Planning defaults are configured in `.spec-workflow/oraculo.toml` (legacy fallback: `.spw/spw-config.toml`):
 
 ```toml
 [planning]
@@ -198,7 +198,7 @@ max_wave_size = 3
 - `all-at-once`: one planning pass creates all executable waves.
 - Explicit CLI args still override config (`--mode`, `--max-wave-size`).
 
-Post-mortem memory defaults are configured in `.spec-workflow/spw-config.toml` (legacy fallback: `.spw/spw-config.toml`):
+Post-mortem memory defaults are configured in `.spec-workflow/oraculo.toml` (legacy fallback: `.spw/spw-config.toml`):
 
 ```toml
 [post_mortem_memory]
@@ -206,11 +206,11 @@ enabled = true
 max_entries_for_design = 5
 ```
 
-- `spw:post-mortem` writes reports to `.spec-workflow/post-mortems/<spec-name>/`.
+- `oraculo:post-mortem` writes reports to `.spec-workflow/post-mortems/<spec-name>/`.
 - Shared index: `.spec-workflow/post-mortems/INDEX.md` (used by design/planning commands when enabled).
-- Design/planning phases (`spw:prd`, `spw:design-research`, `spw:design-draft`, `spw:tasks-plan`, `spw:tasks-check`) load indexed lessons with recency/tag prioritization.
+- Design/planning phases (`oraculo:prd`, `oraculo:design-research`, `oraculo:design-draft`, `oraculo:tasks-plan`, `oraculo:tasks-check`) load indexed lessons with recency/tag prioritization.
 
-Unfinished-run handling for long subagent commands (`spw:prd`, `spw:design-research`, `spw:tasks-plan`, `spw:tasks-check`, `spw:checkpoint`, `spw:post-mortem`, `spw:qa`, `spw:qa-check`, `spw:qa-exec`):
+Unfinished-run handling for long subagent commands (`oraculo:prd`, `oraculo:design-research`, `oraculo:tasks-plan`, `oraculo:tasks-check`, `oraculo:checkpoint`, `oraculo:post-mortem`, `oraculo:qa`, `oraculo:qa-check`, `oraculo:qa-exec`):
 - Before creating a new run-id, inspect the phase run folder (for `checkpoint`, inspect current wave folder first).
 - If latest unfinished run exists, ask explicit user decision:
   - `continue-unfinished`
@@ -219,7 +219,7 @@ Unfinished-run handling for long subagent commands (`spw:prd`, `spw:design-resea
 - If explicit decision is unavailable, stop with `WAITING_FOR_USER_DECISION`.
 - On `continue-unfinished`, reuse completed `status=pass` outputs, redispatch missing/blocked subagents, and rerun the phase final decision/synthesis subagent before final artifact output.
 
-Approval reconciliation for MCP-gated commands (`spw:prd`, `spw:status`, `spw:plan`, `spw:design-draft`, `spw:tasks-plan`):
+Approval reconciliation for MCP-gated commands (`oraculo:prd`, `oraculo:status`, `oraculo:plan`, `oraculo:design-draft`, `oraculo:tasks-plan`):
 - First read approval state from `spec-status` document fields.
 - If status is missing/unknown/inconsistent, resolve approval ID (from `spec-status` or approval records under `.spec-workflow/approvals/<spec-name>/`) and confirm via MCP `approvals status`.
 - `STATUS-SUMMARY.md` is output-only and must not be used as approval source of truth.
@@ -236,7 +236,7 @@ File-first subagent communication is stored under phase-based `_comms/` director
 `<run-id>` format: `run-NNN` (zero-padded sequential, e.g. `run-001`).
 
 YAML frontmatter (optional metadata) is included in spec templates under the
-`spw` key to help subagents classify documents. It does not replace MCP
+`oraculo` key to help subagents classify documents. It does not replace MCP
 approvals or status.
 - `schema`, `spec`, `doc`, `status`, `source`, `updated_at`
 - `inputs`, `requirements`, `decisions`, `task_ids`, `test_required`
@@ -263,11 +263,11 @@ To keep `tasks.md` fully compatible with Dashboard rendering + parsing + approva
 - Keep `_Prompt` structured as:
   - `Role: ... | Task: ... | Restrictions: ... | Success: ...`
 
-SPW task templates and `spw:tasks-plan` are aligned with this compatibility profile.
+Oraculo task templates and `oraculo:tasks-plan` are aligned with this compatibility profile.
 
 ## Mermaid for Architecture Design
 
-SPW now includes the `mermaid-architecture` skill for design phases, with common
+Oraculo now includes the `mermaid-architecture` skill for design phases, with common
 diagram patterns and syntax guidance:
 - skill file: `skills/mermaid-architecture/SKILL.md`
 - default config: listed in `[skills.design].optional`
@@ -279,7 +279,7 @@ Common architecture examples covered by the skill:
 - event-driven pipeline (`flowchart`)
 - workflow lifecycle (`stateDiagram-v2`)
 
-In `spw:design-draft`, `design.md` should include at least one valid Mermaid
+In `oraculo:design-draft`, `design.md` should include at least one valid Mermaid
 diagram in the `## Architecture` section, using fenced lowercase `mermaid`
 code blocks.
 
@@ -290,25 +290,25 @@ Skills use subagent-first loading by default to reduce main-context growth.
 QA follows a plan → check → execute chain:
 
 ```
-spw:qa (plan) → spw:qa-check (validate) → spw:qa-exec (execute)
+oraculo:qa (plan) → oraculo:qa-check (validate) → oraculo:qa-exec (execute)
 ```
 
-### `spw:qa` (planning)
+### `oraculo:qa` (planning)
 - Asks user what should be validated when focus is not explicitly provided
 - Selects `Playwright MCP`, `Bruno CLI`, or `hybrid` by risk/scope
 - Produces `QA-TEST-PLAN.md` with concrete selectors/endpoints per scenario
 - Uses browser automation tools from pre-configured Playwright MCP server
 - Stores file-first communications under `.spec-workflow/specs/<spec-name>/qa/_comms/qa/<run-id>/`
 
-### `spw:qa-check` (validation)
+### `oraculo:qa-check` (validation)
 - Validates test plan against actual code (the ONE phase that reads implementation files)
 - Verifies selectors/endpoints exist via `qa-selector-verifier`
 - Checks requirement traceability and data feasibility
 - Produces `QA-CHECK.md` with verified selector map (test-id → selector → file:line)
-- PASS/BLOCKED decision gates `spw:qa-exec`
+- PASS/BLOCKED decision gates `oraculo:qa-exec`
 - Stores file-first communications under `.spec-workflow/specs/<spec-name>/qa/_comms/qa-check/<run-id>/`
 
-### `spw:qa-exec` (execution)
+### `oraculo:qa-exec` (execution)
 - Executes validated test plan using only verified selectors from `QA-CHECK.md`
 - **Never reads implementation source files** — selector drift is logged as defect
 - Supports `--scope smoke|regression|full` and `--rerun-failed true|false`
@@ -318,21 +318,21 @@ spw:qa (plan) → spw:qa-check (validate) → spw:qa-exec (execute)
 Hook enforcement:
 - `warn` -> diagnostics only
 - `block` -> deny violating actions
-- details: `AGENTS.md` + `.spec-workflow/spw-config.toml` comments (legacy fallback: `.spw/spw-config.toml`)
+- details: `AGENTS.md` + `.spec-workflow/oraculo.toml` comments (legacy fallback: `.spw/spw-config.toml`)
 
 ## Glossary
 
-- **Agent Teams**: Optional mode where SPW spawns multiple Claude Code agents to work in parallel on a phase. Controlled by `[agent_teams].enabled` in `spw-config.toml`.
+- **Agent Teams**: Optional mode where Oraculo spawns multiple Claude Code agents to work in parallel on a phase. Controlled by `[agent_teams].enabled` in `oraculo.toml`.
 
-- **Checkpoint**: Quality gate run after each execution wave via `spw:checkpoint`. Produces a PASS/BLOCKED report that determines whether the next wave can proceed.
+- **Checkpoint**: Quality gate run after each execution wave via `oraculo:checkpoint`. Produces a PASS/BLOCKED report that determines whether the next wave can proceed.
 
 - **Dispatch Pattern**: The orchestration strategy a command uses. One of three categories: Pipeline (sequential stages leading to a synthesizer), Audit (parallel reviewers feeding an aggregator), or Wave Execution (iterative implementation cycles with checkpoints). Declared via `<dispatch_pattern>` in each workflow.
 
 - **File-First Communication**: Subagents communicate exclusively via filesystem artifacts (`brief.md`, `report.md`, `status.json`) rather than chat messages. Artifacts are stored in `_comms/` directories under each phase.
 
-- **Overlay**: Symlink-based mechanism that switches command behavior between solo mode (symlink to `noop.md`) and Agent Teams mode (symlink to `teams/<cmd>.md`). Located in `.claude/workflows/spw/overlays/active/`.
+- **Overlay**: Symlink-based mechanism that switches command behavior between solo mode (symlink to `noop.md`) and Agent Teams mode (symlink to `teams/<cmd>.md`). Located in `.claude/workflows/oraculo/overlays/active/`.
 
-- **Rolling Wave**: Planning strategy where tasks are generated one wave at a time, allowing later waves to incorporate lessons from earlier execution. Set via `[planning].tasks_generation_strategy = "rolling-wave"` in `spw-config.toml`. Alternative: `all-at-once`.
+- **Rolling Wave**: Planning strategy where tasks are generated one wave at a time, allowing later waves to incorporate lessons from earlier execution. Set via `[planning].tasks_generation_strategy = "rolling-wave"` in `oraculo.toml`. Alternative: `all-at-once`.
 
 - **Scout**: Lightweight subagent dispatched before a wave to gather execution state (checkpoint status, in-progress tasks, next actions) without reading full spec files. Returns compact resume state used by the orchestrator to scope its reads.
 
@@ -340,4 +340,4 @@ Hook enforcement:
 
 - **Thin Dispatch**: Core architectural principle: orchestrators read only `status.json` after each subagent (never full reports), pass filesystem paths between stages, and delegate all detailed logic to workflows. Enforced by the 5 core thin-dispatch rules (see Dispatch Categories).
 
-- **Wave**: A batch of tasks executed together in `spw:exec`. Each wave is followed by a checkpoint. Wave size is controlled by `[planning].max_wave_size` in `spw-config.toml`.
+- **Wave**: A batch of tasks executed together in `oraculo:exec`. Each wave is followed by a checkpoint. Wave size is controlled by `[planning].max_wave_size` in `oraculo.toml`.

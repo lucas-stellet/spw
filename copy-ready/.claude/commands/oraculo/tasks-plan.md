@@ -1,0 +1,20 @@
+---
+name: oraculo:tasks-plan
+description: Subagent-driven tasks.md generation for waves, parallelism, and per-task TDD
+argument-hint: "<spec-name> [--mode initial|next-wave] [--max-wave-size <N>] [--allow-no-test-exception true|false]"
+---
+
+<objective>
+Subagent-driven tasks.md generation for waves, parallelism, and per-task TDD.
+</objective>
+
+<execution_context>
+@.claude/workflows/oraculo/tasks-plan.md
+@.claude/workflows/oraculo/overlays/active/tasks-plan.md
+</execution_context>
+
+<process>
+Follow the workflow from `@.claude/workflows/oraculo/tasks-plan.md` end-to-end.
+Apply any overlay policy from `@.claude/workflows/oraculo/overlays/active/tasks-plan.md`.
+Preserve existing guardrails, gates, and output contracts.
+</process>

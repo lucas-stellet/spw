@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/lucas-stellet/spw/internal/config"
-	"github.com/lucas-stellet/spw/internal/embedded"
+	"github.com/lucas-stellet/oraculo/internal/config"
+	"github.com/lucas-stellet/oraculo/internal/embedded"
 )
 
 func goldenDir() string {
@@ -61,7 +61,7 @@ func TestNoAtReferences(t *testing.T) {
 			}
 
 			for i, line := range strings.Split(got, "\n") {
-				if strings.Contains(line, "@.claude/workflows/spw/") {
+				if strings.Contains(line, "@.claude/workflows/oraculo/") {
 					t.Errorf("line %d still has @-reference: %s", i+1, line)
 				}
 			}
@@ -79,8 +79,8 @@ func TestNoJSToolReferences(t *testing.T) {
 				t.Fatalf("RenderCommand(%q) error: %v", cmd, err)
 			}
 
-			if strings.Contains(got, "spw-tools.js") {
-				t.Errorf("rendered output still references spw-tools.js")
+			if strings.Contains(got, "oraculo-tools.js") {
+				t.Errorf("rendered output still references oraculo-tools.js")
 			}
 		})
 	}
@@ -119,7 +119,7 @@ func TestTeamsEnabledOverlayPresent(t *testing.T) {
 		t.Fatalf("RenderCommand error: %v", err)
 	}
 
-	if !strings.Contains(got, "Agent Teams overlay for `spw:exec`") {
+	if !strings.Contains(got, "Agent Teams overlay for `oraculo:exec`") {
 		t.Error("overlay content should be present when teams enabled")
 	}
 }
@@ -159,7 +159,7 @@ func TestPlanOverlayAppendedWhenTeamsEnabled(t *testing.T) {
 		t.Fatalf("RenderCommand error: %v", err)
 	}
 
-	if !strings.Contains(got, "Agent Teams overlay for `spw:plan`") {
+	if !strings.Contains(got, "Agent Teams overlay for `oraculo:plan`") {
 		t.Error("plan overlay should be appended when teams enabled")
 	}
 }

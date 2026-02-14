@@ -4,10 +4,10 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/lucas-stellet/spw/internal/workspace"
+	"github.com/lucas-stellet/oraculo/internal/workspace"
 )
 
-// commandsRequiringSpec is the set of SPW commands that need a <spec-name> argument.
+// commandsRequiringSpec is the set of ORACULO commands that need a <spec-name> argument.
 var commandsRequiringSpec = map[string]bool{
 	"prd":             true,
 	"plan":            true,
@@ -22,15 +22,15 @@ var commandsRequiringSpec = map[string]bool{
 	"qa-exec":         true,
 }
 
-var spwCommandRe = regexp.MustCompile(`(?i)^/spw:([a-z-]+)(?:\s+(.*))?$`)
+var oraculoCommandRe = regexp.MustCompile(`(?i)^/oraculo:([a-z-]+)(?:\s+(.*))?$`)
 
-// parsedCommand represents a parsed /spw: command line.
+// parsedCommand represents a parsed /oraculo: command line.
 type parsedCommand struct {
 	command  string
 	argsLine string
 }
 
-// HandleGuardPrompt validates that SPW commands include a spec-name argument.
+// HandleGuardPrompt validates that ORACULO commands include a spec-name argument.
 func HandleGuardPrompt() error {
 	ctx := newHookContext()
 	if !ctx.cfg.Hooks.Enabled {
@@ -42,7 +42,7 @@ func HandleGuardPrompt() error {
 		return nil
 	}
 
-	parsed := firstSpwCommand(prompt)
+	parsed := firstOraculoCommand(prompt)
 	if parsed == nil {
 		return nil
 	}
@@ -54,15 +54,15 @@ func HandleGuardPrompt() error {
 	specName := extractSpecArg(parsed.argsLine)
 	if specName != "" {
 		writeStatuslineCache(ctx.workspaceRoot, specName, map[string]string{
-			"source": "spw-command",
+			"source": "oraculo-command",
 			"sticky": "true",
 		})
 	}
 
 	if ctx.cfg.Hooks.GuardPromptRequireSpec && !hasSpecArg(parsed.argsLine) {
-		emitViolation(ctx.cfg.Hooks, "Missing <spec-name> for /spw:"+parsed.command, []string{
-			"Expected usage: /spw:" + parsed.command + " <spec-name>",
-			"Tip: use /spw:status if you need help discovering the current stage.",
+		emitViolation(ctx.cfg.Hooks, "Missing <spec-name> for /oraculo:"+parsed.command, []string{
+			"Expected usage: /oraculo:" + parsed.command + " <spec-name>",
+			"Tip: use /oraculo:status if you need help discovering the current stage.",
 		})
 	}
 
@@ -76,10 +76,10 @@ func extractPrompt(p workspace.Payload) string {
 	return ""
 }
 
-func firstSpwCommand(prompt string) *parsedCommand {
+func firstOraculoCommand(prompt string) *parsedCommand {
 	for _, line := range strings.Split(prompt, "\n") {
 		trimmed := strings.TrimSpace(line)
-		m := spwCommandRe.FindStringSubmatch(trimmed)
+		m := oraculoCommandRe.FindStringSubmatch(trimmed)
 		if m != nil {
 			return &parsedCommand{
 				command:  strings.ToLower(m[1]),

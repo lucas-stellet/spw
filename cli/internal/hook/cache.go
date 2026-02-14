@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// statuslineCacheEntry is the JSON structure written to .spw-cache/statusline.json.
+// statuslineCacheEntry is the JSON structure written to .oraculo-cache/statusline.json.
 type statuslineCacheEntry struct {
 	Timestamp int64             `json:"ts"`
 	Spec      string            `json:"spec"`
@@ -29,7 +29,7 @@ func writeStatuslineCache(workspaceRoot, spec string, meta map[string]string) bo
 	if spec == "" {
 		return false
 	}
-	cacheDir := filepath.Join(workspaceRoot, ".spec-workflow", ".spw-cache")
+	cacheDir := filepath.Join(workspaceRoot, ".spec-workflow", ".oraculo-cache")
 	cacheFile := filepath.Join(cacheDir, "statusline.json")
 
 	if err := os.MkdirAll(cacheDir, 0755); err != nil {
@@ -51,7 +51,7 @@ func writeStatuslineCache(workspaceRoot, spec string, meta map[string]string) bo
 }
 
 func readStatuslineCache(workspaceRoot string, ttlSeconds int, ignoreTTL bool) string {
-	cacheFile := filepath.Join(workspaceRoot, ".spec-workflow", ".spw-cache", "statusline.json")
+	cacheFile := filepath.Join(workspaceRoot, ".spec-workflow", ".oraculo-cache", "statusline.json")
 
 	data, err := os.ReadFile(cacheFile)
 	if err != nil {
@@ -82,6 +82,6 @@ func readStatuslineCache(workspaceRoot string, ttlSeconds int, ignoreTTL bool) s
 }
 
 func clearStatuslineCache(workspaceRoot string) {
-	cacheFile := filepath.Join(workspaceRoot, ".spec-workflow", ".spw-cache", "statusline.json")
+	cacheFile := filepath.Join(workspaceRoot, ".spec-workflow", ".oraculo-cache", "statusline.json")
 	_ = os.Remove(cacheFile) // fail-open
 }

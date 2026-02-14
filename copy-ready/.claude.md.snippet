@@ -1,21 +1,21 @@
-<!-- SPW-KIT-START — managed by spw install, do not edit manually -->
-## SPW (Spec-Workflow)
+<!-- ORACULO-KIT-START — managed by oraculo install, do not edit manually -->
+## Oraculo (Spec-Workflow)
 
-This project uses SPW for structured AI-driven development workflows.
+This project uses Oraculo for structured AI-driven development workflows.
 
 ### Commands
 
-`/spw:prd` → `/spw:plan` → `/spw:design-research` → `/spw:design-draft` → `/spw:tasks-plan` → `/spw:tasks-check` → `/spw:exec` → `/spw:checkpoint` → `/spw:qa` → `/spw:qa-check` → `/spw:qa-exec` → `/spw:post-mortem` → `/spw:status`
+`/oraculo:prd` → `/oraculo:plan` → `/oraculo:design-research` → `/oraculo:design-draft` → `/oraculo:tasks-plan` → `/oraculo:tasks-check` → `/oraculo:exec` → `/oraculo:checkpoint` → `/oraculo:qa` → `/oraculo:qa-check` → `/oraculo:qa-exec` → `/oraculo:post-mortem` → `/oraculo:status`
 
 ### Dispatch CLI (used within workflows)
 
-All SPW workflows use these CLI commands for subagent dispatch. The CLI creates directories, boilerplate files, and enforces the file-first handoff contract:
+All Oraculo workflows use these CLI commands for subagent dispatch. The CLI creates directories, boilerplate files, and enforces the file-first handoff contract:
 
-- `spw tools dispatch-init <command> <spec-name> [--wave NN]` — creates run-NNN dir, returns category/dispatch_policy/models
-- `spw tools dispatch-setup <subagent> --run-dir <dir> --model-alias <alias>` — creates subagent dir + brief.md skeleton
-- `spw tools dispatch-read-status <subagent> --run-dir <dir>` — reads status.json (ONLY read report.md if status=blocked)
-- `spw tools dispatch-handoff --run-dir <dir>` — generates _handoff.md from all status.json files
-- `spw tools resolve-model <alias>` — maps config alias (web_research/complex_reasoning/implementation) to model
+- `oraculo tools dispatch-init <command> <spec-name> [--wave NN]` — creates run-NNN dir, returns category/dispatch_policy/models
+- `oraculo tools dispatch-setup <subagent> --run-dir <dir> --model-alias <alias>` — creates subagent dir + brief.md skeleton
+- `oraculo tools dispatch-read-status <subagent> --run-dir <dir>` — reads status.json (ONLY read report.md if status=blocked)
+- `oraculo tools dispatch-handoff --run-dir <dir>` — generates _handoff.md from all status.json files
+- `oraculo tools resolve-model <alias>` — maps config alias (web_research/complex_reasoning/implementation) to model
 
 ### File-First Handoff Contract
 
@@ -25,5 +25,5 @@ Status.json format: `{"status": "pass"|"blocked", "summary": "one-line descripti
 
 ### Config
 
-Runtime config: `.spec-workflow/spw-config.toml`
-<!-- SPW-KIT-END -->
+Runtime config: `.spec-workflow/oraculo.toml`
+<!-- ORACULO-KIT-END -->

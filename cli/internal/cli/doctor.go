@@ -6,15 +6,15 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/lucas-stellet/spw/internal/config"
-	"github.com/lucas-stellet/spw/internal/install"
+	"github.com/lucas-stellet/oraculo/internal/config"
+	"github.com/lucas-stellet/oraculo/internal/install"
 	"github.com/spf13/cobra"
 )
 
 func newDoctorCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "doctor",
-		Short: "Check SPW installation health",
+		Short: "Check ORACULO installation health",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runDoctor(cmd)
 		},
@@ -28,7 +28,7 @@ func runDoctor(cmd *cobra.Command) error {
 	}
 
 	cwd, _ := os.Getwd()
-	fmt.Println("spw doctor")
+	fmt.Println("oraculo doctor")
 	fmt.Printf("version: %s\n", version)
 	fmt.Printf("workspace: %s\n", cwd)
 
@@ -51,7 +51,7 @@ func runDoctor(cmd *cobra.Command) error {
 	settingsPath := filepath.Join(cwd, ".claude", "settings.json")
 	if _, err := os.Stat(settingsPath); err == nil {
 		if install.DetectOldInstall(cwd) {
-			fmt.Println("hooks: .claude/settings.json found (WARNING: old JS-based hooks detected — run 'spw install' to migrate)")
+			fmt.Println("hooks: .claude/settings.json found (WARNING: old JS-based hooks detected — run 'oraculo install' to migrate)")
 		} else {
 			fmt.Println("hooks: .claude/settings.json found (OK)")
 		}
@@ -60,19 +60,19 @@ func runDoctor(cmd *cobra.Command) error {
 	}
 
 	// Commands check
-	cmdsDir := filepath.Join(cwd, ".claude", "commands", "spw")
+	cmdsDir := filepath.Join(cwd, ".claude", "commands", "oraculo")
 	if entries, err := os.ReadDir(cmdsDir); err == nil {
-		fmt.Printf("commands: %d found in .claude/commands/spw/\n", len(entries))
+		fmt.Printf("commands: %d found in .claude/commands/oraculo/\n", len(entries))
 	} else {
-		fmt.Println("commands: .claude/commands/spw/ missing")
+		fmt.Println("commands: .claude/commands/oraculo/ missing")
 	}
 
 	// Workflows check
-	wfDir := filepath.Join(cwd, ".claude", "workflows", "spw")
+	wfDir := filepath.Join(cwd, ".claude", "workflows", "oraculo")
 	if entries, err := os.ReadDir(wfDir); err == nil {
-		fmt.Printf("workflows: %d found in .claude/workflows/spw/\n", len(entries))
+		fmt.Printf("workflows: %d found in .claude/workflows/oraculo/\n", len(entries))
 	} else {
-		fmt.Println("workflows: .claude/workflows/spw/ missing")
+		fmt.Println("workflows: .claude/workflows/oraculo/ missing")
 	}
 
 	// Skills check
@@ -110,15 +110,15 @@ func runDoctor(cmd *cobra.Command) error {
 	if home != "" {
 		fmt.Println("")
 		fmt.Println("--- global install ---")
-		globalCmds := filepath.Join(home, ".claude", "commands", "spw")
-		globalWfs := filepath.Join(home, ".claude", "workflows", "spw")
+		globalCmds := filepath.Join(home, ".claude", "commands", "oraculo")
+		globalWfs := filepath.Join(home, ".claude", "workflows", "oraculo")
 		globalSettings := filepath.Join(home, ".claude", "settings.json")
 		globalSkills := filepath.Join(home, ".claude", "skills")
 
 		if entries, err := os.ReadDir(globalCmds); err == nil {
-			fmt.Printf("global commands: %d found in ~/.claude/commands/spw/\n", len(entries))
+			fmt.Printf("global commands: %d found in ~/.claude/commands/oraculo/\n", len(entries))
 			// Warn on conflict with local
-			localCmds := filepath.Join(cwd, ".claude", "commands", "spw")
+			localCmds := filepath.Join(cwd, ".claude", "commands", "oraculo")
 			if _, err := os.Stat(localCmds); err == nil {
 				fmt.Println("  (!) local commands also present — local takes precedence")
 			}
@@ -127,8 +127,8 @@ func runDoctor(cmd *cobra.Command) error {
 		}
 
 		if entries, err := os.ReadDir(globalWfs); err == nil {
-			fmt.Printf("global workflows: %d found in ~/.claude/workflows/spw/\n", len(entries))
-			localWfs := filepath.Join(cwd, ".claude", "workflows", "spw")
+			fmt.Printf("global workflows: %d found in ~/.claude/workflows/oraculo/\n", len(entries))
+			localWfs := filepath.Join(cwd, ".claude", "workflows", "oraculo")
 			if _, err := os.Stat(localWfs); err == nil {
 				fmt.Println("  (!) local workflows also present — local takes precedence")
 			}
@@ -157,11 +157,11 @@ func runDoctor(cmd *cobra.Command) error {
 		}
 	}
 
-	// spw on PATH
-	if spwPath, err := exec.LookPath("spw"); err == nil {
-		fmt.Printf("\nspw binary: %s\n", spwPath)
+	// oraculo on PATH
+	if binPath, err := exec.LookPath("oraculo"); err == nil {
+		fmt.Printf("\noraculo binary: %s\n", binPath)
 	} else {
-		fmt.Printf("\nspw binary: not found on PATH\n")
+		fmt.Printf("\noraculo binary: not found on PATH\n")
 	}
 
 	return nil

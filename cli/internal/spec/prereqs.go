@@ -3,10 +3,10 @@ package spec
 import (
 	"path/filepath"
 
-	"github.com/lucas-stellet/spw/internal/specdir"
+	"github.com/lucas-stellet/oraculo/internal/specdir"
 )
 
-// commandPrereqs maps SPW commands to their prerequisite artifact paths
+// commandPrereqs maps ORACULO commands to their prerequisite artifact paths
 // (relative to spec directory).
 var commandPrereqs = map[string][]string{
 	"prd":             {},
@@ -22,7 +22,7 @@ var commandPrereqs = map[string][]string{
 	"post-mortem":     {specdir.TasksMD},
 }
 
-// CheckPrereqs verifies prerequisites are met for a given SPW command.
+// CheckPrereqs verifies prerequisites are met for a given ORACULO command.
 func CheckPrereqs(specDir, command string) PrereqResult {
 	reqs, ok := commandPrereqs[command]
 	if !ok {

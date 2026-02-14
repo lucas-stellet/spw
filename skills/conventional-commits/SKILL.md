@@ -12,7 +12,7 @@ Use this skill whenever you create or suggest commit messages.
 `<type>(<scope>): <subject>`
 
 - `type`: one of `feat`, `fix`, `refactor`, `test`, `docs`, `chore`
-- `scope`: short module/spec scope (for SPW, prefer spec name)
+- `scope`: short module/spec scope (for Oráculo, prefer spec name)
 - `subject`: imperative mood, lower-case start, no trailing period, <= 72 chars
 
 ## Type selection
@@ -24,9 +24,9 @@ Use this skill whenever you create or suggest commit messages.
 - `docs`: docs only
 - `chore`: maintenance/tooling/config
 
-## SPW task commits
+## Oráculo task commits
 
-For SPW task-level commits, include task id in subject:
+For Oráculo task-level commits, include task id in subject:
 
 `<type>(<spec-name>): task <task-id> - <short-title>`
 

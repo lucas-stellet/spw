@@ -1,6 +1,6 @@
-# Contributing to SPW
+# Contributing to Oraculo
 
-Thanks for your interest in contributing to SPW.
+Thanks for your interest in contributing to Oraculo.
 
 ## Prerequisites
 
@@ -16,21 +16,21 @@ Thanks for your interest in contributing to SPW.
 
 ```bash
 # Validate all shell scripts parse correctly
-bash -n bin/spw
+bash -n bin/oraculo
 bash -n scripts/bootstrap.sh
-bash -n scripts/install-spw-bin.sh
+bash -n scripts/install-oraculo-bin.sh
 bash -n scripts/validate-thin-orchestrator.sh
 bash -n copy-ready/install.sh
 
 # Validate thin-orchestrator contract (wrapper sizes, workflow refs, mirror sync)
 scripts/validate-thin-orchestrator.sh
 
-# Smoke-test Go hooks (build first: cd cli && go build -o /tmp/spw ./cmd/spw && PATH="/tmp:$PATH")
-echo '{"workspace":{"current_dir":"'"$(pwd)"'"}}' | spw hook statusline
-echo '{"prompt":"/spw:plan"}' | spw hook guard-prompt
-echo '{"cwd":"'"$(pwd)"'","tool_input":{"file_path":"README.md"}}' | spw hook guard-paths
-echo '{}' | spw hook guard-stop
-echo '{}' | spw hook session-start
+# Smoke-test Go hooks (build first: cd cli && go build -o /tmp/oraculo ./cmd/oraculo && PATH="/tmp:$PATH")
+echo '{"workspace":{"current_dir":"'"$(pwd)"'"}}' | oraculo hook statusline
+echo '{"prompt":"/oraculo:plan"}' | oraculo hook guard-prompt
+echo '{"cwd":"'"$(pwd)"'","tool_input":{"file_path":"README.md"}}' | oraculo hook guard-paths
+echo '{}' | oraculo hook guard-stop
+echo '{}' | oraculo hook session-start
 ```
 
 ## Mirror system
@@ -49,14 +49,14 @@ When modifying behavior, defaults, or guardrails, update these files in the same
 
 - `README.md`
 - `AGENTS.md`
-- `docs/SPW-WORKFLOW.md`
+- `docs/ORACULO-WORKFLOW.md`
 - `hooks/README.md`
 - `copy-ready/README.md` (mirror sync)
 
 ## Code style
 
 - Shell scripts: validate with `bash -n` before committing.
-- Go hooks: implemented in `cli/internal/hook/`, invoked via `spw hook <event>`.
+- Go hooks: implemented in `cli/internal/hook/`, invoked via `oraculo hook <event>`.
 - Workflows/commands: follow the thin-orchestrator pattern (max 60 lines for command wrappers).
 
 ## Submitting changes

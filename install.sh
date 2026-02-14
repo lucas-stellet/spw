@@ -1,12 +1,12 @@
 #!/bin/sh
 set -e
 
-# spw installer script
-# Usage: curl -sSL https://raw.githubusercontent.com/lucas-stellet/spw/main/install.sh | sh
+# oraculo installer script
+# Usage: curl -sSL https://raw.githubusercontent.com/lucas-stellet/oraculo/main/install.sh | sh
 
-REPO="lucas-stellet/spw"
+REPO="lucas-stellet/oraculo"
 INSTALL_DIR="/usr/local/bin"
-BINARY_NAME="spw"
+BINARY_NAME="oraculo"
 
 # Detect OS
 detect_os() {
@@ -80,8 +80,8 @@ main() {
     echo ""
     echo "Successfully installed ${BINARY_NAME} ${VERSION} to ${INSTALL_DIR}/${BINARY_NAME}"
     echo ""
-    echo "Run 'spw --help' to get started"
-    echo "Then 'spw install' inside your project to set up the workflow kit"
+    echo "Run 'oraculo --help' to get started"
+    echo "Then 'oraculo install' inside your project to set up the workflow kit"
 }
 
 main

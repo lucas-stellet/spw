@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/lucas-stellet/spw/internal/specdir"
-	"github.com/lucas-stellet/spw/internal/tasks"
-	"github.com/lucas-stellet/spw/internal/tools"
+	"github.com/lucas-stellet/oraculo/internal/specdir"
+	"github.com/lucas-stellet/oraculo/internal/tasks"
+	"github.com/lucas-stellet/oraculo/internal/tools"
 	"github.com/spf13/cobra"
 )
 

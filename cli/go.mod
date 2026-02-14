@@ -1,4 +1,4 @@
-module github.com/lucas-stellet/spw
+module github.com/lucas-stellet/oraculo
 
 go 1.26.0
 

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lucas-stellet/spw/internal/specdir"
+	"github.com/lucas-stellet/oraculo/internal/specdir"
 )
 
 // implLogRegisterResult builds the registration result without Output/Fail side effects.

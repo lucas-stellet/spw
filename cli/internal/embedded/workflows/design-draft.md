@@ -1,5 +1,5 @@
 ---
-name: spw:design-draft
+name: oraculo:design-draft
 description: Subagent-driven design.md drafting from requirements + DESIGN-RESEARCH
 argument-hint: "<spec-name>"
 ---
@@ -9,15 +9,15 @@ category: pipeline
 subcategory: synthesis
 phase: design
 comms_path: design/_comms/design-draft
-policy: @.claude/workflows/spw/shared/dispatch-pipeline.md
+policy: @.claude/workflows/oraculo/shared/dispatch-pipeline.md
 </dispatch_pattern>
 
 <shared_policies>
-- @.claude/workflows/spw/shared/config-resolution.md
-- @.claude/workflows/spw/shared/file-handoff.md
-- @.claude/workflows/spw/shared/resume-policy.md
-- @.claude/workflows/spw/shared/skills-policy.md
-- @.claude/workflows/spw/shared/approval-reconciliation.md
+- @.claude/workflows/oraculo/shared/config-resolution.md
+- @.claude/workflows/oraculo/shared/file-handoff.md
+- @.claude/workflows/oraculo/shared/resume-policy.md
+- @.claude/workflows/oraculo/shared/skills-policy.md
+- @.claude/workflows/oraculo/shared/approval-reconciliation.md
 </shared_policies>
 
 <objective>
@@ -66,7 +66,7 @@ Do not consume generated research from generic locations (for example `docs/*`).
 2. Apply skills policy: run design skills preflight and write `SKILLS-DESIGN-DRAFT.md`.
 3. Verify preconditions:
    - `requirements.md` exists.
-   - `design/DESIGN-RESEARCH.md` exists; stop BLOCKED if missing → instruct `spw:design-research <spec-name>`.
+   - `design/DESIGN-RESEARCH.md` exists; stop BLOCKED if missing → instruct `oraculo:design-research <spec-name>`.
 4. Load post-mortem memory inputs via `<post_mortem_memory>`.
 5. Read templates:
    - `.spec-workflow/user-templates/design-template.md` (preferred)
@@ -108,17 +108,17 @@ Verify file existence only (use Glob, never Read content into orchestrator conte
 - `.spec-workflow/specs/<spec-name>/requirements.md` must exist.
 - `.spec-workflow/specs/<spec-name>/design/DESIGN-RESEARCH.md` must exist (mandatory intermediate artifact).
 - If `DESIGN-RESEARCH.md` is missing, stop BLOCKED and instruct:
-  - `spw:design-research <spec-name>`
+  - `oraculo:design-research <spec-name>`
 </preconditions>
 
 <model_policy>
-Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
+Resolve models from `.spec-workflow/oraculo.toml` `[models]`:
 - complex_reasoning -> default `opus`
 - implementation -> default `sonnet`
 </model_policy>
 
 <post_mortem_memory>
-Resolve from `.spec-workflow/spw-config.toml` `[post_mortem_memory]`:
+Resolve from `.spec-workflow/oraculo.toml` `[post_mortem_memory]`:
 - `enabled` (default `true`)
 - `max_entries_for_design` (default `5`)
 
@@ -133,7 +133,7 @@ If index/report files are missing, continue with warning (non-blocking).
 </post_mortem_memory>
 
 <skills_policy>
-Resolve skill policy from `.spec-workflow/spw-config.toml`:
+Resolve skill policy from `.spec-workflow/oraculo.toml`:
 - `[skills].enabled`
 - `[skills.design].required`
 - `[skills.design].optional`
@@ -194,7 +194,7 @@ Resolve design approval with MCP-first reconciliation:
      ============================================================ -->
 
 <agent_teams_policy>
-@.claude/workflows/spw/overlays/active/design-draft.md
+@.claude/workflows/oraculo/overlays/active/design-draft.md
 </agent_teams_policy>
 
 <!-- ============================================================
@@ -217,9 +217,9 @@ Resolve design approval with MCP-first reconciliation:
 On success:
 - Confirm output path: `.spec-workflow/specs/<spec-name>/design.md`.
 - Confirm approval request status for design.
-- Recommend next command: `spw:tasks-plan <spec-name>` (use config defaults, or override with `--mode` / `--max-wave-size` when needed).
+- Recommend next command: `oraculo:tasks-plan <spec-name>` (use config defaults, or override with `--mode` / `--max-wave-size` when needed).
 
 If blocked:
 - Show precondition/critic/review failures with required fixes.
-- Provide rerun command: `spw:design-draft <spec-name>`.
+- Provide rerun command: `oraculo:design-draft <spec-name>`.
 </completion_guidance>

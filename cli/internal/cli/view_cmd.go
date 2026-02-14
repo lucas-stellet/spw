@@ -5,12 +5,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/lucas-stellet/spw/internal/spec"
-	"github.com/lucas-stellet/spw/internal/specdir"
-	"github.com/lucas-stellet/spw/internal/store"
-	"github.com/lucas-stellet/spw/internal/tasks"
-	"github.com/lucas-stellet/spw/internal/viewer"
-	"github.com/lucas-stellet/spw/internal/wave"
+	"github.com/lucas-stellet/oraculo/internal/spec"
+	"github.com/lucas-stellet/oraculo/internal/specdir"
+	"github.com/lucas-stellet/oraculo/internal/store"
+	"github.com/lucas-stellet/oraculo/internal/tasks"
+	"github.com/lucas-stellet/oraculo/internal/viewer"
+	"github.com/lucas-stellet/oraculo/internal/wave"
 	"github.com/spf13/cobra"
 )
 

@@ -1,10 +1,10 @@
 ---
-spw:
+oraculo:
   schema: 1
   spec: "<spec-name>"
   doc: "requirements"
   status: "draft"
-  source: "spw:prd"
+  source: "oraculo:prd"
   updated_at: "YYYY-MM-DD"
   inputs: []
   open_questions: []

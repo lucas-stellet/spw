@@ -1,21 +1,21 @@
-# SPW Hooks
+# Oraculo Hooks
 
-Hooks are now implemented in Go and invoked via `spw hook <event>`.
+Hooks are now implemented in Go and invoked via `oraculo hook <event>`.
 
 Source code: `cli/internal/hook/`
 
 Available hooks:
-- `spw hook statusline` — StatusLine: detects active spec from git diff/cache, shows token usage and cost
-- `spw hook guard-prompt` — UserPromptSubmit: validates spec arg presence in SPW commands
-- `spw hook guard-paths` — PreToolUse (Write/Edit): prevents writes outside spec-workflow paths
-- `spw hook guard-stop` — Stop: checks file-first handoff completeness in recent runs
-- `spw hook session-start` — SessionStart: syncs active tasks template variant based on TDD config
+- `oraculo hook statusline` — StatusLine: detects active spec from git diff/cache, shows token usage and cost
+- `oraculo hook guard-prompt` — UserPromptSubmit: validates spec arg presence in Oraculo commands
+- `oraculo hook guard-paths` — PreToolUse (Write/Edit): prevents writes outside spec-workflow paths
+- `oraculo hook guard-stop` — Stop: checks file-first handoff completeness in recent runs
+- `oraculo hook session-start` — SessionStart: syncs active tasks template variant based on TDD config
 
-Configuration: `.spec-workflow/spw-config.toml` (`[hooks]` section, legacy fallback: `.spw/spw-config.toml`)
+Configuration: `.spec-workflow/oraculo.toml` (`[hooks]` section, legacy fallback: `.spw/spw-config.toml`)
 
 ## Statusline Token & Cost Display
 
-When Claude Code sends `context_window.total_input_tokens`, `context_window.total_output_tokens`, and `cost.total_cost_usd` in the statusline payload, SPW displays cumulative token usage and cost:
+When Claude Code sends `context_window.total_input_tokens`, `context_window.total_output_tokens`, and `cost.total_cost_usd` in the statusline payload, Oráculo displays cumulative token usage and cost:
 
 ```
 Model | Task | Dir | spec:name | 25.3k $0.42 | ████░░░░░░ 50%

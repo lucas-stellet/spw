@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/lucas-stellet/spw/internal/tasks"
+	"github.com/lucas-stellet/oraculo/internal/tasks"
 )
 
 // extToTech maps file extensions to technology names.

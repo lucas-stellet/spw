@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lucas-stellet/spw/internal/store"
-	"github.com/lucas-stellet/spw/internal/tasks"
-	"github.com/lucas-stellet/spw/internal/wave"
+	"github.com/lucas-stellet/oraculo/internal/store"
+	"github.com/lucas-stellet/oraculo/internal/tasks"
+	"github.com/lucas-stellet/oraculo/internal/wave"
 )
 
 // GenerateCompletion builds a full completion summary from spec artifacts.

@@ -102,12 +102,12 @@ Each spec organizes its artifacts by **workflow phase**. Generated outputs and a
 
 | Phase | Commands | Dispatch category |
 |-------|----------|-------------------|
-| `prd/` | `spw:prd` | Pipeline / Research |
-| `design/` | `spw:design-research`, `spw:design-draft` | Pipeline / Research + Synthesis |
-| `planning/` | `spw:tasks-plan`, `spw:tasks-check` | Pipeline / Synthesis + Audit / Artifact |
-| `execution/` | `spw:exec`, `spw:checkpoint` | Wave Execution / Implementation + Audit / Code |
-| `qa/` | `spw:qa`, `spw:qa-check`, `spw:qa-exec` | Pipeline / Synthesis + Audit / Code + Wave Execution / Validation |
-| `post-mortem/` | `spw:post-mortem` | Pipeline / Synthesis |
+| `prd/` | `oraculo:prd` | Pipeline / Research |
+| `design/` | `oraculo:design-research`, `oraculo:design-draft` | Pipeline / Research + Synthesis |
+| `planning/` | `oraculo:tasks-plan`, `oraculo:tasks-check` | Pipeline / Synthesis + Audit / Artifact |
+| `execution/` | `oraculo:exec`, `oraculo:checkpoint` | Wave Execution / Implementation + Audit / Code |
+| `qa/` | `oraculo:qa`, `oraculo:qa-check`, `oraculo:qa-exec` | Pipeline / Synthesis + Audit / Code + Wave Execution / Validation |
+| `post-mortem/` | `oraculo:post-mortem` | Pipeline / Synthesis |
 
 When a phase contains commands from different dispatch categories (e.g., `qa/` has pipeline, audit, and wave), each command uses its own `_comms/` subdirectory with the appropriate structure for its category.
 
@@ -148,4 +148,4 @@ When a phase contains commands from different dispatch categories (e.g., `qa/` h
 - **Wave format:** `wave-NN` (zero-padded 2-digit sequential).
 - **`_comms/` prefix:** Underscore prefix signals internal/agent-only content, same convention as the previous `_agent-comms/` and `_generated/`.
 - **Dashboard files:** `requirements.md`, `design.md`, `tasks.md` are the only files at spec root that the MCP dashboard reads. They must not move.
-- **Phase directories are created on demand.** If `spw:qa` has never run, the `qa/` directory does not exist.
+- **Phase directories are created on demand.** If `oraculo:qa` has never run, the `qa/` directory does not exist.

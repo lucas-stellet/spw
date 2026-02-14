@@ -1,4 +1,4 @@
-// Package config handles parsing and merging of spw-config.toml.
+// Package config handles parsing and merging of oraculo.toml.
 package config
 
 import (
@@ -12,7 +12,7 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-// Config represents the full spw-config.toml structure.
+// Config represents the full oraculo.toml structure.
 type Config struct {
 	Models           ModelsConfig           `toml:"models"`
 	Execution        ExecutionConfig        `toml:"execution"`
@@ -72,7 +72,7 @@ type SkillsStageConfig struct {
 
 type SkillsConfig struct {
 	Enabled                        bool              `toml:"enabled"`
-	AutoInstallDefaultsOnSPWInstall bool             `toml:"auto_install_defaults_on_spw_install"`
+	AutoInstallDefaultsOnORACULOInstall bool             `toml:"auto_install_defaults_on_oraculo_install"`
 	Design                         SkillsStageConfig `toml:"design"`
 	Implementation                 SkillsStageConfig `toml:"implementation"`
 }
@@ -143,7 +143,7 @@ func Defaults() Config {
 		},
 		Skills: SkillsConfig{
 			Enabled:                         true,
-			AutoInstallDefaultsOnSPWInstall: true,
+			AutoInstallDefaultsOnORACULOInstall: true,
 			Design: SkillsStageConfig{
 				EnforceRequired: true,
 				Required:        []string{},
@@ -184,21 +184,21 @@ func Defaults() Config {
 	}
 }
 
-// ResolveConfigPath finds the spw-config.toml file path.
+// ResolveConfigPath finds the oraculo.toml file path.
 // Checks canonical path first, then legacy fallback.
 func ResolveConfigPath(workspaceRoot string) string {
-	canonical := filepath.Join(workspaceRoot, ".spec-workflow", "spw-config.toml")
+	canonical := filepath.Join(workspaceRoot, ".spec-workflow", "oraculo.toml")
 	if _, err := os.Stat(canonical); err == nil {
 		return canonical
 	}
-	legacy := filepath.Join(workspaceRoot, ".spw", "spw-config.toml")
+	legacy := filepath.Join(workspaceRoot, ".oraculo", "oraculo.toml")
 	if _, err := os.Stat(legacy); err == nil {
 		return legacy
 	}
 	return canonical
 }
 
-// Load reads spw-config.toml from the workspace root.
+// Load reads oraculo.toml from the workspace root.
 // Returns defaults if the file doesn't exist.
 func Load(workspaceRoot string) (Config, error) {
 	cfg := Defaults()

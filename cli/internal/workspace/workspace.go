@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/lucas-stellet/spw/internal/git"
+	"github.com/lucas-stellet/oraculo/internal/git"
 )
 
 // Payload represents the JSON input from Claude Code hooks.

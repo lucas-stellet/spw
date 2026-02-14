@@ -1,5 +1,5 @@
 ---
-name: spw:qa-check
+name: oraculo:qa-check
 description: Validate QA test plan selectors, traceability, and data feasibility against actual code
 argument-hint: "<spec-name>"
 ---
@@ -74,13 +74,13 @@ Audit commands may inject logic at these points:
 <shared_policies>
 # Config Resolution
 
-Canonical runtime config path is `.spec-workflow/spw-config.toml`.
+Canonical runtime config path is `.spec-workflow/oraculo.toml`.
 
 Transitional compatibility:
-- If `.spec-workflow/spw-config.toml` is missing, fallback to `.spw/spw-config.toml`.
+- If `.spec-workflow/oraculo.toml` is missing, fallback to `.oraculo/oraculo.toml`.
 
 When shell logic is required, prefer:
-- `spw tools config-get <section.key> --default <value> [--raw]`
+- `oraculo tools config-get <section.key> --default <value> [--raw]`
 
 This keeps workflow behavior stable and avoids hardcoded path drift.
 
@@ -139,7 +139,7 @@ When `spec-status` is incomplete or ambiguous:
 </shared_policies>
 
 <objective>
-Validate QA test plan against actual code. Confirm selectors/endpoints exist, verify requirement traceability, and check data feasibility. Produces a verified selector map that `spw:qa-exec` consumes without re-reading source files.
+Validate QA test plan against actual code. Confirm selectors/endpoints exist, verify requirement traceability, and check data feasibility. Produces a verified selector map that `oraculo:qa-exec` consumes without re-reading source files.
 </objective>
 
 <artifact_boundary>
@@ -186,7 +186,7 @@ comms:
 <!-- pre_pipeline: verify QA-TEST-PLAN.md exists .................. -->
 <pre_pipeline>
 1. Resolve `SPEC_DIR=.spec-workflow/specs/<spec-name>` and stop BLOCKED if missing.
-2. Verify `qa/QA-TEST-PLAN.md` exists in SPEC_DIR; stop BLOCKED if missing → recommend `spw:qa <spec-name>`.
+2. Verify `qa/QA-TEST-PLAN.md` exists in SPEC_DIR; stop BLOCKED if missing → recommend `oraculo:qa <spec-name>`.
 3. Inspect existing qa-check run dirs and apply resume decision gate.
 4. Read context files:
    - `qa/QA-TEST-PLAN.md`
@@ -212,7 +212,7 @@ comms:
      ============================================================ -->
 
 <model_policy>
-Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
+Resolve models from `.spec-workflow/oraculo.toml` `[models]`:
 - complex_reasoning -> default `opus`
 - implementation -> default `sonnet`
 </model_policy>
@@ -243,11 +243,11 @@ Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
 <completion_guidance>
 On PASS:
 - Confirm output path: `.spec-workflow/specs/<spec-name>/qa/QA-CHECK.md`.
-- Recommend next command: `spw:qa-exec <spec-name>`.
+- Recommend next command: `oraculo:qa-exec <spec-name>`.
 - Recommend running `/clear` before execution.
 
 On BLOCKED:
 - Show findings by severity and required fixes.
-- If selectors are missing or invalid, recommend updating the test plan and rerunning `spw:qa-check <spec-name>`.
+- If selectors are missing or invalid, recommend updating the test plan and rerunning `oraculo:qa-check <spec-name>`.
 - If waiting on resume decision, ask user to choose `continue-unfinished` or `delete-and-restart`, then rerun.
 </completion_guidance>

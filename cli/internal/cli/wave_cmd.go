@@ -3,9 +3,9 @@ package cli
 import (
 	"fmt"
 
-	"github.com/lucas-stellet/spw/internal/specdir"
-	"github.com/lucas-stellet/spw/internal/tools"
-	"github.com/lucas-stellet/spw/internal/wave"
+	"github.com/lucas-stellet/oraculo/internal/specdir"
+	"github.com/lucas-stellet/oraculo/internal/tools"
+	"github.com/lucas-stellet/oraculo/internal/wave"
 	"github.com/spf13/cobra"
 )
 

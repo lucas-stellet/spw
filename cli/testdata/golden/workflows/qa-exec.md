@@ -1,5 +1,5 @@
 ---
-name: spw:qa-exec
+name: oraculo:qa-exec
 description: Execute validated QA test plan using verified selectors from QA-CHECK.md
 argument-hint: "<spec-name> [--scope smoke|regression|full] [--rerun-failed true|false]"
 ---
@@ -88,13 +88,13 @@ Wave execution commands may inject logic at these points:
 <shared_policies>
 # Config Resolution
 
-Canonical runtime config path is `.spec-workflow/spw-config.toml`.
+Canonical runtime config path is `.spec-workflow/oraculo.toml`.
 
 Transitional compatibility:
-- If `.spec-workflow/spw-config.toml` is missing, fallback to `.spw/spw-config.toml`.
+- If `.spec-workflow/oraculo.toml` is missing, fallback to `.oraculo/oraculo.toml`.
 
 When shell logic is required, prefer:
-- `spw tools config-get <section.key> --default <value> [--raw]`
+- `oraculo tools config-get <section.key> --default <value> [--raw]`
 
 This keeps workflow behavior stable and avoids hardcoded path drift.
 
@@ -206,8 +206,8 @@ comms:
 <pre_pipeline>
 1. Resolve `SPEC_DIR=.spec-workflow/specs/<spec-name>` and stop BLOCKED if missing.
 2. Verify prerequisites exist in SPEC_DIR:
-   - `qa/QA-TEST-PLAN.md` must exist; stop BLOCKED if missing → recommend `spw:qa <spec-name>`.
-   - `qa/QA-CHECK.md` must exist and contain `PASS` status; stop BLOCKED if missing or BLOCKED → recommend `spw:qa-check <spec-name>`.
+   - `qa/QA-TEST-PLAN.md` must exist; stop BLOCKED if missing → recommend `oraculo:qa <spec-name>`.
+   - `qa/QA-CHECK.md` must exist and contain `PASS` status; stop BLOCKED if missing or BLOCKED → recommend `oraculo:qa-check <spec-name>`.
 3. Dispatch `qa-state-scout` for compact resume state.
 4. Inspect existing qa-exec run dirs and apply resume decision gate.
 5. Apply skills policy: if `[skills].enabled=true`, load `qa-validation-planning`.
@@ -249,22 +249,22 @@ For each scenario batch (grouped by tool type — Playwright MCP / Bruno CLI):
      ============================================================ -->
 
 <model_policy>
-Resolve models from `.spec-workflow/spw-config.toml` `[models]`:
+Resolve models from `.spec-workflow/oraculo.toml` `[models]`:
 - complex_reasoning -> default `opus`
 - implementation -> default `sonnet`
 </model_policy>
 
 <no_source_read_policy>
-This is the core constraint of `spw:qa-exec`.
+This is the core constraint of `oraculo:qa-exec`.
 
-All selectors, routes, endpoints, and CSS identifiers must come from `QA-CHECK.md` (the verified selector map produced by `spw:qa-check`). No subagent in this command is allowed to read implementation source files (`.ex`, `.ts`, `.tsx`, `.py`, `.html`, `.heex`, etc.).
+All selectors, routes, endpoints, and CSS identifiers must come from `QA-CHECK.md` (the verified selector map produced by `oraculo:qa-check`). No subagent in this command is allowed to read implementation source files (`.ex`, `.ts`, `.tsx`, `.py`, `.html`, `.heex`, etc.).
 
 If a selector does not work at runtime:
 - Log it as a "selector drift" defect in the execution report
 - Do NOT search source files to find the correct selector
-- Recommend rerunning `spw:qa-check` after the execution completes
+- Recommend rerunning `oraculo:qa-check` after the execution completes
 
-This policy ensures `spw:qa-exec` remains fast and focused on execution, not re-discovery.
+This policy ensures `oraculo:qa-exec` remains fast and focused on execution, not re-discovery.
 </no_source_read_policy>
 
 <execution_scope_policy>
@@ -336,7 +336,7 @@ Skill gate:
 - [ ] QA-EXECUTION-REPORT.md and QA-DEFECT-REPORT.md were generated.
 - [ ] File-first handoff exists under `qa/_comms/qa-exec/<run-id>/`.
 - [ ] If unfinished run exists, explicit user decision was respected.
-- [ ] Selector drift defects (if any) recommend `spw:qa-check` rerun.
+- [ ] Selector drift defects (if any) recommend `oraculo:qa-check` rerun.
 - [ ] Orchestrator never read report.md from any subagent (thin-dispatch).
 </acceptance_criteria>
 
@@ -349,10 +349,10 @@ On GO:
 
 On NO-GO:
 - Show failed scenarios with defect IDs.
-- If failures are fixable: recommend `spw:qa-exec <spec-name> --rerun-failed true` after fixes.
-- If failures need plan revision: recommend `spw:qa <spec-name>` → `spw:qa-check` → `spw:qa-exec`.
+- If failures are fixable: recommend `oraculo:qa-exec <spec-name> --rerun-failed true` after fixes.
+- If failures need plan revision: recommend `oraculo:qa <spec-name>` → `oraculo:qa-check` → `oraculo:qa-exec`.
 
 On selector drift:
 - Log drift defects in QA-DEFECT-REPORT.md.
-- Recommend `spw:qa-check <spec-name>` to re-verify selectors, then `spw:qa-exec <spec-name>`.
+- Recommend `oraculo:qa-check <spec-name>` to re-verify selectors, then `oraculo:qa-exec <spec-name>`.
 </completion_guidance>

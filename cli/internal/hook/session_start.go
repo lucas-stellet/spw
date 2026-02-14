@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/lucas-stellet/spw/internal/config"
-	"github.com/lucas-stellet/spw/internal/render"
-	"github.com/lucas-stellet/spw/internal/workspace"
+	"github.com/lucas-stellet/oraculo/internal/config"
+	"github.com/lucas-stellet/oraculo/internal/render"
+	"github.com/lucas-stellet/oraculo/internal/workspace"
 )
 
 // HandleSessionStart syncs the tasks template variant based on TDD config
@@ -36,7 +36,7 @@ func reRenderIfStale(workspaceRoot string, cfg config.Config) error {
 		return nil // No config, nothing to re-render.
 	}
 
-	outDir := filepath.Join(workspaceRoot, ".claude", "workflows", "spw")
+	outDir := filepath.Join(workspaceRoot, ".claude", "workflows", "oraculo")
 	entries, err := os.ReadDir(outDir)
 	if err != nil || len(entries) == 0 {
 		return nil // No rendered workflows yet.
@@ -190,5 +190,5 @@ func filesEqual(a, b string) bool {
 }
 
 func logHook(msg string) {
-	fmt.Fprintf(os.Stderr, "[spw-hook] %s\n", msg)
+	fmt.Fprintf(os.Stderr, "[oraculo-hook] %s\n", msg)
 }

@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/lucas-stellet/spw/internal/registry"
-	"github.com/lucas-stellet/spw/internal/store"
+	"github.com/lucas-stellet/oraculo/internal/registry"
+	"github.com/lucas-stellet/oraculo/internal/store"
 )
 
 type subagentStatus struct {

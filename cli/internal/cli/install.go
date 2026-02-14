@@ -3,14 +3,14 @@ package cli
 import (
 	"os"
 
-	"github.com/lucas-stellet/spw/internal/install"
+	"github.com/lucas-stellet/oraculo/internal/install"
 	"github.com/spf13/cobra"
 )
 
 func newInstallCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "install",
-		Short: "Install SPW kit into the current project (or globally with --global)",
+		Short: "Install ORACULO kit into the current project (or globally with --global)",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			global, _ := cmd.Flags().GetBool("global")
 			if global {

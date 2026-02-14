@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to SPW are documented in this file.
+All notable changes to Oraculo are documented in this file.
 
 ## [2.0.0] - 2025
 
@@ -8,10 +8,10 @@ All notable changes to SPW are documented in this file.
 - Thin-dispatch architecture: commands as thin wrappers (max 60 lines) delegating to full workflow orchestration.
 - Three dispatch categories: Pipeline, Audit, and Wave Execution with shared policies.
 - Phase-based spec directory structure replacing flat `_generated/` and `_agent-comms/` dumps.
-- 3-phase QA chain: `spw:qa` (plan) -> `spw:qa-check` (validate) -> `spw:qa-exec` (execute).
+- 3-phase QA chain: `oraculo:qa` (plan) -> `oraculo:qa-check` (validate) -> `oraculo:qa-exec` (execute).
 - Agent Teams via symlink overlays (base + noop/teams toggle).
 - Model routing: haiku for scouting, opus for reasoning, sonnet for implementation.
-- `spw` CLI with `install`, `update`, `doctor`, `status`, and `skills` commands.
+- `oraculo` CLI with `install`, `update`, `doctor`, `status`, and `skills` commands.
 - Rolling-wave planning strategy as default (alternative: all-at-once).
 - Post-mortem memory system with indexed lessons for design/planning phases.
 - File-first subagent communication with `brief.md`, `report.md`, and `status.json`.
@@ -29,5 +29,5 @@ All notable changes to SPW are documented in this file.
 
 ### Added
 - Initial spec-workflow integration with Claude Code commands.
-- Basic command entry points: `spw:prd`, `spw:plan`, `spw:exec`, `spw:checkpoint`, `spw:status`.
+- Basic command entry points: `oraculo:prd`, `oraculo:plan`, `oraculo:exec`, `oraculo:checkpoint`, `oraculo:status`.
 - `copy-ready/` installer for project setup.

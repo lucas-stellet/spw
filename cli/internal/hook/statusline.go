@@ -10,9 +10,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/lucas-stellet/spw/internal/config"
-	"github.com/lucas-stellet/spw/internal/git"
-	"github.com/lucas-stellet/spw/internal/workspace"
+	"github.com/lucas-stellet/oraculo/internal/config"
+	"github.com/lucas-stellet/oraculo/internal/git"
+	"github.com/lucas-stellet/oraculo/internal/workspace"
 )
 
 // HandleStatusline outputs the Claude Code status line.
@@ -247,7 +247,7 @@ func detectActiveSpec(dir string) string {
 
 	cfg, _ := loadStatuslineConfig(repoRoot)
 
-	cacheFile := filepath.Join(repoRoot, ".spec-workflow", ".spw-cache", "statusline.json")
+	cacheFile := filepath.Join(repoRoot, ".spec-workflow", ".oraculo-cache", "statusline.json")
 	if cfg.stickySpec {
 		cached := readStatuslineCache(repoRoot, cfg.cacheTTLSeconds, true)
 		if cached != "" && specExists(specsRoot, cached) {

@@ -7,8 +7,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/lucas-stellet/spw/internal/specdir"
-	"github.com/lucas-stellet/spw/internal/store"
+	"github.com/lucas-stellet/oraculo/internal/specdir"
+	"github.com/lucas-stellet/oraculo/internal/store"
 )
 
 // statusToChar maps status strings to their checkbox characters.

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lucas-stellet/spw/internal/specdir"
+	"github.com/lucas-stellet/oraculo/internal/specdir"
 )
 
 // waveUpdateResult performs the wave update logic and returns the result.

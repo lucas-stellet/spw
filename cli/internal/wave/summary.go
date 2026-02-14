@@ -3,7 +3,7 @@ package wave
 import (
 	"path/filepath"
 
-	"github.com/lucas-stellet/spw/internal/specdir"
+	"github.com/lucas-stellet/oraculo/internal/specdir"
 )
 
 // GenerateSummary creates a WaveSummary for a specific wave by reading

@@ -8,28 +8,28 @@ set -euo pipefail
 # Behavior:
 # - help (default): prints usage
 # - install: copies kit files into current project (preserves user config across upgrades)
-# - skills: installs default SPW skills into .claude/skills (best effort)
+# - skills: installs default Oraculo skills into .claude/skills (best effort)
 # - status: prints a quick summary of kit presence + default skills
-# - Merges SPW hooks into .claude/settings.json (preserves non-SPW entries)
-# - Agent Teams activation is driven by [agent_teams].enabled in spw-config.toml
+# - Merges Oraculo hooks into .claude/settings.json (preserves non-Oraculo entries)
+# - Agent Teams activation is driven by [agent_teams].enabled in oraculo.toml
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TARGET_ROOT="$(pwd)"
-CONFIG_PATH_CANONICAL="${TARGET_ROOT}/.spec-workflow/spw-config.toml"
-CONFIG_PATH_LEGACY="${TARGET_ROOT}/.spw/spw-config.toml"
+CONFIG_PATH_CANONICAL="${TARGET_ROOT}/.spec-workflow/oraculo.toml"
+CONFIG_PATH_LEGACY="${TARGET_ROOT}/.oraculo/oraculo.toml"
 CONFIG_PATH="${CONFIG_PATH_CANONICAL}"
 # Resolve repository root robustly.
-# Typical cached layout used by `spw` wrapper:
+# Typical cached layout used by `oraculo` wrapper:
 #   <cache>/repos/<repo>/copy-ready/install.sh
 # where repo root is one level above SCRIPT_DIR.
-SPW_REPO_ROOT_CANDIDATE_1="$(cd "${SCRIPT_DIR}/.." && pwd)"
-SPW_REPO_ROOT_CANDIDATE_2="$(cd "${SCRIPT_DIR}/../.." && pwd)"
-if [ -d "${SPW_REPO_ROOT_CANDIDATE_1}/skills" ] || [ -d "${SPW_REPO_ROOT_CANDIDATE_1}/.git" ]; then
-  SPW_REPO_ROOT="${SPW_REPO_ROOT_CANDIDATE_1}"
+ORACULO_REPO_ROOT_CANDIDATE_1="$(cd "${SCRIPT_DIR}/.." && pwd)"
+ORACULO_REPO_ROOT_CANDIDATE_2="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+if [ -d "${ORACULO_REPO_ROOT_CANDIDATE_1}/skills" ] || [ -d "${ORACULO_REPO_ROOT_CANDIDATE_1}/.git" ]; then
+  ORACULO_REPO_ROOT="${ORACULO_REPO_ROOT_CANDIDATE_1}"
 else
-  SPW_REPO_ROOT="${SPW_REPO_ROOT_CANDIDATE_2}"
+  ORACULO_REPO_ROOT="${ORACULO_REPO_ROOT_CANDIDATE_2}"
 fi
-SUPERPOWERS_SKILLS_DIR="${SPW_SUPERPOWERS_SKILLS_DIR:-${SPW_REPO_ROOT}/superpowers/skills}"
+SUPERPOWERS_SKILLS_DIR="${ORACULO_SUPERPOWERS_SKILLS_DIR:-${ORACULO_REPO_ROOT}/superpowers/skills}"
 
 resolve_config_path() {
   if [ -f "$CONFIG_PATH_CANONICAL" ]; then
@@ -58,20 +58,20 @@ GENERAL_SKILLS=(
   "test-driven-development"
 )
 
-# All skills combined (backward compat for spw install)
+# All skills combined (backward compat for oraculo install)
 DEFAULT_SKILLS=("${GENERAL_SKILLS[@]}" "${ELIXIR_SKILLS[@]}")
 
 show_help() {
   cat <<'USAGE'
-spw - install or inspect the SPW kit in the current project
+oraculo - install or inspect the Oraculo kit in the current project
 
 Usage:
-  spw
-  spw install [--global]
-  spw init
-  spw skills
-  spw skills install [--elixir]
-  spw status
+  oraculo
+  oraculo install [--global]
+  oraculo init
+  oraculo skills
+  oraculo skills install [--elixir]
+  oraculo status
 
 Behavior:
 - help (default): prints this help output.
@@ -85,9 +85,9 @@ Behavior:
 - status: prints a quick summary of kit presence + default skills.
 
 Notes:
-- SPW hooks are auto-merged into .claude/settings.json (non-SPW entries preserved).
-- User config (.spec-workflow/spw-config.toml) is preserved across installs via smart merge.
-- Agent Teams activation is driven by [agent_teams].enabled in spw-config.toml.
+- Oraculo hooks are auto-merged into .claude/settings.json (non-Oraculo entries preserved).
+- User config (.spec-workflow/oraculo.toml) is preserved across installs via smart merge.
+- Agent Teams activation is driven by [agent_teams].enabled in oraculo.toml.
 - Global + init coexist: local installs take precedence over global (Claude Code native behavior).
 USAGE
 }
@@ -140,14 +140,14 @@ setup_gitattributes() {
   local gitattributes="${TARGET_ROOT}/.gitattributes"
   if [ ! -f "$gitattributes" ] || ! grep -qF "$rule" "$gitattributes"; then
     echo "$rule" >> "$gitattributes"
-    echo "[spw-kit] Added .gitattributes rule for PR review optimization."
+    echo "[oraculo-kit] Added .gitattributes rule for PR review optimization."
   fi
 }
 
 activate_teams_overlay_symlinks() {
-  local active_dir="${TARGET_ROOT}/.claude/workflows/spw/overlays/active"
-  local teams_dir="${TARGET_ROOT}/.claude/workflows/spw/overlays/teams"
-  [ -d "$teams_dir" ] || { echo "[spw-kit] Team overlays not found; skipping." >&2; return 0; }
+  local active_dir="${TARGET_ROOT}/.claude/workflows/oraculo/overlays/active"
+  local teams_dir="${TARGET_ROOT}/.claude/workflows/oraculo/overlays/teams"
+  [ -d "$teams_dir" ] || { echo "[oraculo-kit] Team overlays not found; skipping." >&2; return 0; }
   mkdir -p "$active_dir"
   for overlay in "$teams_dir"/*.md; do
     [ -f "$overlay" ] || continue
@@ -155,11 +155,11 @@ activate_teams_overlay_symlinks() {
     rm -f "${active_dir}/${name}"
     ln -s "../teams/${name}" "${active_dir}/${name}"
   done
-  echo "[spw-kit] Activated team overlays via symlinks in overlays/active/."
+  echo "[oraculo-kit] Activated team overlays via symlinks in overlays/active/."
 }
 
 deactivate_teams_overlay_symlinks() {
-  local active_dir="${TARGET_ROOT}/.claude/workflows/spw/overlays/active"
+  local active_dir="${TARGET_ROOT}/.claude/workflows/oraculo/overlays/active"
   [ -d "$active_dir" ] || return 0
   for link in "$active_dir"/*.md; do
     [ -L "$link" ] || continue
@@ -167,13 +167,13 @@ deactivate_teams_overlay_symlinks() {
     rm -f "$link"
     ln -s "../noop.md" "${active_dir}/${name}"
   done
-  echo "[spw-kit] Deactivated team overlays (all symlinks → noop.md)."
+  echo "[oraculo-kit] Deactivated team overlays (all symlinks → noop.md)."
 }
 
 find_skill_source_dir() {
   local skill="$1"
   local candidates=(
-    "${SPW_REPO_ROOT}/skills/${skill}"
+    "${ORACULO_REPO_ROOT}/skills/${skill}"
     "${HOME}/.claude/skills/${skill}"
     "${HOME}/.codex/skills/${skill}"
     "${HOME}/.codex/superpowers/skills/${skill}"
@@ -224,16 +224,16 @@ install_skill_set() {
     fi
   done
 
-  echo "[spw-kit] Skills (${label}): installed=${installed}, existing=${skipped_existing}, missing=${#missing[@]}"
+  echo "[oraculo-kit] Skills (${label}): installed=${installed}, existing=${skipped_existing}, missing=${#missing[@]}"
   if [ "${#missing[@]}" -gt 0 ]; then
-    echo "[spw-kit] Missing local skill sources (non-blocking): ${missing[*]}"
+    echo "[oraculo-kit] Missing local skill sources (non-blocking): ${missing[*]}"
   fi
 }
 
 patch_config_elixir_skills() {
   resolve_config_path
   if [ ! -f "$CONFIG_PATH" ]; then
-    echo "[spw-kit] No config file found; skipping Elixir config patch."
+    echo "[oraculo-kit] No config file found; skipping Elixir config patch."
     return 0
   fi
 
@@ -248,7 +248,7 @@ patch_config_elixir_skills() {
   done
 
   if [ "$patched" = "false" ]; then
-    echo "[spw-kit] Elixir skills already in config required lists."
+    echo "[oraculo-kit] Elixir skills already in config required lists."
     return 0
   fi
 
@@ -330,7 +330,7 @@ patch_config_elixir_skills() {
   done
 
   mv "$tmp" "$CONFIG_PATH"
-  echo "[spw-kit] Patched config: added using-elixir-skills and elixir-anti-patterns to required lists."
+  echo "[oraculo-kit] Patched config: added using-elixir-skills and elixir-anti-patterns to required lists."
 }
 
 status_default_skills() {
@@ -347,17 +347,17 @@ status_default_skills() {
     fi
   done
 
-  echo "[spw-kit] Default skills: installed=${installed}, missing=${#missing[@]}"
+  echo "[oraculo-kit] Default skills: installed=${installed}, missing=${#missing[@]}"
   if [ "${#missing[@]}" -gt 0 ]; then
-    echo "[spw-kit] Missing in .claude/skills: ${missing[*]}"
+    echo "[oraculo-kit] Missing in .claude/skills: ${missing[*]}"
   fi
 }
 
 inject_snippet() {
   local target_file="$1"
   local snippet_file="$2"
-  local marker_start="<!-- SPW-KIT-START"
-  local marker_end="<!-- SPW-KIT-END -->"
+  local marker_start="<!-- ORACULO-KIT-START"
+  local marker_end="<!-- ORACULO-KIT-END -->"
 
   [ -f "$snippet_file" ] || return 0
 
@@ -379,26 +379,26 @@ inject_snippet() {
 
 cmd_install_global() {
   local global_root="${HOME}"
-  echo "[spw-kit] Installing globally into: ${global_root}"
+  echo "[oraculo-kit] Installing globally into: ${global_root}"
 
-  # 1. Command stubs → ~/.claude/commands/spw/
+  # 1. Command stubs → ~/.claude/commands/oraculo/
   rsync -a "${SCRIPT_DIR}/.claude/commands/" "${global_root}/.claude/commands/"
-  echo "[spw-kit] Copied command stubs to ~/.claude/commands/spw/"
+  echo "[oraculo-kit] Copied command stubs to ~/.claude/commands/oraculo/"
 
-  # 2. Workflows → ~/.claude/workflows/spw/
+  # 2. Workflows → ~/.claude/workflows/oraculo/
   rsync -a "${SCRIPT_DIR}/.claude/workflows/" "${global_root}/.claude/workflows/"
-  echo "[spw-kit] Copied workflows to ~/.claude/workflows/spw/"
+  echo "[oraculo-kit] Copied workflows to ~/.claude/workflows/oraculo/"
 
   # 3. Settings.json → ~/.claude/settings.json
   if [ ! -f "${global_root}/.claude/settings.json" ]; then
     mkdir -p "${global_root}/.claude"
     cp "${SCRIPT_DIR}/.claude/settings.json.example" "${global_root}/.claude/settings.json"
-    echo "[spw-kit] Created ~/.claude/settings.json with SPW hooks."
+    echo "[oraculo-kit] Created ~/.claude/settings.json with Oraculo hooks."
   else
-    if command -v spw >/dev/null 2>&1 && spw tools merge-settings --global >/dev/null 2>&1; then
-      echo "[spw-kit] Hooks merged into ~/.claude/settings.json."
+    if command -v oraculo >/dev/null 2>&1 && oraculo tools merge-settings --global >/dev/null 2>&1; then
+      echo "[oraculo-kit] Hooks merged into ~/.claude/settings.json."
     else
-      echo "[spw-kit] spw Go binary not available; manually merge hooks from ${SCRIPT_DIR}/.claude/settings.json.example"
+      echo "[oraculo-kit] oraculo Go binary not available; manually merge hooks from ${SCRIPT_DIR}/.claude/settings.json.example"
     fi
   fi
 
@@ -409,23 +409,23 @@ cmd_install_global() {
   TARGET_ROOT="${saved_target_root}"
 
   # 5. Overlay symlinks → noop by default
-  local active_dir="${global_root}/.claude/workflows/spw/overlays/active"
+  local active_dir="${global_root}/.claude/workflows/oraculo/overlays/active"
   mkdir -p "$active_dir"
   # Ensure noop.md exists
-  local noop_path="${global_root}/.claude/workflows/spw/overlays/noop.md"
+  local noop_path="${global_root}/.claude/workflows/oraculo/overlays/noop.md"
   if [ ! -f "$noop_path" ]; then
     mkdir -p "$(dirname "$noop_path")"
     echo "<!-- noop overlay -->" > "$noop_path"
   fi
   deactivate_teams_overlay_symlinks_at "${global_root}"
 
-  echo "[spw-kit] Global installation complete."
-  echo "[spw-kit] Use 'spw init' in each project to set up project-specific config."
+  echo "[oraculo-kit] Global installation complete."
+  echo "[oraculo-kit] Use 'oraculo init' in each project to set up project-specific config."
 }
 
 deactivate_teams_overlay_symlinks_at() {
   local root="$1"
-  local active_dir="${root}/.claude/workflows/spw/overlays/active"
+  local active_dir="${root}/.claude/workflows/oraculo/overlays/active"
   [ -d "$active_dir" ] || return 0
   # Create noop symlinks for all commands
   local commands=("prd" "plan" "design-research" "design-draft" "tasks-plan" "tasks-check" "exec" "checkpoint" "post-mortem" "qa" "qa-check" "qa-exec" "status")
@@ -434,48 +434,48 @@ deactivate_teams_overlay_symlinks_at() {
     rm -f "${active_dir}/${cmd_name}.md"
     ln -s "../noop.md" "${active_dir}/${cmd_name}.md"
   done
-  echo "[spw-kit] Overlay symlinks set to noop (teams disabled)."
+  echo "[oraculo-kit] Overlay symlinks set to noop (teams disabled)."
 }
 
 cmd_init() {
   if [ "$#" -gt 0 ]; then
-    echo "[spw-kit] Unexpected arguments for init: $*" >&2
+    echo "[oraculo-kit] Unexpected arguments for init: $*" >&2
     exit 1
   fi
 
-  echo "[spw-kit] Initializing project: ${TARGET_ROOT}"
+  echo "[oraculo-kit] Initializing project: ${TARGET_ROOT}"
 
-  # 1. Write defaults (.spec-workflow/spw-config.toml + user-templates/)
+  # 1. Write defaults (.spec-workflow/oraculo.toml + user-templates/)
   rsync -a "${SCRIPT_DIR}/.spec-workflow/" "${TARGET_ROOT}/.spec-workflow/"
-  echo "[spw-kit] Copied config and templates to .spec-workflow/"
+  echo "[oraculo-kit] Copied config and templates to .spec-workflow/"
 
   # 2. Inject snippets (CLAUDE.md, AGENTS.md)
   inject_snippet "${TARGET_ROOT}/CLAUDE.md" "${SCRIPT_DIR}/.claude.md.snippet"
   inject_snippet "${TARGET_ROOT}/AGENTS.md" "${SCRIPT_DIR}/.agents.md.snippet"
-  echo "[spw-kit] Updated CLAUDE.md and AGENTS.md with SPW dispatch instructions."
+  echo "[oraculo-kit] Updated CLAUDE.md and AGENTS.md with Oraculo dispatch instructions."
 
   # 3. Setup .gitattributes
   setup_gitattributes
 
   # 4. Diagnose global install presence
-  local global_cmds="${HOME}/.claude/commands/spw"
+  local global_cmds="${HOME}/.claude/commands/oraculo"
   if [ -d "$global_cmds" ] && [ "$(ls -1 "$global_cmds" 2>/dev/null | wc -l)" -gt 0 ]; then
-    echo "[spw-kit] Global install detected: commands found in ~/.claude/commands/spw/"
+    echo "[oraculo-kit] Global install detected: commands found in ~/.claude/commands/oraculo/"
   else
-    echo "[spw-kit] No global install detected. Run 'spw install --global' or 'spw install' for a full local install."
+    echo "[oraculo-kit] No global install detected. Run 'oraculo install --global' or 'oraculo install' for a full local install."
   fi
 
-  echo "[spw-kit] Project initialized."
-  echo "[spw-kit] Next step: adjust .spec-workflow/spw-config.toml"
+  echo "[oraculo-kit] Project initialized."
+  echo "[oraculo-kit] Next step: adjust .spec-workflow/oraculo.toml"
 }
 
 cmd_install() {
   if [ "$#" -gt 0 ]; then
-    echo "[spw-kit] Unexpected arguments for install: $*" >&2
+    echo "[oraculo-kit] Unexpected arguments for install: $*" >&2
     exit 1
   fi
 
-  echo "[spw-kit] Installing into project: ${TARGET_ROOT}"
+  echo "[oraculo-kit] Installing into project: ${TARGET_ROOT}"
 
   # Backup user config before rsync overwrites it
   local config_backup=""
@@ -485,28 +485,28 @@ cmd_install() {
     cp "$CONFIG_PATH" "$config_backup"
   fi
 
-  # Copy only SPW runtime assets (avoid touching project root files like README.md)
+  # Copy only Oraculo runtime assets (avoid touching project root files like README.md)
   rsync -a "${SCRIPT_DIR}/.claude/" "${TARGET_ROOT}/.claude/"
   rsync -a "${SCRIPT_DIR}/.spec-workflow/" "${TARGET_ROOT}/.spec-workflow/"
 
   # PR review optimization: collapse spec-workflow files in GitHub diffs
   setup_gitattributes
 
-  # Inject SPW dispatch instructions into project CLAUDE.md and AGENTS.md
+  # Inject Oraculo dispatch instructions into project CLAUDE.md and AGENTS.md
   inject_snippet "${TARGET_ROOT}/CLAUDE.md" "${SCRIPT_DIR}/.claude.md.snippet"
   inject_snippet "${TARGET_ROOT}/AGENTS.md" "${SCRIPT_DIR}/.agents.md.snippet"
-  echo "[spw-kit] Updated CLAUDE.md and AGENTS.md with SPW dispatch instructions."
+  echo "[oraculo-kit] Updated CLAUDE.md and AGENTS.md with Oraculo dispatch instructions."
 
   # Smart merge: preserve user config values with new template structure
   if [ -n "$config_backup" ]; then
     # Try Go binary's merge-config (suppress output in case the bash wrapper is
-    # the only `spw` in PATH — it doesn't support `tools` and would abort).
-    if command -v spw >/dev/null 2>&1 && spw tools merge-config "$CONFIG_PATH" "$config_backup" "$CONFIG_PATH" >/dev/null 2>&1; then
-      echo "[spw-kit] Config merged: user values preserved, new keys added."
+    # the only `oraculo` in PATH — it doesn't support `tools` and would abort).
+    if command -v oraculo >/dev/null 2>&1 && oraculo tools merge-config "$CONFIG_PATH" "$config_backup" "$CONFIG_PATH" >/dev/null 2>&1; then
+      echo "[oraculo-kit] Config merged: user values preserved, new keys added."
     else
       # Fallback: restore user backup as-is (keeps values, misses new keys)
       cp "$config_backup" "$CONFIG_PATH"
-      echo "[spw-kit] spw Go binary not available; restored user config as-is (new template keys may be missing)."
+      echo "[oraculo-kit] oraculo Go binary not available; restored user config as-is (new template keys may be missing)."
     fi
     rm -f "$config_backup"
   fi
@@ -514,21 +514,21 @@ cmd_install() {
   if [ ! -f "${TARGET_ROOT}/.claude/settings.json" ]; then
     mkdir -p "${TARGET_ROOT}/.claude"
     cp "${SCRIPT_DIR}/.claude/settings.json.example" "${TARGET_ROOT}/.claude/settings.json"
-    echo "[spw-kit] Created .claude/settings.json with SPW hooks."
+    echo "[oraculo-kit] Created .claude/settings.json with Oraculo hooks."
   else
-    if command -v spw >/dev/null 2>&1 && spw tools merge-settings >/dev/null 2>&1; then
-      echo "[spw-kit] Hooks merged into .claude/settings.json."
+    if command -v oraculo >/dev/null 2>&1 && oraculo tools merge-settings >/dev/null 2>&1; then
+      echo "[oraculo-kit] Hooks merged into .claude/settings.json."
     else
-      echo "[spw-kit] spw Go binary not available; manually merge hooks from ${SCRIPT_DIR}/.claude/settings.json.example"
+      echo "[oraculo-kit] oraculo Go binary not available; manually merge hooks from ${SCRIPT_DIR}/.claude/settings.json.example"
     fi
   fi
 
   resolve_config_path
-  AUTO_INSTALL_SKILLS="$(toml_bool_value skills auto_install_defaults_on_spw_install true)"
+  AUTO_INSTALL_SKILLS="$(toml_bool_value skills auto_install_defaults_on_oraculo_install true)"
   if [ "$AUTO_INSTALL_SKILLS" = "true" ]; then
     install_default_skills
   else
-    echo "[spw-kit] Skipping default skills install (auto_install_defaults_on_spw_install=false)."
+    echo "[oraculo-kit] Skipping default skills install (auto_install_defaults_on_oraculo_install=false)."
   fi
 
   # Agent Teams: activate/deactivate overlay symlinks based on config
@@ -547,19 +547,19 @@ cmd_install() {
         data.teammateMode = "in-process";
         fs.writeFileSync(path, JSON.stringify(data, null, 2));
       ' "${TARGET_ROOT}/.claude/settings.json"
-      echo "[spw-kit] Enabled Agent Teams in settings.json (teammateMode=in-process)."
+      echo "[oraculo-kit] Enabled Agent Teams in settings.json (teammateMode=in-process)."
     else
-      echo "[spw-kit] Agent Teams enabled in config but cannot inject settings."
-      echo "[spw-kit] Add to .claude/settings.json manually:"
-      echo "[spw-kit] - env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = \"1\""
-      echo "[spw-kit] - teammateMode = \"in-process\" (or \"tmux\")"
+      echo "[oraculo-kit] Agent Teams enabled in config but cannot inject settings."
+      echo "[oraculo-kit] Add to .claude/settings.json manually:"
+      echo "[oraculo-kit] - env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = \"1\""
+      echo "[oraculo-kit] - teammateMode = \"in-process\" (or \"tmux\")"
     fi
   else
     deactivate_teams_overlay_symlinks
   fi
 
-  echo "[spw-kit] Installation complete."
-  echo "[spw-kit] Next step: adjust .spec-workflow/spw-config.toml"
+  echo "[oraculo-kit] Installation complete."
+  echo "[oraculo-kit] Next step: adjust .spec-workflow/oraculo.toml"
 }
 
 diagnose_skill_set() {
@@ -598,13 +598,13 @@ cmd_skills() {
       cmd_skills_install "$@"
       ;;
     "")
-      echo "[spw-kit] Skills diagnosis:"
+      echo "[oraculo-kit] Skills diagnosis:"
       diagnose_skill_set "General" "${GENERAL_SKILLS[@]}"
       diagnose_skill_set "Elixir" "${ELIXIR_SKILLS[@]}"
       ;;
     *)
-      echo "[spw-kit] Unknown skills subcommand: $subcmd" >&2
-      echo "Usage: spw skills | spw skills install [--elixir]" >&2
+      echo "[oraculo-kit] Unknown skills subcommand: $subcmd" >&2
+      echo "Usage: oraculo skills | oraculo skills install [--elixir]" >&2
       exit 1
       ;;
   esac
@@ -616,8 +616,8 @@ cmd_skills_install() {
     case "$1" in
       --elixir) mode="elixir"; shift ;;
       *)
-        echo "[spw-kit] Unknown flag for skills install: $1" >&2
-        echo "Usage: spw skills install [--elixir]" >&2
+        echo "[oraculo-kit] Unknown flag for skills install: $1" >&2
+        echo "Usage: oraculo skills install [--elixir]" >&2
         exit 1
         ;;
     esac
@@ -625,12 +625,12 @@ cmd_skills_install() {
 
   case "$mode" in
     elixir)
-      echo "[spw-kit] Installing Elixir skills into: ${TARGET_ROOT}/.claude/skills"
+      echo "[oraculo-kit] Installing Elixir skills into: ${TARGET_ROOT}/.claude/skills"
       install_skill_set "elixir" "${ELIXIR_SKILLS[@]}"
       patch_config_elixir_skills
       ;;
     *)
-      echo "[spw-kit] Installing general skills into: ${TARGET_ROOT}/.claude/skills"
+      echo "[oraculo-kit] Installing general skills into: ${TARGET_ROOT}/.claude/skills"
       install_skill_set "general" "${GENERAL_SKILLS[@]}"
       ;;
   esac
@@ -638,47 +638,47 @@ cmd_skills_install() {
 
 cmd_status() {
   if [ "$#" -gt 0 ]; then
-    echo "[spw-kit] Unexpected arguments for status: $*" >&2
+    echo "[oraculo-kit] Unexpected arguments for status: $*" >&2
     exit 1
   fi
 
-  echo "[spw-kit] Status for project: ${TARGET_ROOT}"
-  echo "[spw-kit] Kit dir: ${SCRIPT_DIR}"
+  echo "[oraculo-kit] Status for project: ${TARGET_ROOT}"
+  echo "[oraculo-kit] Kit dir: ${SCRIPT_DIR}"
   resolve_config_path
 
   if [ -d "${TARGET_ROOT}/.claude" ]; then
-    echo "[spw-kit] .claude: present"
+    echo "[oraculo-kit] .claude: present"
   else
-    echo "[spw-kit] .claude: missing"
+    echo "[oraculo-kit] .claude: missing"
   fi
 
   if [ -d "${TARGET_ROOT}/.spec-workflow" ]; then
-    echo "[spw-kit] .spec-workflow: present"
+    echo "[oraculo-kit] .spec-workflow: present"
   else
-    echo "[spw-kit] .spec-workflow: missing"
+    echo "[oraculo-kit] .spec-workflow: missing"
   fi
 
   if [ -f "${CONFIG_PATH}" ]; then
     if [ "${CONFIG_PATH}" = "${CONFIG_PATH_CANONICAL}" ]; then
-      echo "[spw-kit] .spec-workflow/spw-config.toml: present"
+      echo "[oraculo-kit] .spec-workflow/oraculo.toml: present"
     else
-      echo "[spw-kit] .spec-workflow/spw-config.toml: missing (using legacy .spw/spw-config.toml)"
+      echo "[oraculo-kit] .spec-workflow/oraculo.toml: missing (using legacy .oraculo/oraculo.toml)"
     fi
-    echo "[spw-kit] auto_install_defaults_on_spw_install=$(toml_bool_value skills auto_install_defaults_on_spw_install true)"
+    echo "[oraculo-kit] auto_install_defaults_on_oraculo_install=$(toml_bool_value skills auto_install_defaults_on_oraculo_install true)"
   else
-    echo "[spw-kit] .spec-workflow/spw-config.toml: missing"
+    echo "[oraculo-kit] .spec-workflow/oraculo.toml: missing"
   fi
 
   if [ -f "${TARGET_ROOT}/.claude/settings.json" ]; then
-    echo "[spw-kit] .claude/settings.json: present"
+    echo "[oraculo-kit] .claude/settings.json: present"
   else
-    echo "[spw-kit] .claude/settings.json: missing"
+    echo "[oraculo-kit] .claude/settings.json: missing"
   fi
 
-  if command -v spw >/dev/null 2>&1; then
-    echo "[spw-kit] spw binary: present ($(spw --version 2>/dev/null || echo 'unknown version'))"
+  if command -v oraculo >/dev/null 2>&1; then
+    echo "[oraculo-kit] oraculo binary: present ($(oraculo --version 2>/dev/null || echo 'unknown version'))"
   else
-    echo "[spw-kit] spw binary: missing (hooks require spw in PATH)"
+    echo "[oraculo-kit] oraculo binary: missing (hooks require oraculo in PATH)"
   fi
 
   status_default_skills
@@ -711,7 +711,7 @@ case "$cmd" in
     cmd_status "$@"
     ;;
   *)
-    echo "[spw-kit] Unknown command: $cmd" >&2
+    echo "[oraculo-kit] Unknown command: $cmd" >&2
     show_help
     exit 1
     ;;

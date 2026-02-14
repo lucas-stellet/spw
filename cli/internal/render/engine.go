@@ -7,29 +7,29 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/lucas-stellet/spw/internal/config"
-	"github.com/lucas-stellet/spw/internal/embedded"
+	"github.com/lucas-stellet/oraculo/internal/config"
+	"github.com/lucas-stellet/oraculo/internal/embedded"
 )
 
 // refPrefix is the path prefix that Claude Code uses for @ references.
-const refPrefix = "@.claude/workflows/spw/"
+const refPrefix = "@.claude/workflows/oraculo/"
 
-// sharedRefRe matches lines like "- @.claude/workflows/spw/shared/<name>.md".
+// sharedRefRe matches lines like "- @.claude/workflows/oraculo/shared/<name>.md".
 var sharedRefRe = regexp.MustCompile(`^-\s+` + regexp.QuoteMeta(refPrefix) + `shared/(.+\.md)\s*$`)
 
-// dispatchPolicyRe matches "policy: @.claude/workflows/spw/shared/dispatch-<cat>.md".
+// dispatchPolicyRe matches "policy: @.claude/workflows/oraculo/shared/dispatch-<cat>.md".
 var dispatchPolicyRe = regexp.MustCompile(`^(\s*policy:\s+)` + regexp.QuoteMeta(refPrefix) + `shared/(dispatch-.+\.md)\s*$`)
 
-// overlayRefRe matches standalone "@.claude/workflows/spw/overlays/active/<cmd>.md".
+// overlayRefRe matches standalone "@.claude/workflows/oraculo/overlays/active/<cmd>.md".
 var overlayRefRe = regexp.MustCompile(`^` + regexp.QuoteMeta(refPrefix) + `overlays/active/(.+\.md)\s*$`)
 
 // jsToolRefOld is the legacy tool invocation that should be replaced.
-const jsToolRefOld = "node .claude/hooks/spw-tools.js config get"
+const jsToolRefOld = "node .claude/hooks/oraculo-tools.js config get"
 
 // jsToolRefNew is the Go binary replacement.
-const jsToolRefNew = "spw tools config-get"
+const jsToolRefNew = "oraculo tools config-get"
 
-// AllCommands lists every SPW workflow command.
+// AllCommands lists every ORACULO workflow command.
 var AllCommands = embedded.AllWorkflowNames
 
 // Engine renders composed workflows from embedded sources.
