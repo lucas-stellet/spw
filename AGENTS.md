@@ -31,7 +31,7 @@ Note:
 2. Canonical runtime config: `.spec-workflow/oraculo.toml` (with legacy fallback to `.spw/spw-config.toml`).
 3. Keep artifact locality: research/planning artifacts stay inside the active spec; supporting material goes in `.spec-workflow/specs/<spec-name>/research/`.
 4. Approval is MCP-only: check status via MCP; never substitute with manual chat approval.
-5. Preserve command contracts (`oraculo:prd`, `oraculo:plan`, `oraculo:tasks-plan`, `oraculo:exec`, `oraculo:checkpoint`, `oraculo:status`, `oraculo:post-mortem`, `oraculo:qa`, `oraculo:qa-check`, `oraculo:qa-exec`, `oraculo finalizar`, `oraculo view`, `oraculo search`, `oraculo summary`) and update docs if behavior changes.
+5. Preserve command contracts (`oraculo:discover`, `oraculo:plan`, `oraculo:tasks-plan`, `oraculo:exec`, `oraculo:checkpoint`, `oraculo:status`, `oraculo:post-mortem`, `oraculo:qa`, `oraculo:qa-check`, `oraculo:qa-exec`, `oraculo finalizar`, `oraculo view`, `oraculo search`, `oraculo summary`) and update docs if behavior changes.
 6. Thin-orchestrator pattern is mandatory: `commands/` are thin wrappers (max 60 lines) and detailed logic lives in `workflows/`.
 7. In `oraculo:tasks-plan`, maintain semantics + precedence:
    - `--mode initial`: generates only the initial executable wave
@@ -45,7 +45,7 @@ Note:
 9. If `execution.require_user_approval_between_waves=true`, do not advance to the next wave without explicit user authorization.
 10. If `execution.commit_per_task="auto"` or `"manual"`, require atomic commit per task; if `"manual"`, stop with explicit git commands; if `"none"`, skip per-task commit enforcement. Respect the clean worktree gate when enabled.
 11. `oraculo update` must first update the binary itself (`oraculo`) and then clear the local kit cache before updating, to avoid stale templates/commands.
-12. In long-running commands with subagents (`oraculo:prd`, `oraculo:design-research`, `oraculo:tasks-plan`, `oraculo:tasks-check`, `oraculo:checkpoint`, `oraculo:post-mortem`, `oraculo:qa`, `oraculo:qa-check`, `oraculo:qa-exec`), if an incomplete run exists, AskUserQuestion is mandatory (`continue-unfinished` or `delete-and-restart`); the agent must not choose to restart on its own.
+12. In long-running commands with subagents (`oraculo:discover`, `oraculo:design-research`, `oraculo:tasks-plan`, `oraculo:tasks-check`, `oraculo:checkpoint`, `oraculo:post-mortem`, `oraculo:qa`, `oraculo:qa-check`, `oraculo:qa-exec`), if an incomplete run exists, AskUserQuestion is mandatory (`continue-unfinished` or `delete-and-restart`); the agent must not choose to restart on its own.
 13. Dashboard compatibility (`spec-workflow-mcp`) in `tasks.md` is mandatory:
    - checkboxes only on task lines (`- [ ]`, `- [-]`, `- [x]` with numeric ID)
    - task IDs must be unique within the file (no duplicates)
@@ -58,15 +58,15 @@ Note:
 14. In `design.md`, include at least one valid Mermaid diagram in `## Architecture` (main flow), preferring the `mermaid-architecture` skill for standardization.
    - use a fenced code block with lowercase `mermaid` language marker
 15. CLI UX: `oraculo` must show help by default; installation is explicit via `oraculo install`.
-16. In approval gates (`oraculo:prd`, `oraculo:status`, `oraculo:plan`, `oraculo:design-draft`, `oraculo:tasks-plan`), when `spec-status` returns incomplete/ambiguous, reconcile via MCP `approvals status` (resolving `approvalId` from `spec-status` and, if needed, from `.spec-workflow/approvals/<spec-name>/`); never decide based on `overallStatus`/phases alone and never use `STATUS-SUMMARY.md` as source of truth.
+16. In approval gates (`oraculo:discover`, `oraculo:status`, `oraculo:plan`, `oraculo:design-draft`, `oraculo:tasks-plan`), when `spec-status` returns incomplete/ambiguous, reconcile via MCP `approvals status` (resolving `approvalId` from `spec-status` and, if needed, from `.spec-workflow/approvals/<spec-name>/`); never decide based on `overallStatus`/phases alone and never use `STATUS-SUMMARY.md` as source of truth.
 17. In `oraculo:post-mortem`, save reports to `.spec-workflow/post-mortems/<spec-name>/` with YAML front matter (`spec`, `topic`, `tags`, `range_from`, `range_to`) and update `.spec-workflow/post-mortems/INDEX.md`.
-18. When `[post_mortem_memory].enabled=true`, design/planning commands (`oraculo:prd`, `oraculo:design-research`, `oraculo:design-draft`, `oraculo:tasks-plan`, `oraculo:tasks-check`) must consult the post-mortems index and apply at most `[post_mortem_memory].max_entries_for_design` relevant entries.
+18. When `[post_mortem_memory].enabled=true`, design/planning commands (`oraculo:discover`, `oraculo:design-research`, `oraculo:design-draft`, `oraculo:tasks-plan`, `oraculo:tasks-check`) must consult the post-mortems index and apply at most `[post_mortem_memory].max_entries_for_design` relevant entries.
 19. Default skill catalog: do not include `requesting-code-review`; keep alignment between `copy-ready/install.sh`, `config/oraculo.toml`, and `copy-ready/.spec-workflow/oraculo.toml`.
 20. `test-driven-development` belongs to the common catalog; in `oraculo:exec`/`oraculo:checkpoint`, it only becomes mandatory when `[execution].tdd_default=true`.
 21. In `oraculo:exec` (normal and teams), before broad reading the orchestrator must dispatch `execution-state-scout` (implementation/sonnet model by default) to consolidate checkpoint, in-progress `[-]` task, next executable task(s), and resume action; the main agent must consume only the compact summary and then read context per task.
 22. In `oraculo:qa`, when the focus is not provided, explicitly ask the user for the validation target and choose `playwright|bruno|hybrid` with risk/scope justification. The plan must include concrete selectors/endpoints per scenario (CSS, `data-testid`, routes, HTTP methods).
 23. In Playwright validations within `oraculo:qa`/`oraculo:qa-exec`, use pre-configured Playwright MCP server tools; never invoke npx or Node scripts directly for browser automation.
-24. In `oraculo:prd` and `oraculo:design-research`, when a URL returns an SPA shell (minimal HTML with only JS bundle refs) or belongs to a prototype domain (`*.lovable.app`, `*.vercel.app`, etc.), use Playwright MCP to navigate and extract visible content; if unavailable, warn the user and continue with the WebFetch result.
+24. In `oraculo:discover` and `oraculo:design-research`, when a URL returns an SPA shell (minimal HTML with only JS bundle refs) or belongs to a prototype domain (`*.lovable.app`, `*.vercel.app`, etc.), use Playwright MCP to navigate and extract visible content; if unavailable, warn the user and continue with the WebFetch result.
 25. Agent Teams coverage for subagent-first commands uses symlinks in `workflows/oraculo/overlays/active/` (pointing to `../noop.md` when disabled or `../teams/<cmd>.md` when enabled); by default all phases are eligible (`[agent_teams].exclude_phases = []`); phases can be excluded by adding them to `exclude_phases`.
 26. In `oraculo:qa-check`, validate plan selectors/endpoints against actual source code (the only QA command that reads implementation files); produce a verified map in `QA-CHECK.md`.
 27. In `oraculo:qa-exec`, never read implementation source files; use only verified selectors from `QA-CHECK.md`. If a selector fails at runtime, log it as a "selector drift" defect and recommend `oraculo:qa-check`.
@@ -79,7 +79,7 @@ All Oraculo commands follow the thin-dispatch model (`docs/DISPATCH-PATTERNS.md`
 29. Between subagents, the orchestrator passes file paths in `brief.md`, never inline content. Subagent-B receives the path to subagent-A's `report.md`, not its content.
 30. Synthesizers and aggregators read all previous reports directly from the filesystem via paths received in the brief.
 31. Commands are categorized into three dispatch patterns:
-    - **Pipeline** (sequence -> synthesizer): `prd`, `design-research`, `design-draft`, `tasks-plan`, `qa`, `post-mortem`
+    - **Pipeline** (sequence -> synthesizer): `discover`, `design-research`, `design-draft`, `tasks-plan`, `qa`, `post-mortem`
     - **Audit** (parallel auditors -> aggregator): `tasks-check`, `qa-check`, `checkpoint`
     - **Wave Execution** (scout -> iterative waves -> synthesizer): `exec`, `qa-exec`
 32. In Wave Execution, iterative work (tasks, scenarios) is divided into waves (`wave-NN`). Each wave dispatches subagents sequentially, writes `_wave-summary.json`, and the orchestrator only accumulates status -- never full results.
@@ -90,7 +90,7 @@ Artifacts are organized by **workflow phase**, not in flat dumps. Each phase own
 
 33. Generated artifacts belong to the phase directory that produced them (e.g., `qa/QA-CHECK.md`, not `_generated/QA-CHECK.md`). The top-level `_generated/` and `_agent-comms/` directories no longer exist.
 34. Agent comms go in `<phase>/_comms/<command>/run-NNN/` (Pipeline and Audit) or `<phase>/_comms/<command>/waves/wave-NN/run-NNN/` (Wave Execution).
-35. Phases: `prd/`, `design/`, `planning/`, `execution/`, `qa/`, `post-mortem/`. When a phase contains commands from different categories (e.g., `qa/` has pipeline, audit, and wave), each command uses the appropriate `_comms/` subdirectory.
+35. Phases: `discover/`, `design/`, `planning/`, `execution/`, `qa/`, `post-mortem/`. When a phase contains commands from different categories (e.g., `qa/` has pipeline, audit, and wave), each command uses the appropriate `_comms/` subdirectory.
 36. Dashboard files (`requirements.md`, `design.md`, `tasks.md`) remain at the spec root -- the MCP dashboard reads from here.
 37. Phase directories are created on demand. If `oraculo:qa` has never run, `qa/` does not exist.
 

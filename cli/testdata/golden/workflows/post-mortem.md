@@ -260,7 +260,7 @@ If auto-detection is ambiguous or no safe anchor is found:
 
 <taxonomy>
 Classify each relevant change into one or more root-cause buckets:
-- `prd-gap`: missing/ambiguous requirement intent, scope, or acceptance criteria.
+- `discover-gap`: missing/ambiguous requirement intent, scope, or acceptance criteria.
 - `design-gap`: architecture/flow/integration decisions missing or weak.
 - `tasks-gap`: decomposition/dependency/wave granularity missing.
 - `review-gap`: validation checkpoints missed issue despite evidence.
@@ -272,7 +272,7 @@ Classify each relevant change into one or more root-cause buckets:
 Post-mortem report must include:
 - What changed after spec completion (commit clusters)
 - Why each change was missed earlier (by artifact/gate)
-- Gaps by taxonomy (`prd-gap`, `design-gap`, `tasks-gap`, `review-gap`, `test-gap`, `execution-gap`)
+- Gaps by taxonomy (`discover-gap`, `design-gap`, `tasks-gap`, `review-gap`, `test-gap`, `execution-gap`)
 - Concrete command/process improvements:
   - PRD prompt checks
   - design/research checks
@@ -310,7 +310,7 @@ On success:
 - Confirm report path and analyzed commit range.
 - Confirm index update path.
 - Recommend next command:
-  - if planning a new cycle: `oraculo:prd <spec-name>` or `oraculo:plan <spec-name>`
+  - if planning a new cycle: `oraculo:discover <spec-name>` or `oraculo:plan <spec-name>`
   - if only sharing learning: `oraculo:status <spec-name>`
 
 If blocked:

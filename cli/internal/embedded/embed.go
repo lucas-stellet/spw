@@ -107,7 +107,7 @@ func (c *CompositeFS) ReadDir(name string) ([]fs.DirEntry, error) {
 
 // AllWorkflowNames lists the 13 ORACULO command names in pipeline order.
 var AllWorkflowNames = []string{
-	"prd",
+	"discover",
 	"plan",
 	"design-research",
 	"design-draft",

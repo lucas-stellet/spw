@@ -307,7 +307,7 @@ deactivate_teams_overlay_symlinks_at() {
   local active_dir="${root}/.claude/workflows/oraculo/overlays/active"
   [ -d "$active_dir" ] || return 0
   # Create noop symlinks for all commands
-  local commands=("prd" "plan" "design-research" "design-draft" "tasks-plan" "tasks-check" "exec" "checkpoint" "post-mortem" "qa" "qa-check" "qa-exec" "status")
+  local commands=("discover" "plan" "design-research" "design-draft" "tasks-plan" "tasks-check" "exec" "checkpoint" "post-mortem" "qa" "qa-check" "qa-exec" "status")
   local cmd_name
   for cmd_name in "${commands[@]}"; do
     rm -f "${active_dir}/${cmd_name}.md"

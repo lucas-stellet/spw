@@ -164,7 +164,7 @@ func TestRunCRUD(t *testing.T) {
 func TestSubagentCRUD(t *testing.T) {
 	s := openTestStore(t)
 
-	runID, err := s.CreateRun("prd", 1, "prd", nil, "prd/_comms/run-001")
+	runID, err := s.CreateRun("discover", 1, "discover", nil, "discover/_comms/run-001")
 	if err != nil {
 		t.Fatalf("CreateRun: %v", err)
 	}
@@ -295,7 +295,7 @@ func TestTaskCRUD(t *testing.T) {
 func TestHandoff(t *testing.T) {
 	s := openTestStore(t)
 
-	runID, _ := s.CreateRun("prd", 1, "prd", nil, "prd/_comms/run-001")
+	runID, _ := s.CreateRun("discover", 1, "discover", nil, "discover/_comms/run-001")
 	if err := s.CreateHandoff(runID, "All subagents passed.", true); err != nil {
 		t.Fatalf("CreateHandoff: %v", err)
 	}
@@ -391,12 +391,12 @@ func TestHarvestRunDir(t *testing.T) {
 	// Write handoff.
 	os.WriteFile(filepath.Join(runDir, "_handoff.md"), []byte("All agents done."), 0644)
 
-	if err := s.HarvestRunDir(runDir, "prd", nil); err != nil {
+	if err := s.HarvestRunDir(runDir, "discover", nil); err != nil {
 		t.Fatalf("HarvestRunDir: %v", err)
 	}
 
 	// Verify run was created.
-	r, err := s.LatestRun("prd")
+	r, err := s.LatestRun("discover")
 	if err != nil {
 		t.Fatalf("LatestRun: %v", err)
 	}
@@ -434,7 +434,7 @@ func TestIndexStore(t *testing.T) {
 	}
 
 	// Index documents.
-	if err := ix.IndexDocument("auth-feature", "report", "prd", "PRD Report", "User auth requirements", "Full content of the PRD report about user authentication..."); err != nil {
+	if err := ix.IndexDocument("auth-feature", "report", "discover", "Discover Report", "User auth requirements", "Full content of the discover report about user authentication..."); err != nil {
 		t.Fatalf("IndexDocument: %v", err)
 	}
 	if err := ix.IndexDocument("auth-feature", "checkpoint", "execution", "Wave 1 Checkpoint", "All tests pass", "Checkpoint report showing all tests passing..."); err != nil {

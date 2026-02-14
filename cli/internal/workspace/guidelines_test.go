@@ -129,9 +129,9 @@ func TestGuidelinesForPhase(t *testing.T) {
 		t.Errorf("checkpoint should match 2 guidelines, got %d", len(result))
 	}
 
-	// prd → project only.
-	result = GuidelinesForPhase(guidelines, "prd")
+	// discover → project only.
+	result = GuidelinesForPhase(guidelines, "discover")
 	if len(result) != 1 || result[0].Name != "project" {
-		t.Errorf("prd should match only project, got %v", result)
+		t.Errorf("discover should match only project, got %v", result)
 	}
 }

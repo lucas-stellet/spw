@@ -18,7 +18,7 @@ func TestFirstOraculoCommand(t *testing.T) {
 		{"/oraculo:exec my-spec", "exec", "my-spec"},
 		{"/oraculo:plan my-spec --mode rolling-wave", "plan", "my-spec --mode rolling-wave"},
 		{"/oraculo:status", "status", ""},
-		{"/oraculo:prd my-spec --source url", "prd", "my-spec --source url"},
+		{"/oraculo:discover my-spec --source url", "discover", "my-spec --source url"},
 		{"hello world", "", ""},
 		{"", "", ""},
 		{"some text\n/oraculo:exec test-spec\nmore text", "exec", "test-spec"},
@@ -216,7 +216,7 @@ func TestCollectRunDirs(t *testing.T) {
 
 	// Create spec structure
 	paths := []string{
-		"prd/_comms/run-001",
+		"discover/_comms/run-001",
 		"design/_comms/design-research/run-001",
 		"planning/_comms/tasks-plan/run-001",
 		"execution/waves/wave-01/execution/run-001",

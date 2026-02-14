@@ -1,14 +1,14 @@
 ---
-name: oraculo:prd
-description: Zero-to-PRD discovery flow with subagents to generate requirements.md
+name: oraculo:discover
+description: Discovery flow with subagents to generate requirements.md
 argument-hint: "<spec-name> [--source <url-or-file.md>]"
 ---
 
 <dispatch_pattern>
 category: pipeline
 subcategory: research
-phase: prd
-comms_path: prd/_comms
+phase: discover
+comms_path: discover/_comms
 policy: @.claude/workflows/oraculo/shared/dispatch-pipeline.md
 </dispatch_pattern>
 
@@ -38,13 +38,13 @@ inputs:
 
 output:
 - `.spec-workflow/specs/<spec-name>/requirements.md`
-- `.spec-workflow/specs/<spec-name>/prd/PRD.md` (product mirror)
-- `.spec-workflow/specs/<spec-name>/prd/PRD-SOURCE-NOTES.md`
-- `.spec-workflow/specs/<spec-name>/prd/PRD-STRUCTURE.md`
+- `.spec-workflow/specs/<spec-name>/discover/PRD.md` (product mirror)
+- `.spec-workflow/specs/<spec-name>/discover/PRD-SOURCE-NOTES.md`
+- `.spec-workflow/specs/<spec-name>/discover/PRD-STRUCTURE.md`
 
 comms:
-- `.spec-workflow/specs/<spec-name>/prd/_comms/run-NNN/`
-- `.spec-workflow/specs/<spec-name>/prd/_comms/prd-revision/run-NNN/` (revision loop)
+- `.spec-workflow/specs/<spec-name>/discover/_comms/run-NNN/`
+- `.spec-workflow/specs/<spec-name>/discover/_comms/discover-revision/run-NNN/` (revision loop)
 </artifact_boundary>
 
 <!-- ============================================================
@@ -66,9 +66,9 @@ comms:
   - Produces an explicit revision plan before any document edits.
 - `requirements-structurer` (model: complex_reasoning)
   - Produces v1/v2/out-of-scope, REQ-IDs, acceptance criteria draft.
-- `prd-editor` (model: implementation)
+- `discover-editor` (model: implementation)
   - Writes final PRD into template format.
-- `prd-critic` (model: complex_reasoning)
+- `discover-critic` (model: complex_reasoning)
   - Performs strict quality gate before approval request.
 </subagents>
 
@@ -81,8 +81,8 @@ comms:
 | codebase-impact-scanner | (report.md only) | task | implementation |
 | revision-planner | PRD-REVISION-PLAN.md | task | complex_reasoning |
 | requirements-structurer | PRD-STRUCTURE.md | task | complex_reasoning |
-| prd-editor | PRD.md, requirements.md | task | implementation |
-| prd-critic | (report.md only) | task | complex_reasoning |
+| discover-editor | PRD.md, requirements.md | task | implementation |
+| discover-critic | (report.md only) | task | complex_reasoning |
 </subagent_artifact_map>
 
 <!-- ============================================================
@@ -98,7 +98,7 @@ comms:
 2. Apply skills policy: run design skills preflight (availability).
 3. Load post-mortem memory inputs via `<post_mortem_memory>`.
 4. If `--source` is present, apply `<source_handling>` gate.
-5. Inspect existing `prd` run dirs and apply resume decision gate.
+5. Inspect existing `discover` run dirs and apply resume decision gate.
 6. Determine active run directory:
    - `continue-unfinished` -> reuse latest unfinished run dir
    - `delete-and-restart` or no unfinished run -> create new run dir.
@@ -115,7 +115,7 @@ Dispatch only when user selected an MCP-based source in `<source_handling>`.
 
 <!-- post_dispatch: mid-pipeline user interaction .................. -->
 <post_dispatch subagent="requirements-structurer">
-Run one-question-at-a-time discovery with user before proceeding to prd-editor.
+Run one-question-at-a-time discovery with user before proceeding to discover-editor.
 
 Procedure:
 1. Read `status.json` only (thin-dispatch). Extract `summary` for clarification count.
@@ -125,21 +125,21 @@ Procedure:
    - Wait for user answer before asking the next question.
 3. After all clarifications are resolved, write decisions to:
    `<run-dir>/_orchestrator-context/user-clarifications.md`
-4. Reference that file in the prd-editor brief.
+4. Reference that file in the discover-editor brief.
 
 Exception: if the structurer flagged 4+ items AND they are independent (no dependencies between them), batch up to 4 in a single AskUserQuestion call. Document the batching reason in user-clarifications.md.
 </post_dispatch>
 
-<post_dispatch subagent="prd-critic">
-If critic returns BLOCKED, revise with `prd-editor` and re-run critic.
-If resuming, always rerun `prd-critic` before final approval flow.
+<post_dispatch subagent="discover-critic">
+If critic returns BLOCKED, revise with `discover-editor` and re-run critic.
+If resuming, always rerun `discover-critic` before final approval flow.
 </post_dispatch>
 
 <!-- post_pipeline: artifact save + approval ....................... -->
 <post_pipeline>
 1. Save artifacts:
    - canonical: `.spec-workflow/specs/<spec-name>/requirements.md`
-   - product mirror: `.spec-workflow/specs/<spec-name>/prd/PRD.md`
+   - product mirror: `.spec-workflow/specs/<spec-name>/discover/PRD.md`
 2. Write `<run-dir>/_handoff.md` referencing source/structure/editor/critic outputs.
 3. Handle approval via MCP only:
    - If MCP tools are unavailable or fail: log WARNING to `_handoff.md` per `<approval_reconciliation>` § MCP Unavailability, stop `WAITING_FOR_APPROVAL`.
@@ -233,11 +233,11 @@ Trigger this protocol when either:
 - user asks to analyze/adjust reviewed requirements.
 
 Protocol (mandatory):
-1. Inspect existing `prd-revision` run dirs and apply resume decision gate.
+1. Inspect existing `discover-revision` run dirs and apply resume decision gate.
 2. Determine active revision run directory:
    - `continue-unfinished` -> reuse latest unfinished run dir
    - `delete-and-restart` or no unfinished run -> create:
-     `.spec-workflow/specs/<spec-name>/prd/_comms/prd-revision/run-NNN/`
+     `.spec-workflow/specs/<spec-name>/discover/_comms/discover-revision/run-NNN/`
 3. Read approval feedback from MCP and existing `requirements.md`.
 4. Dispatch `feedback-analyzer` (with file handoff) to classify:
    - accepted changes
@@ -247,15 +247,15 @@ Protocol (mandatory):
 5. Dispatch `codebase-impact-scanner` with file handoff.
    - if resuming, redispatch only when output is missing/blocked
 6. Dispatch `revision-planner` with file handoff to create:
-   - `.spec-workflow/specs/<spec-name>/prd/PRD-REVISION-PLAN.md`
-   - `.spec-workflow/specs/<spec-name>/prd/PRD-REVISION-QUESTIONS.md` (if needed)
+   - `.spec-workflow/specs/<spec-name>/discover/PRD-REVISION-PLAN.md`
+   - `.spec-workflow/specs/<spec-name>/discover/PRD-REVISION-QUESTIONS.md` (if needed)
    - if resuming, redispatch only when output is missing/blocked
 7. Ask targeted clarification questions before editing if ambiguity/conflict exists.
-8. Only after clarification, dispatch `prd-editor` with file handoff to apply approved deltas.
+8. Only after clarification, dispatch `discover-editor` with file handoff to apply approved deltas.
 9. Save revision summary:
-   - `.spec-workflow/specs/<spec-name>/prd/PRD-REVISION-NOTES.md`
+   - `.spec-workflow/specs/<spec-name>/discover/PRD-REVISION-NOTES.md`
 10. Write revision handoff:
-   - `.spec-workflow/specs/<spec-name>/prd/_comms/prd-revision/run-NNN/_handoff.md`
+   - `.spec-workflow/specs/<spec-name>/discover/_comms/discover-revision/run-NNN/_handoff.md`
    - include resume decision taken (`continue-unfinished` or `delete-and-restart`)
 
 Never directly edit requirements immediately after reading review comments.
@@ -297,7 +297,7 @@ Resolve requirements approval with MCP-first reconciliation:
      ============================================================ -->
 
 <agent_teams_policy>
-@.claude/workflows/oraculo/overlays/active/prd.md
+@.claude/workflows/oraculo/overlays/active/discover.md
 </agent_teams_policy>
 
 <!-- ============================================================
@@ -305,7 +305,7 @@ Resolve requirements approval with MCP-first reconciliation:
      ============================================================ -->
 
 <acceptance_criteria>
-- [ ] Subagent outputs exist and are traceable (`prd/PRD-SOURCE-NOTES.md`, `prd/PRD-STRUCTURE.md`).
+- [ ] Subagent outputs exist and are traceable (`discover/PRD-SOURCE-NOTES.md`, `discover/PRD-STRUCTURE.md`).
 - [ ] Final document is PRD format and remains compatible with spec-workflow requirements flow.
 - [ ] Every functional requirement has REQ-ID, priority, and verifiable acceptance criteria.
 - [ ] REQ-IDs are unique and follow canonical format (`REQ-001`, `REQ-002`, ...).
@@ -314,7 +314,7 @@ Resolve requirements approval with MCP-first reconciliation:
 - [ ] On revision cycles, subagent analysis + codebase impact scan happened before edits.
 - [ ] Clarification questions were asked when feedback was ambiguous/conflicting.
 - [ ] PRD is approved before moving to design/tasks.
-- [ ] File-based handoff exists under `prd/_comms/run-NNN/` (and revision run dir when applicable).
+- [ ] File-based handoff exists under `discover/_comms/run-NNN/` (and revision run dir when applicable).
 - [ ] If unfinished run exists, explicit user decision (`continue-unfinished` or `delete-and-restart`) was respected.
 - [ ] Orchestrator never read report.md from any subagent (thin-dispatch).
 </acceptance_criteria>
@@ -329,5 +329,5 @@ If blocked:
 - Show the blocking reason (approval pending/rejected, missing source context, quality gate failure).
 - If blocked by revision ambiguity, show pending clarification questions and do not edit artifacts until answered.
 - If waiting on resume decision, ask user to choose `continue-unfinished` or `delete-and-restart`, then rerun.
-- Provide exact fix action and the command to rerun: `oraculo:prd <spec-name>`.
+- Provide exact fix action and the command to rerun: `oraculo:discover <spec-name>`.
 </completion_guidance>

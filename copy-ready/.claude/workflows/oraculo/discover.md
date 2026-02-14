@@ -1,164 +1,24 @@
 ---
-name: oraculo:prd
-description: Zero-to-PRD discovery flow with subagents to generate requirements.md
+name: oraculo:discover
+description: Discovery flow with subagents to generate requirements.md
 argument-hint: "<spec-name> [--source <url-or-file.md>]"
 ---
 
 <dispatch_pattern>
 category: pipeline
 subcategory: research
-phase: prd
-comms_path: prd/_comms
-policy: (inlined below)
-
-# Pipeline Dispatch Pattern
-
-Sequential chain of subagents where each produces output that feeds the next.
-A synthesizer at the end consolidates everything into the command's final artifact.
-
-## Thin-Dispatch Rules
-
-These rules are mandatory for all pipeline commands. They override any command-specific behavior.
-
-### 1. Status-Only Reads
-
-After dispatching any subagent, read ONLY `<subagent>/status.json`.
-- If `status=pass`: proceed to next step.
-- If `status=blocked`: read `<subagent>/report.md` to decide action (log + skip, or stop BLOCKED).
-- Never read `report.md` when status is pass.
-
-### 2. Path-Based Briefs
-
-When subagent-B depends on output from subagent-A:
-- Write the **filesystem path** to `subagent-A/report.md` in `subagent-B/brief.md`.
-- Never copy or summarize report content into the brief.
-
-Example brief content:
-```
-## Inputs
-- Scope analysis: <run-dir>/qa-scope-analyst/report.md
-- Requirements: .spec-workflow/specs/<spec-name>/requirements.md
-```
-
-### 3. Synthesizer Reads From Filesystem
-
-The last subagent (synthesizer/writer) receives a brief listing ALL previous report paths.
-It reads them directly from disk — the orchestrator does not relay content.
-
-### 4. Run Structure
-
-```
-<phase>/_comms/<command>/run-NNN/
-  <subagent-1>/brief.md, report.md, status.json
-  <subagent-2>/brief.md, report.md, status.json
-  <synthesizer>/brief.md, report.md, status.json
-  _handoff.md
-```
-
-### 5. Resume Policy
-
-On `continue-unfinished`:
-- Skip subagents where `status.json` exists with `status=pass`.
-- Redispatch missing or blocked subagents.
-- Always rerun synthesizer.
-
-### 6. Artifact Save
-
-When the pipeline's final subagent (synthesizer/writer) writes the command's output artifact to its `report.md`, the orchestrator saves it to the canonical path using filesystem copy — never by reading content into its own context.
-
-```
-cp <run-dir>/<writer>/report.md <canonical-output-path>
-```
-
-If the command requires post-save validation (Mermaid syntax, dashboard markdown profile, MDX compilation), run validation tools/scripts on the saved file — do not Read the file into orchestrator context. If validation fails, re-dispatch the writer with fix instructions in a new brief iteration, or apply the Surgical Fix Policy below.
-
-### 7. Surgical Fix Policy
-
-When a critic/reviewer returns BLOCKED with a specific, mechanical fix (e.g., arithmetic correction, typo, missing escape character):
-
-- **Threshold:** fix touches ≤ 3 lines in the writer's `report.md` AND requires no design judgment (pure factual/syntactic correction).
-- **Allowed:** orchestrator applies the fix directly to the writer's `report.md`.
-- **Required:** log every inline fix in `<run-dir>/_handoff.md` under a `## Inline Fixes` section with: line(s) changed, reason, original value → new value.
-- **Re-run critic:** always re-dispatch the critic after an inline fix.
-
-If the fix exceeds the threshold (> 3 lines or requires design judgment), re-dispatch the writer subagent with the critic's feedback in a new brief.
-
-## Extension Points
-
-Pipeline commands may inject logic at these points:
-
-- **`pre_pipeline`**: After resolving spec dir and reading config, before first dispatch. Use for user intent gates, preflight checks, skill loading.
-- **`pre_dispatch(<subagent>)`**: Before writing a specific subagent's brief. Use for conditional dispatch (e.g., selecting which designer to run based on a gate decision).
-- **`post_dispatch(<subagent>)`**: After reading a subagent's status.json. Use for mid-pipeline decisions that affect subsequent dispatches.
-- **`post_pipeline`**: After synthesizer completes, before writing _handoff.md. Use for artifact generation, approval reconciliation, completion guidance.
-
+phase: discover
+comms_path: discover/_comms
+policy: @.claude/workflows/oraculo/shared/dispatch-pipeline.md
 </dispatch_pattern>
 
 <shared_policies>
-# Config Resolution
-
-Canonical runtime config path is `.spec-workflow/oraculo.toml`.
-
-Transitional compatibility:
-- If `.spec-workflow/oraculo.toml` is missing, fallback to `.oraculo/oraculo.toml`.
-
-When shell logic is required, prefer:
-- `oraculo tools config-get <section.key> --default <value> [--raw]`
-
-This keeps workflow behavior stable and avoids hardcoded path drift.
-
-# File-First Handoff Contract
-
-Required files for each dispatched subagent:
-- `<subagent>/brief.md`
-- `<subagent>/report.md`
-- `<subagent>/status.json`
-- `<run-dir>/_handoff.md`
-
-If any required handoff file is missing, return `BLOCKED`.
-
-**CRITICAL — Run-id format**: MUST be `run-NNN` (zero-padded 3-digit sequential).
-Examples: `run-001`, `run-002`, `run-003`.
-NEVER use dates, timestamps, or any other format (e.g. `run-20260209-1` is WRONG).
-To create a new run, scan existing sibling directories, extract the highest NNN, and increment by 1.
-
-## Thin-Dispatch Integration
-
-This contract defines the **file structure**. The category-level dispatch policies define **how the orchestrator interacts** with these files:
-
-- `dispatch-pipeline.md` — sequential chain, status-only reads, path-based briefs
-- `dispatch-audit.md` — parallel auditors, aggregator reads from filesystem
-- `dispatch-wave.md` — wave iteration, wave summaries, scout-based resume
-
-The 5 core thin-dispatch rules apply on top of this contract:
-1. Orchestrator reads only `status.json` after dispatch (never `report.md` on pass).
-2. Briefs contain filesystem paths to prior reports (never content).
-3. Synthesizers/aggregators read from disk directly.
-4. Run structure follows category layout.
-5. Resume skips completed subagents, always reruns final stage.
-
-# Resume Policy
-
-For commands with run folders:
-- Detect the latest unfinished run before creating a new run.
-- Ask user explicitly: `continue-unfinished` or `delete-and-restart`.
-- Never auto-restart without explicit user decision.
-
-# Skills Policy Canonical Notes
-
-- Skill loading is always subagent-first.
-- Enforce per stage via `skills.<stage>.enforce_required` (default: `true`).
-
-# MCP Approval Reconciliation
-
-Approval source of truth is MCP.
-
-When `spec-status` is incomplete or ambiguous:
-1. Resolve `approvalId` from `spec-status` fields.
-2. If missing, inspect `.spec-workflow/approvals/<spec-name>/approval_*.json`.
-3. If `approvalId` exists, call MCP `approvals status`.
-4. Never infer approval from phase labels or `overallStatus` alone.
-
+- @.claude/workflows/oraculo/shared/config-resolution.md
+- @.claude/workflows/oraculo/shared/file-handoff.md
+- @.claude/workflows/oraculo/shared/resume-policy.md
+- @.claude/workflows/oraculo/shared/skills-policy.md
+- @.claude/workflows/oraculo/shared/approval-reconciliation.md
+- @.claude/workflows/oraculo/shared/dispatch-implementation.md
 </shared_policies>
 
 <objective>
@@ -178,13 +38,13 @@ inputs:
 
 output:
 - `.spec-workflow/specs/<spec-name>/requirements.md`
-- `.spec-workflow/specs/<spec-name>/prd/PRD.md` (product mirror)
-- `.spec-workflow/specs/<spec-name>/prd/PRD-SOURCE-NOTES.md`
-- `.spec-workflow/specs/<spec-name>/prd/PRD-STRUCTURE.md`
+- `.spec-workflow/specs/<spec-name>/discover/PRD.md` (product mirror)
+- `.spec-workflow/specs/<spec-name>/discover/PRD-SOURCE-NOTES.md`
+- `.spec-workflow/specs/<spec-name>/discover/PRD-STRUCTURE.md`
 
 comms:
-- `.spec-workflow/specs/<spec-name>/prd/_comms/run-NNN/`
-- `.spec-workflow/specs/<spec-name>/prd/_comms/prd-revision/run-NNN/` (revision loop)
+- `.spec-workflow/specs/<spec-name>/discover/_comms/run-NNN/`
+- `.spec-workflow/specs/<spec-name>/discover/_comms/discover-revision/run-NNN/` (revision loop)
 </artifact_boundary>
 
 <!-- ============================================================
@@ -206,11 +66,24 @@ comms:
   - Produces an explicit revision plan before any document edits.
 - `requirements-structurer` (model: complex_reasoning)
   - Produces v1/v2/out-of-scope, REQ-IDs, acceptance criteria draft.
-- `prd-editor` (model: implementation)
+- `discover-editor` (model: implementation)
   - Writes final PRD into template format.
-- `prd-critic` (model: complex_reasoning)
+- `discover-critic` (model: complex_reasoning)
   - Performs strict quality gate before approval request.
 </subagents>
+
+<subagent_artifact_map>
+| Subagent | Artifact | Dispatch | Model |
+|----------|----------|----------|-------|
+| source-reader-web | PRD-SOURCE-NOTES.md (web) | task | web_research |
+| source-reader-mcp | PRD-SOURCE-NOTES.md (mcp) | inline-mcp | implementation |
+| feedback-analyzer | PRD-REVISION-NOTES.md | task | complex_reasoning |
+| codebase-impact-scanner | (report.md only) | task | implementation |
+| revision-planner | PRD-REVISION-PLAN.md | task | complex_reasoning |
+| requirements-structurer | PRD-STRUCTURE.md | task | complex_reasoning |
+| discover-editor | PRD.md, requirements.md | task | implementation |
+| discover-critic | (report.md only) | task | complex_reasoning |
+</subagent_artifact_map>
 
 <!-- ============================================================
      EXTENSION POINTS — command-specific logic injected into
@@ -225,7 +98,7 @@ comms:
 2. Apply skills policy: run design skills preflight (availability).
 3. Load post-mortem memory inputs via `<post_mortem_memory>`.
 4. If `--source` is present, apply `<source_handling>` gate.
-5. Inspect existing `prd` run dirs and apply resume decision gate.
+5. Inspect existing `discover` run dirs and apply resume decision gate.
 6. Determine active run directory:
    - `continue-unfinished` -> reuse latest unfinished run dir
    - `delete-and-restart` or no unfinished run -> create new run dir.
@@ -242,7 +115,7 @@ Dispatch only when user selected an MCP-based source in `<source_handling>`.
 
 <!-- post_dispatch: mid-pipeline user interaction .................. -->
 <post_dispatch subagent="requirements-structurer">
-Run one-question-at-a-time discovery with user before proceeding to prd-editor.
+Run one-question-at-a-time discovery with user before proceeding to discover-editor.
 
 Procedure:
 1. Read `status.json` only (thin-dispatch). Extract `summary` for clarification count.
@@ -252,23 +125,24 @@ Procedure:
    - Wait for user answer before asking the next question.
 3. After all clarifications are resolved, write decisions to:
    `<run-dir>/_orchestrator-context/user-clarifications.md`
-4. Reference that file in the prd-editor brief.
+4. Reference that file in the discover-editor brief.
 
 Exception: if the structurer flagged 4+ items AND they are independent (no dependencies between them), batch up to 4 in a single AskUserQuestion call. Document the batching reason in user-clarifications.md.
 </post_dispatch>
 
-<post_dispatch subagent="prd-critic">
-If critic returns BLOCKED, revise with `prd-editor` and re-run critic.
-If resuming, always rerun `prd-critic` before final approval flow.
+<post_dispatch subagent="discover-critic">
+If critic returns BLOCKED, revise with `discover-editor` and re-run critic.
+If resuming, always rerun `discover-critic` before final approval flow.
 </post_dispatch>
 
 <!-- post_pipeline: artifact save + approval ....................... -->
 <post_pipeline>
 1. Save artifacts:
    - canonical: `.spec-workflow/specs/<spec-name>/requirements.md`
-   - product mirror: `.spec-workflow/specs/<spec-name>/prd/PRD.md`
+   - product mirror: `.spec-workflow/specs/<spec-name>/discover/PRD.md`
 2. Write `<run-dir>/_handoff.md` referencing source/structure/editor/critic outputs.
 3. Handle approval via MCP only:
+   - If MCP tools are unavailable or fail: log WARNING to `_handoff.md` per `<approval_reconciliation>` § MCP Unavailability, stop `WAITING_FOR_APPROVAL`.
    - call `spec-status`, resolve via `<approval_reconciliation>`
    - if approved: continue
    - if `needs-revision`/`changes-requested`/`rejected`: run `<revision_protocol>` (subagent-driven)
@@ -359,11 +233,11 @@ Trigger this protocol when either:
 - user asks to analyze/adjust reviewed requirements.
 
 Protocol (mandatory):
-1. Inspect existing `prd-revision` run dirs and apply resume decision gate.
+1. Inspect existing `discover-revision` run dirs and apply resume decision gate.
 2. Determine active revision run directory:
    - `continue-unfinished` -> reuse latest unfinished run dir
    - `delete-and-restart` or no unfinished run -> create:
-     `.spec-workflow/specs/<spec-name>/prd/_comms/prd-revision/run-NNN/`
+     `.spec-workflow/specs/<spec-name>/discover/_comms/discover-revision/run-NNN/`
 3. Read approval feedback from MCP and existing `requirements.md`.
 4. Dispatch `feedback-analyzer` (with file handoff) to classify:
    - accepted changes
@@ -373,15 +247,15 @@ Protocol (mandatory):
 5. Dispatch `codebase-impact-scanner` with file handoff.
    - if resuming, redispatch only when output is missing/blocked
 6. Dispatch `revision-planner` with file handoff to create:
-   - `.spec-workflow/specs/<spec-name>/prd/PRD-REVISION-PLAN.md`
-   - `.spec-workflow/specs/<spec-name>/prd/PRD-REVISION-QUESTIONS.md` (if needed)
+   - `.spec-workflow/specs/<spec-name>/discover/PRD-REVISION-PLAN.md`
+   - `.spec-workflow/specs/<spec-name>/discover/PRD-REVISION-QUESTIONS.md` (if needed)
    - if resuming, redispatch only when output is missing/blocked
 7. Ask targeted clarification questions before editing if ambiguity/conflict exists.
-8. Only after clarification, dispatch `prd-editor` with file handoff to apply approved deltas.
+8. Only after clarification, dispatch `discover-editor` with file handoff to apply approved deltas.
 9. Save revision summary:
-   - `.spec-workflow/specs/<spec-name>/prd/PRD-REVISION-NOTES.md`
+   - `.spec-workflow/specs/<spec-name>/discover/PRD-REVISION-NOTES.md`
 10. Write revision handoff:
-   - `.spec-workflow/specs/<spec-name>/prd/_comms/prd-revision/run-NNN/_handoff.md`
+   - `.spec-workflow/specs/<spec-name>/discover/_comms/discover-revision/run-NNN/_handoff.md`
    - include resume decision taken (`continue-unfinished` or `delete-and-restart`)
 
 Never directly edit requirements immediately after reading review comments.
@@ -423,6 +297,7 @@ Resolve requirements approval with MCP-first reconciliation:
      ============================================================ -->
 
 <agent_teams_policy>
+@.claude/workflows/oraculo/overlays/active/discover.md
 </agent_teams_policy>
 
 <!-- ============================================================
@@ -430,7 +305,7 @@ Resolve requirements approval with MCP-first reconciliation:
      ============================================================ -->
 
 <acceptance_criteria>
-- [ ] Subagent outputs exist and are traceable (`prd/PRD-SOURCE-NOTES.md`, `prd/PRD-STRUCTURE.md`).
+- [ ] Subagent outputs exist and are traceable (`discover/PRD-SOURCE-NOTES.md`, `discover/PRD-STRUCTURE.md`).
 - [ ] Final document is PRD format and remains compatible with spec-workflow requirements flow.
 - [ ] Every functional requirement has REQ-ID, priority, and verifiable acceptance criteria.
 - [ ] REQ-IDs are unique and follow canonical format (`REQ-001`, `REQ-002`, ...).
@@ -439,7 +314,7 @@ Resolve requirements approval with MCP-first reconciliation:
 - [ ] On revision cycles, subagent analysis + codebase impact scan happened before edits.
 - [ ] Clarification questions were asked when feedback was ambiguous/conflicting.
 - [ ] PRD is approved before moving to design/tasks.
-- [ ] File-based handoff exists under `prd/_comms/run-NNN/` (and revision run dir when applicable).
+- [ ] File-based handoff exists under `discover/_comms/run-NNN/` (and revision run dir when applicable).
 - [ ] If unfinished run exists, explicit user decision (`continue-unfinished` or `delete-and-restart`) was respected.
 - [ ] Orchestrator never read report.md from any subagent (thin-dispatch).
 </acceptance_criteria>
@@ -454,5 +329,5 @@ If blocked:
 - Show the blocking reason (approval pending/rejected, missing source context, quality gate failure).
 - If blocked by revision ambiguity, show pending clarification questions and do not edit artifacts until answered.
 - If waiting on resume decision, ask user to choose `continue-unfinished` or `delete-and-restart`, then rerun.
-- Provide exact fix action and the command to rerun: `oraculo:prd <spec-name>`.
+- Provide exact fix action and the command to rerun: `oraculo:discover <spec-name>`.
 </completion_guidance>

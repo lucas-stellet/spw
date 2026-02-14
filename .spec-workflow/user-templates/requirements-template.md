@@ -4,7 +4,7 @@ oraculo:
   spec: "<spec-name>"
   doc: "requirements"
   status: "draft"
-  source: "oraculo:prd"
+  source: "oraculo:discover"
   updated_at: "YYYY-MM-DD"
   inputs: []
   open_questions: []

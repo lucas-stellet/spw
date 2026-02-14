@@ -15,8 +15,8 @@ description: Test command
 <dispatch_pattern>
 category: pipeline
 subcategory: research
-phase: prd
-comms_path: prd/_comms
+phase: discover
+comms_path: discover/_comms
 policy: @.claude/workflows/oraculo/shared/dispatch-pipeline.md
 </dispatch_pattern>
 
@@ -34,11 +34,11 @@ Some other content here.
 	if meta.Subcategory != "research" {
 		t.Errorf("Subcategory = %q, want %q", meta.Subcategory, "research")
 	}
-	if meta.Phase != "prd" {
-		t.Errorf("Phase = %q, want %q", meta.Phase, "prd")
+	if meta.Phase != "discover" {
+		t.Errorf("Phase = %q, want %q", meta.Phase, "discover")
 	}
-	if meta.CommsPath != "prd/_comms" {
-		t.Errorf("CommsPath = %q, want %q", meta.CommsPath, "prd/_comms")
+	if meta.CommsPath != "discover/_comms" {
+		t.Errorf("CommsPath = %q, want %q", meta.CommsPath, "discover/_comms")
 	}
 	if meta.Policy != "@.claude/workflows/oraculo/shared/dispatch-pipeline.md" {
 		t.Errorf("Policy = %q, want dispatch-pipeline ref", meta.Policy)
@@ -124,7 +124,7 @@ func TestParseDispatchPatternMissingCommsPath(t *testing.T) {
 	content := `<dispatch_pattern>
 category: pipeline
 subcategory: research
-phase: prd
+phase: discover
 policy: @.claude/workflows/oraculo/shared/dispatch-pipeline.md
 </dispatch_pattern>`
 
@@ -155,11 +155,11 @@ func TestDispatchPolicy(t *testing.T) {
 
 func TestCategoryHelper(t *testing.T) {
 	reg := map[string]CommandMeta{
-		"prd": {Category: "pipeline"},
+		"discover": {Category: "pipeline"},
 	}
 
-	if got := Category(reg, "prd"); got != "pipeline" {
-		t.Errorf("Category(prd) = %q, want %q", got, "pipeline")
+	if got := Category(reg, "discover"); got != "pipeline" {
+		t.Errorf("Category(discover) = %q, want %q", got, "pipeline")
 	}
 	if got := Category(reg, "unknown"); got != "" {
 		t.Errorf("Category(unknown) = %q, want empty", got)
@@ -182,7 +182,7 @@ func TestRegistryFromEmbedded(t *testing.T) {
 		waveAware   bool
 		artifacts   []string
 	}{
-		"prd":             {"prd", "pipeline", "research", "prd/_comms", false, nil},
+		"discover":        {"discover", "pipeline", "research", "discover/_comms", false, nil},
 		"design-research": {"design", "pipeline", "research", "design/_comms/design-research", false, nil},
 		"design-draft":    {"design", "pipeline", "synthesis", "design/_comms/design-draft", false, nil},
 		"tasks-plan":      {"planning", "pipeline", "synthesis", "planning/_comms/tasks-plan", false, nil},

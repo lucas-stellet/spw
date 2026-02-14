@@ -216,7 +216,7 @@ func isSpecialDir(name string) bool {
 }
 
 func inferPhase(runDir string) string {
-	phases := []string{"prd", "design", "planning", "execution", "qa", "post-mortem"}
+	phases := []string{"discover", "design", "planning", "execution", "qa", "post-mortem"}
 	for _, p := range phases {
 		if containsPathSegment(runDir, p) {
 			return p

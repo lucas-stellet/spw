@@ -130,7 +130,7 @@ Qualquer adicao deve preservar os pilares atuais:
 
 - thin dispatch (orchestrator le apenas status.json no fluxo feliz)
 - file-first handoff
-- estrutura por fase (`prd/`, `design/`, `planning/`, `execution/`, `qa/`, `post-mortem/`)
+- estrutura por fase (`discover/`, `design/`, `planning/`, `execution/`, `qa/`, `post-mortem/`)
 - aprovacao MCP como fonte unica de verdade
 - sem avance automatico entre waves quando policy exige aprovacao do usuario
 

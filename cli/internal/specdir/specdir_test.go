@@ -37,7 +37,7 @@ func TestCommsPath(t *testing.T) {
 		wave    int
 		want    string
 	}{
-		{"prd", 0, "prd/_comms"},
+		{"discover", 0, "discover/_comms"},
 		{"design-research", 0, "design/_comms/design-research"},
 		{"design-draft", 0, "design/_comms/design-draft"},
 		{"tasks-plan", 0, "planning/_comms/tasks-plan"},

@@ -24,7 +24,7 @@ type CommandMeta struct {
 // AllCommands returns metadata for all 13 ORACULO commands.
 func AllCommands() []CommandMeta {
 	return []CommandMeta{
-		{"prd", "Zero-to-PRD discovery flow with subagents to generate requirements.md", "<spec-name> [--source <url-or-file.md>]"},
+		{"discover", "Discovery flow to generate requirements.md", "<spec-name> [--source <url-or-file.md>]"},
 		{"plan", "Design-to-tasks planning gateway — merges design and tasks sub-phases", "<spec-name> [--mode rolling-wave|all-at-once]"},
 		{"design-research", "External research subagents gather references for the design doc", "<spec-name>"},
 		{"design-draft", "Draft and finalize the design document from research artifacts", "<spec-name>"},

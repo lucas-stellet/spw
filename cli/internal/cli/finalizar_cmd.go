@@ -180,7 +180,7 @@ func harvestAllArtifacts(s *store.SpecStore, sd string) int {
 		name string
 		dir  string
 	}{
-		{specdir.PhasePRD, specdir.PhasePRD},
+		{specdir.PhaseDiscover, specdir.PhaseDiscover},
 		{specdir.PhaseDesign, specdir.PhaseDesign},
 		{specdir.PhasePlanning, specdir.PhasePlanning},
 		{specdir.PhaseExecution, specdir.PhaseExecution},
@@ -300,8 +300,8 @@ func inferCommandFromPath(path string) string {
 	// Fallback: infer from phase.
 	for _, p := range parts {
 		switch p {
-		case "prd":
-			return "prd"
+		case "discover":
+			return "discover"
 		case "design":
 			return "design-research"
 		case "planning":

@@ -18,7 +18,7 @@ func TestCommandRegistry(t *testing.T) {
 		category    string
 		subcategory string
 	}{
-		"prd":             {"prd", "pipeline", "research"},
+		"discover":        {"discover", "pipeline", "research"},
 		"design-research": {"design", "pipeline", "research"},
 		"design-draft":    {"design", "pipeline", "synthesis"},
 		"tasks-plan":      {"planning", "pipeline", "synthesis"},
@@ -80,7 +80,7 @@ func TestCommsPathGeneration(t *testing.T) {
 		wave    string
 		want    string
 	}{
-		{"prd", "", "prd/_comms"},
+		{"discover", "", "discover/_comms"},
 		{"design-research", "", "design/_comms/design-research"},
 		{"design-draft", "", "design/_comms/design-draft"},
 		{"tasks-plan", "", "planning/_comms/tasks-plan"},

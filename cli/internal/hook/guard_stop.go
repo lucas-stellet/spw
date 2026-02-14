@@ -97,8 +97,8 @@ func checkRunCompleteness(runDir string) []string {
 func collectRunDirs(specDir string) []string {
 	var runs []string
 
-	// Phase dirs with direct run dirs: prd/_comms/run-NNN/, post-mortem/_comms/run-NNN/
-	for _, phase := range []string{"prd", "post-mortem"} {
+	// Phase dirs with direct run dirs: discover/_comms/run-NNN/, post-mortem/_comms/run-NNN/
+	for _, phase := range []string{"discover", "post-mortem"} {
 		commsRoot := filepath.Join(specDir, phase, "_comms")
 		for _, entry := range listDirSafe(commsRoot) {
 			if !entry.IsDir() {
@@ -108,7 +108,7 @@ func collectRunDirs(specDir string) []string {
 				runs = append(runs, filepath.Join(commsRoot, entry.Name()))
 			}
 		}
-		// Nested command dirs (e.g. prd/_comms/prd-revision/run-NNN/)
+		// Nested command dirs (e.g. discover/_comms/discover-revision/run-NNN/)
 		for _, entry := range listDirSafe(commsRoot) {
 			if !entry.IsDir() || runDirRe.MatchString(entry.Name()) {
 				continue

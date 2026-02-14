@@ -20,7 +20,7 @@ Sequential chain of subagents where each produces output that feeds the next. A 
 
 **Directory structure:** `<phase>/_comms/<command>/run-NNN/<subagent>/`
 
-Phase mapping: `prd` → `prd/_comms/run-NNN/`, `design-research`/`design-draft` → `design/_comms/<command>/run-NNN/`, `tasks-plan` → `planning/_comms/tasks-plan/run-NNN/`, `qa` → `qa/_comms/qa/run-NNN/`, `post-mortem` → `post-mortem/_comms/run-NNN/`.
+Phase mapping: `discover` → `discover/_comms/run-NNN/`, `design-research`/`design-draft` → `design/_comms/<command>/run-NNN/`, `tasks-plan` → `planning/_comms/tasks-plan/run-NNN/`, `qa` → `qa/_comms/qa/run-NNN/`, `post-mortem` → `post-mortem/_comms/run-NNN/`.
 
 **Dispatch pattern:**
 ```
@@ -38,12 +38,12 @@ Gathers information, potentially from external sources (URLs, web search, Playwr
 
 | Command | Subagent chain | Final artifact |
 |---------|---------------|----------------|
-| `prd` | scope-analyst → research scouts → requirements-synthesizer | PRD.md, requirements.md |
+| `discover` | scope-analyst → research scouts → requirements-synthesizer | PRD.md, requirements.md |
 | `design-research` | research dispatches | DESIGN-RESEARCH.md |
 
 **Distinguishing traits:**
 - May dispatch multiple scouts for different sources (web URLs, code, prototypes).
-- May include user interaction gates mid-pipeline (e.g., `prd` revision loop).
+- May include user interaction gates mid-pipeline (e.g., `discover` revision loop).
 - External source reads (WebFetch, Playwright MCP) happen inside subagents, not in orchestrator.
 - **MCP inline exception:** When a subagent needs session-scoped MCP tools (Linear, Playwright), the orchestrator runs dispatch-setup as normal but executes the work inline — still writing report.md and status.json to the subagent directory.
 
@@ -182,7 +182,7 @@ Execute tests or checks without modifying code. Lighter gates between waves.
 
 | Command | Category | Subcategory |
 |---------|----------|-------------|
-| `prd` | Pipeline | Research |
+| `discover` | Pipeline | Research |
 | `design-research` | Pipeline | Research |
 | `design-draft` | Pipeline | Synthesis |
 | `tasks-plan` | Pipeline | Synthesis |
@@ -262,7 +262,7 @@ Adding a new dispatch-capable command only requires creating the workflow `.md` 
 |-----|----------|-------------|
 | `category` | yes | Dispatch category: `pipeline`, `audit`, `wave-execution` |
 | `subcategory` | yes | Subcategory: `research`, `synthesis`, `artifact`, `code`, `implementation`, `validation` |
-| `phase` | yes | Spec directory phase: `prd`, `design`, `planning`, `execution`, `qa`, `post-mortem` |
+| `phase` | yes | Spec directory phase: `discover`, `design`, `planning`, `execution`, `qa`, `post-mortem` |
 | `comms_path` | yes | Template path for comms dir. Use `{wave}` placeholder for wave-aware commands |
 | `artifacts` | no | Comma-separated list of artifact dirs to create under spec dir (e.g. `execution/_implementation-logs`) |
 | `policy` | yes | `@`-reference to the shared dispatch policy |

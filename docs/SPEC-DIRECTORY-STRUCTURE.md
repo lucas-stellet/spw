@@ -19,7 +19,7 @@ Each spec organizes its artifacts by **workflow phase**. Generated outputs and a
 ├── tasks.md                               ← dashboard (MCP approval)
 ├── STATUS-SUMMARY.md                      ← output-only (not source of truth)
 │
-├── prd/                                   ← phase: requirements
+├── discover/                              ← phase: requirements
 │   ├── PRD.md
 │   ├── PRD-SOURCE-NOTES.md
 │   ├── PRD-STRUCTURE.md
@@ -102,7 +102,7 @@ Each spec organizes its artifacts by **workflow phase**. Generated outputs and a
 
 | Phase | Commands | Dispatch category |
 |-------|----------|-------------------|
-| `prd/` | `oraculo:prd` | Pipeline / Research |
+| `discover/` | `oraculo:discover` | Pipeline / Research |
 | `design/` | `oraculo:design-research`, `oraculo:design-draft` | Pipeline / Research + Synthesis |
 | `planning/` | `oraculo:tasks-plan`, `oraculo:tasks-check` | Pipeline / Synthesis + Audit / Artifact |
 | `execution/` | `oraculo:exec`, `oraculo:checkpoint` | Wave Execution / Implementation + Audit / Code |
@@ -115,10 +115,10 @@ When a phase contains commands from different dispatch categories (e.g., `qa/` h
 
 | Current path | New path |
 |--------------|----------|
-| `_generated/PRD.md` | `prd/PRD.md` |
-| `_generated/PRD-SOURCE-NOTES.md` | `prd/PRD-SOURCE-NOTES.md` |
-| `_generated/PRD-STRUCTURE.md` | `prd/PRD-STRUCTURE.md` |
-| `_generated/PRD-REVISION-*.md` | `prd/PRD-REVISION-*.md` |
+| `_generated/PRD.md` | `discover/PRD.md` |
+| `_generated/PRD-SOURCE-NOTES.md` | `discover/PRD-SOURCE-NOTES.md` |
+| `_generated/PRD-STRUCTURE.md` | `discover/PRD-STRUCTURE.md` |
+| `_generated/PRD-REVISION-*.md` | `discover/PRD-REVISION-*.md` |
 | `_generated/DESIGN-RESEARCH.md` | `design/DESIGN-RESEARCH.md` |
 | `_generated/SKILLS-*.md` | `design/SKILLS-DESIGN.md` or `planning/SKILLS-EXEC.md` |
 | `_generated/TASKS-CHECK.md` | `planning/TASKS-CHECK.md` |
@@ -129,7 +129,7 @@ When a phase contains commands from different dispatch categories (e.g., `qa/` h
 | `_generated/QA-DEFECT-REPORT.md` | `qa/QA-DEFECT-REPORT.md` |
 | `_generated/qa-artifacts/` | `qa/qa-artifacts/` |
 | `_generated/STATUS-SUMMARY.md` | `STATUS-SUMMARY.md` (spec root) |
-| `_agent-comms/prd/run-NNN/` | `prd/_comms/run-NNN/` |
+| `_agent-comms/discover/run-NNN/` | `discover/_comms/run-NNN/` |
 | `_agent-comms/design-research/run-NNN/` | `design/_comms/design-research/run-NNN/` |
 | `_agent-comms/tasks-plan/run-NNN/` | `planning/_comms/tasks-plan/run-NNN/` |
 | `_agent-comms/tasks-check/run-NNN/` | `planning/_comms/tasks-check/run-NNN/` |

@@ -18,7 +18,7 @@ const (
 
 // Phase directories.
 const (
-	PhasePRD        = "prd"
+	PhaseDiscover   = "discover"
 	PhaseDesign     = "design"
 	PhasePlanning   = "planning"
 	PhaseExecution  = "execution"
@@ -93,7 +93,7 @@ const (
 
 // _comms path patterns per command.
 const (
-	CommsPRD            = "prd/_comms"
+	CommsDiscover       = "discover/_comms"
 	CommsDesignResearch = "design/_comms/design-research"
 	CommsDesignDraft    = "design/_comms/design-draft"
 	CommsTasksPlan      = "planning/_comms/tasks-plan"
@@ -143,8 +143,8 @@ func WaveLatestPath(specDir string, waveNum int) string {
 // For wave-aware commands, waveNum must be provided (>0).
 func CommsPath(specDir, command string, waveNum int) string {
 	switch command {
-	case "prd":
-		return filepath.Join(specDir, CommsPRD)
+	case "discover":
+		return filepath.Join(specDir, CommsDiscover)
 	case "design-research":
 		return filepath.Join(specDir, CommsDesignResearch)
 	case "design-draft":

@@ -20,13 +20,13 @@
 
 Oraculo is a toolkit that adds structured workflow orchestration to Claude Code projects. Instead of letting an agent tackle an entire feature in one shot, Oráculo breaks work into phases -- requirements, design, planning, implementation, and QA -- each with its own quality gates and approval checkpoints.
 
-Every phase dispatches specialized subagents with model routing: haiku handles lightweight web scouting, opus drives complex reasoning, and sonnet does the implementation drafting. Agents communicate through filesystem artifacts (not chat), so handoffs are reproducible and auditable. You drive the whole process through slash commands in Claude Code (e.g., `/oraculo:prd`, `/oraculo:exec`) while `spec-workflow-mcp` serves as the source of truth for artifacts and approvals.
+Every phase dispatches specialized subagents with model routing: haiku handles lightweight web scouting, opus drives complex reasoning, and sonnet does the implementation drafting. Agents communicate through filesystem artifacts (not chat), so handoffs are reproducible and auditable. You drive the whole process through slash commands in Claude Code (e.g., `/oraculo:discover`, `/oraculo:exec`) while `spec-workflow-mcp` serves as the source of truth for artifacts and approvals.
 
 ## Quick Start
 
 After [installing](#installation), run these commands inside a Claude Code session:
 
-1. `/oraculo:prd my-feature` -- Generate a requirements document from your feature description
+1. `/oraculo:discover my-feature` -- Generate a requirements document from your feature description
 2. `/oraculo:plan my-feature` -- Create a design document and break it into executable tasks
 3. `/oraculo:exec my-feature` -- Implement tasks in waves with automatic checkpoints
 4. `/oraculo:qa my-feature` -- Build and run a QA validation plan
@@ -122,11 +122,11 @@ Additional setup (done automatically by the installer):
 - `teammateMode = "in-process"` (change to `"tmux"` manually if desired)
 - Overlay symlinks: `cd .claude/workflows/oraculo/overlays/active && ln -sf ../teams/<cmd>.md <cmd>.md`
 
-When enabled, Oraculo creates a team for any phase not listed in `[agent_teams].exclude_phases` (all phases are eligible by default). `oraculo:exec` enforces delegate mode when `[agent_teams].require_delegate_mode = true`. Team overlays are available for all subagent-first entrypoints: `oraculo:prd`, `oraculo:plan`, `oraculo:design-research`, `oraculo:design-draft`, `oraculo:tasks-plan`, `oraculo:tasks-check`, `oraculo:exec`, `oraculo:checkpoint`, `oraculo:post-mortem`, `oraculo:qa`, `oraculo:qa-check`, `oraculo:qa-exec`, `oraculo:status`.
+When enabled, Oraculo creates a team for any phase not listed in `[agent_teams].exclude_phases` (all phases are eligible by default). `oraculo:exec` enforces delegate mode when `[agent_teams].require_delegate_mode = true`. Team overlays are available for all subagent-first entrypoints: `oraculo:discover`, `oraculo:plan`, `oraculo:design-research`, `oraculo:design-draft`, `oraculo:tasks-plan`, `oraculo:tasks-check`, `oraculo:exec`, `oraculo:checkpoint`, `oraculo:post-mortem`, `oraculo:qa`, `oraculo:qa-check`, `oraculo:qa-exec`, `oraculo:status`.
 
 ## Command entry points
 
-- `oraculo:prd` -> zero-to-PRD requirements flow
+- `oraculo:discover` -> zero-to-PRD requirements flow
 - `oraculo:plan` -> design/tasks planning from existing requirements (with MCP approval gate)
 - `oraculo:tasks-plan` -> config-driven task generation (`rolling-wave` or `all-at-once`)
 - `oraculo:exec` -> batch execution with checkpoints
@@ -151,7 +151,7 @@ Every workflow declares a `<dispatch_pattern>` section that serves as the **sing
 
 | Category | Policy | Commands |
 |----------|--------|----------|
-| **Pipeline** | `dispatch-pipeline.md` | `prd`, `design-research`, `design-draft`, `tasks-plan`, `qa`, `post-mortem` |
+| **Pipeline** | `dispatch-pipeline.md` | `discover`, `design-research`, `design-draft`, `tasks-plan`, `qa`, `post-mortem` |
 | **Audit** | `dispatch-audit.md` | `tasks-check`, `qa-check`, `checkpoint` |
 | **Wave Execution** | `dispatch-wave.md` | `exec`, `qa-exec` |
 
@@ -208,9 +208,9 @@ max_entries_for_design = 5
 
 - `oraculo:post-mortem` writes reports to `.spec-workflow/post-mortems/<spec-name>/`.
 - Shared index: `.spec-workflow/post-mortems/INDEX.md` (used by design/planning commands when enabled).
-- Design/planning phases (`oraculo:prd`, `oraculo:design-research`, `oraculo:design-draft`, `oraculo:tasks-plan`, `oraculo:tasks-check`) load indexed lessons with recency/tag prioritization.
+- Design/planning phases (`oraculo:discover`, `oraculo:design-research`, `oraculo:design-draft`, `oraculo:tasks-plan`, `oraculo:tasks-check`) load indexed lessons with recency/tag prioritization.
 
-Unfinished-run handling for long subagent commands (`oraculo:prd`, `oraculo:design-research`, `oraculo:tasks-plan`, `oraculo:tasks-check`, `oraculo:checkpoint`, `oraculo:post-mortem`, `oraculo:qa`, `oraculo:qa-check`, `oraculo:qa-exec`):
+Unfinished-run handling for long subagent commands (`oraculo:discover`, `oraculo:design-research`, `oraculo:tasks-plan`, `oraculo:tasks-check`, `oraculo:checkpoint`, `oraculo:post-mortem`, `oraculo:qa`, `oraculo:qa-check`, `oraculo:qa-exec`):
 - Before creating a new run-id, inspect the phase run folder (for `checkpoint`, inspect current wave folder first).
 - If latest unfinished run exists, ask explicit user decision:
   - `continue-unfinished`
@@ -219,13 +219,13 @@ Unfinished-run handling for long subagent commands (`oraculo:prd`, `oraculo:desi
 - If explicit decision is unavailable, stop with `WAITING_FOR_USER_DECISION`.
 - On `continue-unfinished`, reuse completed `status=pass` outputs, redispatch missing/blocked subagents, and rerun the phase final decision/synthesis subagent before final artifact output.
 
-Approval reconciliation for MCP-gated commands (`oraculo:prd`, `oraculo:status`, `oraculo:plan`, `oraculo:design-draft`, `oraculo:tasks-plan`):
+Approval reconciliation for MCP-gated commands (`oraculo:discover`, `oraculo:status`, `oraculo:plan`, `oraculo:design-draft`, `oraculo:tasks-plan`):
 - First read approval state from `spec-status` document fields.
 - If status is missing/unknown/inconsistent, resolve approval ID (from `spec-status` or approval records under `.spec-workflow/approvals/<spec-name>/`) and confirm via MCP `approvals status`.
 - `STATUS-SUMMARY.md` is output-only and must not be used as approval source of truth.
 
 File-first subagent communication is stored under phase-based `_comms/` directories:
-- prd: `.spec-workflow/specs/<spec-name>/prd/_comms/run-NNN/`
+- discover: `.spec-workflow/specs/<spec-name>/discover/_comms/run-NNN/`
 - design: `.spec-workflow/specs/<spec-name>/design/_comms/{design-research,design-draft}/run-NNN/`
 - planning: `.spec-workflow/specs/<spec-name>/planning/_comms/{tasks-plan,tasks-check}/run-NNN/`
 - execution: `.spec-workflow/specs/<spec-name>/execution/waves/wave-NN/{execution,checkpoint}/run-NNN/`

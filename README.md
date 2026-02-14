@@ -36,7 +36,7 @@ In the temples of Ancient Greece, the Oraculo of Delphi was consulted before any
 | **Execution** (Exec) | The generals implement the prophecy | Implementation with automatic checkpoints |
 | **Judgment** (QA) | The tribunal validates compliance | Tests planned, verified, and executed | Each phase dispatches **specialized agents** with model routing: Haiku performs light reconnaissance (like scouts), Opus conducts complex reasoning (like temple sages), and Sonnet executes implementation (like artisans). Agents communicate via artifacts in the file system—not chat—making each handoff reproducible and auditable.
 
-You orchestrate everything with slash commands in Claude Code (e.g., `/oraculo:prd`, `/oraculo:exec`) while `spec-workflow-mcp` serves as the truth source for artifacts and approvals.
+You orchestrate everything with slash commands in Claude Code (e.g., `/oraculo:discover`, `/oraculo:exec`) while `spec-workflow-mcp` serves as the truth source for artifacts and approvals.
 
 ## Why Oraculo?
 
@@ -54,7 +54,7 @@ The Oraculo of Delphi wasn't simply a diviner. It was a **system**:
 
 After [installation](#installation), run the following within a Claude Code session:
 
-1. `/oraculo:prd my-feature` — Generates the requirements document from the description
+1. `/oraculo:discover my-feature` — Generates the requirements document from the description
 2. `/oraculo:plan my-feature` — Creates the design and decomposes it into executable tasks
 3. `/oraculo:exec my-feature` — Deploys in waves with automatic checkpoints
 4. `/oraculo:qa my-feature` — Builds and executes the QA validation plan
@@ -253,7 +253,7 @@ Oraculo stores structured data in SQLite databases (pure Go driver, no CGO, WAL 
 
 The phases follow the Oraculo's journey:
 
-- `oraculo:prd` → zero-to-PRD requirements flow *(the question to the Oraculo)*
+- `oraculo:discover` → zero-to-PRD requirements flow *(the question to the Oraculo)*
 - `oraculo:plan` → design/task meta-orchestrator: chains research → draft → plan → checkout *(the interpretation)*
 - `oraculo:tasks-plan` → task generation (`rolling-wave` or `all-at-once`) *(the tablets with the answer)*
 - `oraculo:exec` → batch execution with checkpoints *(the generals implement)*
@@ -280,7 +280,7 @@ Each workflow declares a `<dispatch_pattern>` section as the **single source of 
 
 |-----------|----------|----------|
 
-| **Pipeline** | `dispatch-pipeline.md` | `prd`, `design-research`, `design-draft`, `tasks-plan`, `qa`, `post-mortem` |
+| **Pipeline** | `dispatch-pipeline.md` | `discover`, `design-research`, `design-draft`, `tasks-plan`, `qa`, `post-mortem` |
 
 | **Audit** | `dispatch-audit.md` | `tasks-check`, `qa-check`, `checkpoint` |
 
@@ -378,7 +378,7 @@ Reconciliation of approvals for commands with MCP gates:
 - `STATUS-SUMMARY.md` is output-only, never a source of truth.
 
 File-first communication between subagents is stored in `_comms/` directories organized by phase:
-- prd: `.spec-workflow/specs/<spec-name>/prd/_comms/run-NNN/`
+- discover: `.spec-workflow/specs/<spec-name>/discover/_comms/run-NNN/`
 - design: `.spec-workflow/specs/<spec-name>/design/_comms/{design-research,design-draft}/run-NNN/`
 - planning: `.spec-workflow/specs/<spec-name>/planning/_comms/{tasks-plan,tasks-check}/run-NNN/`
 - execution: `.spec-workflow/specs/<spec-name>/execution/waves/wave-NN/{execution,checkpoint}/run-NNN/`

@@ -1,7 +1,7 @@
 <!-- ORACULO-KIT-START — managed by oraculo install, do not edit manually -->
 ## Oraculo Dispatch Rules
 
-When executing SPW workflow commands, follow these rules strictly:
+When executing Oráculo workflow commands, follow these rules strictly:
 
 1. **Always use CLI for dispatch.** Never create run dirs or subagent dirs manually. Use `oraculo tools dispatch-init` and `oraculo tools dispatch-setup`.
 2. **Status-only reads.** After dispatching a subagent, read ONLY status.json via `oraculo tools dispatch-read-status`. Never read report.md unless status=blocked.

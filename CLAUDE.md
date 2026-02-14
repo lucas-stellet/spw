@@ -56,7 +56,7 @@ oraculo spec list --help
 
 Commands and workflows are separated into two layers:
 
-- **`commands/oraculo/*.md`** — Thin wrappers (max 60 lines) that define frontmatter metadata and point to a workflow via `<execution_context>` referencing `@.claude/workflows/oraculo/<command>.md`. These are what Claude Code slash commands (`/oraculo:exec`, `/oraculo:prd`, etc.) invoke.
+- **`commands/oraculo/*.md`** — Thin wrappers (max 60 lines) that define frontmatter metadata and point to a workflow via `<execution_context>` referencing `@.claude/workflows/oraculo/<command>.md`. These are what Claude Code slash commands (`/oraculo:exec`, `/oraculo:discover`, etc.) invoke.
 - **`workflows/oraculo/*.md`** — Full orchestration logic: subagent definitions, policies, gates, state machines. Shared policy fragments live in `workflows/oraculo/shared/` (config resolution, file handoff, resume policy, skills policy, approval reconciliation).
 
 Agent Teams uses base + overlay via symlinks: each command references `workflows/oraculo/overlays/active/<command>.md`, which is a symlink pointing to `../noop.md` (teams off) or `../teams/<command>.md` (teams on). The installer switches symlinks; no separate command directory needed.
@@ -138,7 +138,7 @@ This project uses Oraculo for structured AI-driven development workflows.
 
 ### Commands
 
-`/oraculo:prd` → `/oraculo:plan` → `/oraculo:design-research` → `/oraculo:design-draft` → `/oraculo:tasks-plan` → `/oraculo:tasks-check` → `/oraculo:exec` → `/oraculo:checkpoint` → `/oraculo:qa` → `/oraculo:qa-check` → `/oraculo:qa-exec` → `/oraculo:post-mortem` → `/oraculo:status`
+`/oraculo:discover` → `/oraculo:plan` → `/oraculo:design-research` → `/oraculo:design-draft` → `/oraculo:tasks-plan` → `/oraculo:tasks-check` → `/oraculo:exec` → `/oraculo:checkpoint` → `/oraculo:qa` → `/oraculo:qa-check` → `/oraculo:qa-exec` → `/oraculo:post-mortem` → `/oraculo:status`
 
 ### Dispatch CLI (used within workflows)
 
@@ -168,7 +168,7 @@ This project uses Oraculo for structured AI-driven development workflows.
 
 ### Commands
 
-`/oraculo:prd` → `/oraculo:plan` → `/oraculo:design-research` → `/oraculo:design-draft` → `/oraculo:tasks-plan` → `/oraculo:tasks-check` → `/oraculo:exec` → `/oraculo:checkpoint` → `/oraculo:qa` → `/oraculo:qa-check` → `/oraculo:qa-exec` → `/oraculo:post-mortem` → `/oraculo:status`
+`/oraculo:discover` → `/oraculo:plan` → `/oraculo:design-research` → `/oraculo:design-draft` → `/oraculo:tasks-plan` → `/oraculo:tasks-check` → `/oraculo:exec` → `/oraculo:checkpoint` → `/oraculo:qa` → `/oraculo:qa-check` → `/oraculo:qa-exec` → `/oraculo:post-mortem` → `/oraculo:status`
 
 ### Dispatch CLI (used within workflows)
 

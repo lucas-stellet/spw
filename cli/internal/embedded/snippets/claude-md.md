@@ -5,7 +5,7 @@ This project uses Oraculo for structured AI-driven development workflows.
 
 ### Commands
 
-`/oraculo:prd` → `/oraculo:plan` → `/oraculo:design-research` → `/oraculo:design-draft` → `/oraculo:tasks-plan` → `/oraculo:tasks-check` → `/oraculo:exec` → `/oraculo:checkpoint` → `/oraculo:qa` → `/oraculo:qa-check` → `/oraculo:qa-exec` → `/oraculo:post-mortem` → `/oraculo:status`
+`/oraculo:discover` → `/oraculo:plan` → `/oraculo:design-research` → `/oraculo:design-draft` → `/oraculo:tasks-plan` → `/oraculo:tasks-check` → `/oraculo:exec` → `/oraculo:checkpoint` → `/oraculo:qa` → `/oraculo:qa-check` → `/oraculo:qa-exec` → `/oraculo:post-mortem` → `/oraculo:status`
 
 ### Dispatch CLI (used within workflows)
 

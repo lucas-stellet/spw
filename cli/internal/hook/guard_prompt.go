@@ -9,7 +9,7 @@ import (
 
 // commandsRequiringSpec is the set of ORACULO commands that need a <spec-name> argument.
 var commandsRequiringSpec = map[string]bool{
-	"prd":             true,
+	"discover":        true,
 	"plan":            true,
 	"design-research": true,
 	"design-draft":    true,

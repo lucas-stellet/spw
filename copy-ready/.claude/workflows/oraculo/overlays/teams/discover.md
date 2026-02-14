@@ -1,5 +1,5 @@
 <purpose>
-Agent Teams overlay for `oraculo:prd`.
+Agent Teams overlay for `oraculo:discover`.
 </purpose>
 
 <agent_teams_policy>
@@ -9,9 +9,9 @@ Resolve Agent Teams config from `.spec-workflow/oraculo.toml` (legacy fallback `
 - `max_teammates`
 - `exclude_phases` (default `[]`)
 
-When `enabled=true` and `prd` is NOT listed in `exclude_phases`:
+When `enabled=true` and `discover` is NOT listed in `exclude_phases`:
 - create a team and set `teammate_mode`
-- map PRD roles (`source-reader-web`, `source-reader-mcp`, `codebase-impact-scanner`, `requirements-structurer`, `prd-editor`, `prd-critic`) to teammates (do not exceed `max_teammates`)
+- map PRD roles (`source-reader-web`, `source-reader-mcp`, `codebase-impact-scanner`, `requirements-structurer`, `discover-editor`, `discover-critic`) to teammates (do not exceed `max_teammates`)
 - apply the same mapping in revision protocol roles
 - each teammate must still write `brief.md`, `report.md`, `status.json` in the run dir
 </agent_teams_policy>

@@ -275,17 +275,17 @@ func TestGuidelinesInjectedForMatchingPhase(t *testing.T) {
 		t.Error("coding guideline should be in exec output")
 	}
 
-	// prd should have only the project guideline.
-	got, err = e.RenderCommand("prd")
+	// discover should have only the project guideline.
+	got, err = e.RenderCommand("discover")
 	if err != nil {
 		t.Fatalf("RenderCommand error: %v", err)
 	}
 
 	if !strings.Contains(got, "Always use conventional commits.") {
-		t.Error("project guideline should be in prd output")
+		t.Error("project guideline should be in discover output")
 	}
 	if strings.Contains(got, "Follow SOLID principles.") {
-		t.Error("coding guideline should NOT be in prd output")
+		t.Error("coding guideline should NOT be in discover output")
 	}
 }
 

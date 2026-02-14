@@ -9,7 +9,7 @@ import (
 // commandPrereqs maps ORACULO commands to their prerequisite artifact paths
 // (relative to spec directory).
 var commandPrereqs = map[string][]string{
-	"prd":             {},
+	"discover":        {},
 	"design-research": {specdir.RequirementsMD},
 	"design-draft":    {specdir.RequirementsMD, specdir.DesignResearchMD},
 	"tasks-plan":      {specdir.DesignMD},

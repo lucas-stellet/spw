@@ -4,7 +4,7 @@ Oraculo generates dozens of spec-workflow files alongside feature code (PRDs, de
 
 ## Problem
 
-A typical feature PR after a full Oraculo pipeline (`prd → design → tasks → exec → qa`) might show:
+A typical feature PR after a full Oraculo pipeline (`discover → design → tasks → exec → qa`) might show:
 
 ```
 Files changed (47)  +2,340 -180
@@ -32,8 +32,8 @@ Files changed (47)  +2,340 -180
   lib/accounts_web/live/user_live.ex                      +78 -23
   lib/accounts_web/templates/user.heex                    +34 -8
   .spec-workflow/specs/user-auth/requirements.md          +120 -0
-  .spec-workflow/specs/user-auth/prd/PRD.md               +340 -0
-  .spec-workflow/specs/user-auth/prd/PRD-SOURCE-NOTES.md  +89 -0
+  .spec-workflow/specs/user-auth/discover/PRD.md               +340 -0
+  .spec-workflow/specs/user-auth/discover/PRD-SOURCE-NOTES.md  +89 -0
   .spec-workflow/specs/user-auth/design/DESIGN-RESEARCH.md +210 -0
   ... 40 more spec files ...
 ```
