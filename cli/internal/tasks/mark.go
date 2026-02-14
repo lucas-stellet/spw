@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/lucas-stellet/spw/internal/specdir"
+	"github.com/lucas-stellet/spw/internal/store"
 )
 
 // statusToChar maps status strings to their checkbox characters.
@@ -63,7 +64,22 @@ func MarkTaskInFile(filePath, taskID, newStatus string, requireImplLog bool, spe
 
 	// Write back preserving original line endings
 	output := strings.Join(lines, "\n")
-	return os.WriteFile(filePath, []byte(output), 0644)
+	if err := os.WriteFile(filePath, []byte(output), 0644); err != nil {
+		return err
+	}
+
+	// Dual-write: sync task status to spec.db
+	if specDir != "" {
+		if s := store.TryOpen(specDir); s != nil {
+			defer s.Close()
+			s.SyncTask(store.TaskRecord{
+				TaskID: taskID,
+				Status: newStatus,
+			})
+		}
+	}
+
+	return nil
 }
 
 // checkImplLog verifies that an implementation log exists for the given task.

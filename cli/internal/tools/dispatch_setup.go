@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/lucas-stellet/spw/internal/config"
+	"github.com/lucas-stellet/spw/internal/store"
 )
 
 func boolToOnOff(b bool) string {
@@ -89,6 +90,16 @@ status.json format:
 	briefFullPath := filepath.Join(subagentDir, "brief.md")
 	if err := os.WriteFile(briefFullPath, []byte(brief), 0644); err != nil {
 		Fail("failed to write brief.md: "+err.Error(), raw)
+	}
+
+	// Dual-write: register subagent in spec.db
+	if specDir := resolveSpecDirFromRunDir(runDir); specDir != "" {
+		if s := store.TryOpen(specDir); s != nil {
+			defer s.Close()
+			if run, _ := s.LatestRun(extractCommandFromRunDir(runDir)); run != nil {
+				s.CreateSubagent(run.ID, subagentName)
+			}
+		}
 	}
 
 	result := map[string]any{

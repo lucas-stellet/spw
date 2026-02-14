@@ -84,6 +84,13 @@ const (
 // Post-mortem phase.
 const PostMortemReport = "post-mortem/report.md"
 
+// Store files.
+const (
+	SpecDB              = "spec.db"
+	CompletionSummaryMD = "COMPLETION-SUMMARY.md"
+	ProgressSummaryMD   = "PROGRESS-SUMMARY.md"
+)
+
 // _comms path patterns per command.
 const (
 	CommsPRD            = "prd/_comms"
