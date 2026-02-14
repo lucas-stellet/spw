@@ -1,6 +1,6 @@
 # Oraculo 
 
-![Version](https://img.shields.io/badge/version-2.0-blue)
+![Version](https://img.shields.io/badge/version-1.16.0-blue)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
 > *"Know thyself."* — Inscription at the Temple of Apollo at Delphi
@@ -22,7 +22,7 @@
 
 ## What is the Oraculo?
 
-First of all, is the word in portuguese for Oracle. 
+First of all, it is the Portuguese word for Oracle.
 
 In the temples of Ancient Greece, the Oraculo of Delphi was consulted before any important undertaking—wars, city foundings, political decisions. No one acted without first seeking the wisdom of the Pythia, who channeled Apollo's knowledge into structured and interpretable prophecies.
 
