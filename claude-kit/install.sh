@@ -262,11 +262,11 @@ cmd_install_global() {
   echo "[oraculo-kit] Installing globally into: ${global_root}"
 
   # 1. Command stubs → ~/.claude/commands/oraculo/
-  rsync -a "${SCRIPT_DIR}/.claude/commands/" "${global_root}/.claude/commands/"
+  rsync -a --delete "${SCRIPT_DIR}/.claude/commands/" "${global_root}/.claude/commands/"
   echo "[oraculo-kit] Copied command stubs to ~/.claude/commands/oraculo/"
 
   # 2. Workflows → ~/.claude/workflows/oraculo/
-  rsync -a "${SCRIPT_DIR}/.claude/workflows/" "${global_root}/.claude/workflows/"
+  rsync -a --delete "${SCRIPT_DIR}/.claude/workflows/" "${global_root}/.claude/workflows/"
   echo "[oraculo-kit] Copied workflows to ~/.claude/workflows/oraculo/"
 
   # 3. Settings.json → ~/.claude/settings.json
@@ -366,7 +366,10 @@ cmd_install() {
   fi
 
   # Copy only Oraculo runtime assets (avoid touching project root files like README.md)
-  rsync -a "${SCRIPT_DIR}/.claude/" "${TARGET_ROOT}/.claude/"
+  # --delete on commands/workflows ensures obsolete stubs are removed on upgrade
+  rsync -a --delete "${SCRIPT_DIR}/.claude/commands/" "${TARGET_ROOT}/.claude/commands/"
+  rsync -a --delete "${SCRIPT_DIR}/.claude/workflows/" "${TARGET_ROOT}/.claude/workflows/"
+  rsync -a --exclude='commands/' --exclude='workflows/' "${SCRIPT_DIR}/.claude/" "${TARGET_ROOT}/.claude/"
   rsync -a "${SCRIPT_DIR}/.spec-workflow/" "${TARGET_ROOT}/.spec-workflow/"
 
   # PR review optimization: collapse spec-workflow files in GitHub diffs
