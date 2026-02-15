@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Install or inspect the copy-ready kit in the current project root.
+# Install or inspect the claude-kit in the current project root.
 # Usage:
 #   ./install.sh [install|skills|status]
 #
@@ -20,11 +20,11 @@ CONFIG_PATH_LEGACY="${TARGET_ROOT}/.oraculo/oraculo.toml"
 CONFIG_PATH="${CONFIG_PATH_CANONICAL}"
 # Resolve repository root robustly.
 # Typical cached layout used by `oraculo` wrapper:
-#   <cache>/repos/<repo>/copy-ready/install.sh
+#   <cache>/repos/<repo>/claude-kit/install.sh
 # where repo root is one level above SCRIPT_DIR.
 ORACULO_REPO_ROOT_CANDIDATE_1="$(cd "${SCRIPT_DIR}/.." && pwd)"
 ORACULO_REPO_ROOT_CANDIDATE_2="$(cd "${SCRIPT_DIR}/../.." && pwd)"
-if [ -d "${ORACULO_REPO_ROOT_CANDIDATE_1}/skills" ] || [ -d "${ORACULO_REPO_ROOT_CANDIDATE_1}/.git" ]; then
+if [ -d "${ORACULO_REPO_ROOT_CANDIDATE_1}/claude-kit" ] || [ -d "${ORACULO_REPO_ROOT_CANDIDATE_1}/.git" ]; then
   ORACULO_REPO_ROOT="${ORACULO_REPO_ROOT_CANDIDATE_1}"
 else
   ORACULO_REPO_ROOT="${ORACULO_REPO_ROOT_CANDIDATE_2}"
@@ -159,6 +159,7 @@ deactivate_teams_overlay_symlinks() {
 find_skill_source_dir() {
   local skill="$1"
   local candidates=(
+    "${SCRIPT_DIR}/skills/${skill}"
     "${ORACULO_REPO_ROOT}/skills/${skill}"
     "${HOME}/.claude/skills/${skill}"
     "${HOME}/.codex/skills/${skill}"

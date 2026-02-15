@@ -37,7 +37,7 @@ Each command handles subagent dispatch, file handoff, and quality gates automati
 
 - This file is the main source of truth for usage and operations.
 - Agent/contributor operational rules are in `AGENTS.md`.
-- Keep `docs/ORACULO-WORKFLOW.md`, `hooks/README.md`, and `copy-ready/README.md` as lightweight pointers to this README.
+- Keep `docs/ORACULO-WORKFLOW.md` and `claude-kit/README.md` as lightweight pointers to this README.
 
 ## Installation
 
@@ -65,7 +65,7 @@ From your project root:
 oraculo install
 ```
 
-This copies commands, workflows, hooks, config, and skills into your project. For a manual install, you can also run `cp -R /path/to/oraculo/copy-ready/. .` instead.
+This copies commands, workflows, hooks, config, and skills into your project. For a manual install, you can also run `cp -R /path/to/oraculo/claude-kit/. .` instead.
 
 ### 3. Post-install checklist
 

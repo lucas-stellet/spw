@@ -8,22 +8,22 @@ Oraculo is a command/template kit for `spec-workflow-mcp`, with subagent-first e
 
 1. `README.md` (primary source for installation/usage/workflow)
 2. `AGENTS.md` (operational rules for agents and contributors)
-3. `config/oraculo.toml` (operational defaults)
+3. `claude-kit/.spec-workflow/oraculo.toml` (operational defaults)
 
 Note:
-- `docs/ORACULO-WORKFLOW.md`, `hooks/README.md`, and `copy-ready/README.md` should remain lean and point to `README.md`.
+- `docs/ORACULO-WORKFLOW.md` and `claude-kit/README.md` should remain lean and point to `README.md`.
 
-## Mirror file map
+## Source of truth
 
-- `commands/oraculo/*.md` <-> `copy-ready/.claude/commands/oraculo/*.md`
-- `workflows/oraculo/*.md` <-> `copy-ready/.claude/workflows/oraculo/*.md`
-- `workflows/oraculo/overlays/teams/*.md` <-> `copy-ready/.claude/workflows/oraculo/overlays/teams/*.md`
-- `workflows/oraculo/overlays/noop.md` <-> `copy-ready/.claude/workflows/oraculo/overlays/noop.md`
-- `workflows/oraculo/overlays/active/*.md` <-> `copy-ready/.claude/workflows/oraculo/overlays/active/*.md` (symlinks)
-- `templates/user-templates/**` <-> `copy-ready/.spec-workflow/user-templates/**`
-- `config/oraculo.toml` <-> `copy-ready/.spec-workflow/oraculo.toml`
-- `hooks/*.js|*.sh` <-> `copy-ready/.claude/hooks/*`
-- `hooks/claude-hooks.snippet.json` aligned with `copy-ready/.claude/settings.json.example`
+`claude-kit/` is the single source of truth for all user-facing content:
+
+- `claude-kit/.claude/commands/oraculo/*.md` — thin command wrappers
+- `claude-kit/.claude/workflows/oraculo/*.md` — full orchestration workflows
+- `claude-kit/.claude/workflows/oraculo/overlays/` — team overlay symlinks
+- `claude-kit/.spec-workflow/oraculo.toml` — runtime config
+- `claude-kit/.spec-workflow/user-templates/` — user templates
+- `claude-kit/skills/` — bundled skill sources
+- `claude-kit/hooks/` — hook configuration snippets
 
 ## Mandatory operational rules
 
@@ -61,7 +61,7 @@ Note:
 16. In approval gates (`oraculo:discover`, `oraculo:status`, `oraculo:plan`, `oraculo:design-draft`, `oraculo:tasks-plan`), when `spec-status` returns incomplete/ambiguous, reconcile via MCP `approvals status` (resolving `approvalId` from `spec-status` and, if needed, from `.spec-workflow/approvals/<spec-name>/`); never decide based on `overallStatus`/phases alone and never use `STATUS-SUMMARY.md` as source of truth.
 17. In `oraculo:post-mortem`, save reports to `.spec-workflow/post-mortems/<spec-name>/` with YAML front matter (`spec`, `topic`, `tags`, `range_from`, `range_to`) and update `.spec-workflow/post-mortems/INDEX.md`.
 18. When `[post_mortem_memory].enabled=true`, design/planning commands (`oraculo:discover`, `oraculo:design-research`, `oraculo:design-draft`, `oraculo:tasks-plan`, `oraculo:tasks-check`) must consult the post-mortems index and apply at most `[post_mortem_memory].max_entries_for_design` relevant entries.
-19. Default skill catalog: do not include `requesting-code-review`; keep alignment between `copy-ready/install.sh`, `config/oraculo.toml`, and `copy-ready/.spec-workflow/oraculo.toml`.
+19. Default skill catalog: do not include `requesting-code-review`; keep alignment between `claude-kit/install.sh` and `claude-kit/.spec-workflow/oraculo.toml`.
 20. `test-driven-development` belongs to the common catalog; in `oraculo:exec`/`oraculo:checkpoint`, it only becomes mandatory when `[execution].tdd_default=true`.
 21. In `oraculo:exec` (normal and teams), before broad reading the orchestrator must dispatch `execution-state-scout` (implementation/sonnet model by default) to consolidate checkpoint, in-progress `[-]` task, next executable task(s), and resume action; the main agent must consume only the compact summary and then read context per task.
 22. In `oraculo:qa`, when the focus is not provided, explicitly ask the user for the validation target and choose `playwright|bruno|hybrid` with risk/scope justification. The plan must include concrete selectors/endpoints per scenario (CSS, `data-testid`, routes, HTTP methods).
@@ -134,9 +134,9 @@ Absence of these files must result in `BLOCKED`.
 - `bash -n bin/oraculo`
 - `bash -n scripts/bootstrap.sh`
 - `bash -n scripts/install-oraculo-bin.sh`
-- `bash -n scripts/validate-thin-orchestrator.sh`
-- `scripts/validate-thin-orchestrator.sh`
-- `bash -n copy-ready/install.sh`
+- `bash -n scripts/validate-kit.sh`
+- `scripts/validate-kit.sh`
+- `bash -n claude-kit/install.sh`
 - `echo '{"workspace":{"current_dir":"'"$(pwd)"'"}}' | oraculo hook statusline`
 - `echo '{"prompt":"/oraculo:plan"}' | oraculo hook guard-prompt`
 - `echo '{"cwd":"'"$(pwd)"'","tool_input":{"file_path":"README.md"}}' | oraculo hook guard-paths`
@@ -157,8 +157,7 @@ When changing behavior, defaults, or guardrails, update in the same patch:
 - `README.md`
 - `AGENTS.md`
 - `docs/ORACULO-WORKFLOW.md` (pointer)
-- `hooks/README.md` (pointer)
-- `copy-ready/README.md` (pointer)
+- `claude-kit/README.md` (pointer)
 - `.claude/docs/oraculo-cli-reference.md` (CLI reference)
 
 <!-- ORACULO-KIT-START — managed by oraculo install, do not edit manually -->

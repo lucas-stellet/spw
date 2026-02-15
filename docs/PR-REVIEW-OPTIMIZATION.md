@@ -65,7 +65,7 @@ This marks all files under any spec directory as generated. Dashboard files (`re
 
 ### Installer integration
 
-The `copy-ready/install.sh` script adds this rule automatically during `oraculo install`:
+The `claude-kit/install.sh` script adds this rule automatically during `oraculo install`:
 
 ```bash
 setup_gitattributes() {

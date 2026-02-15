@@ -69,9 +69,9 @@ func TestDefaults(t *testing.T) {
 
 func TestParseActualConfig(t *testing.T) {
 	// Find the actual oraculo.toml relative to the repo root
-	configPath := findRepoFile(t, "config/oraculo.toml")
+	configPath := findRepoFile(t, "claude-kit/.spec-workflow/oraculo.toml")
 	if configPath == "" {
-		t.Skip("config/oraculo.toml not found")
+		t.Skip("claude-kit/.spec-workflow/oraculo.toml not found")
 	}
 
 	cfg, err := LoadFromPath(configPath)

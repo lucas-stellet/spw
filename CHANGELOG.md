@@ -30,4 +30,4 @@ All notable changes to Oraculo are documented in this file.
 ### Added
 - Initial spec-workflow integration with Claude Code commands.
 - Basic command entry points: `oraculo:prd`, `oraculo:plan`, `oraculo:exec`, `oraculo:checkpoint`, `oraculo:status`.
-- `copy-ready/` installer for project setup.
+- `claude-kit/` installer for project setup.

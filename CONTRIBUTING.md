@@ -19,11 +19,11 @@ Thanks for your interest in contributing to Oraculo.
 bash -n bin/oraculo
 bash -n scripts/bootstrap.sh
 bash -n scripts/install-oraculo-bin.sh
-bash -n scripts/validate-thin-orchestrator.sh
-bash -n copy-ready/install.sh
+bash -n scripts/validate-kit.sh
+bash -n claude-kit/install.sh
 
-# Validate thin-orchestrator contract (wrapper sizes, workflow refs, mirror sync)
-scripts/validate-thin-orchestrator.sh
+# Validate kit structure (wrapper sizes, workflow refs, overlays)
+scripts/validate-kit.sh
 
 # Smoke-test Go hooks (build first: cd cli && go build -o /tmp/oraculo ./cmd/oraculo && PATH="/tmp:$PATH")
 echo '{"workspace":{"current_dir":"'"$(pwd)"'"}}' | oraculo hook statusline
@@ -33,15 +33,13 @@ echo '{}' | oraculo hook guard-stop
 echo '{}' | oraculo hook session-start
 ```
 
-## Mirror system
+## Source of truth
 
-Source files must stay in sync with their `copy-ready/` counterparts. Always update both sides in the same patch. The validation script checks this:
+`claude-kit/` is the single source of truth for all user-facing content (commands, workflows, config, templates, skills). The validation script checks structural integrity:
 
 ```bash
-scripts/validate-thin-orchestrator.sh
+scripts/validate-kit.sh
 ```
-
-See the mirror table in `CLAUDE.md` for the full mapping.
 
 ## Documentation updates
 
@@ -50,8 +48,7 @@ When modifying behavior, defaults, or guardrails, update these files in the same
 - `README.md`
 - `AGENTS.md`
 - `docs/ORACULO-WORKFLOW.md`
-- `hooks/README.md`
-- `copy-ready/README.md` (mirror sync)
+- `claude-kit/README.md`
 
 ## Code style
 
@@ -62,7 +59,7 @@ When modifying behavior, defaults, or guardrails, update these files in the same
 ## Submitting changes
 
 1. Create a branch from `main`.
-2. Make your changes, keeping the mirror in sync.
+2. Make your changes.
 3. Run the full validation suite (see above).
 4. Open a pull request with a clear description of the change.
 

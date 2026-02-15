@@ -243,7 +243,7 @@ resolve_kit_dir() {
   else
     checkout_ref
   fi
-  printf '%s' "$repo_dir/copy-ready"
+  printf '%s' "$repo_dir/claude-kit"
 }
 
 doctor() {
@@ -251,7 +251,7 @@ doctor() {
   if [ -n "${ORACULO_KIT_DIR:-}" ]; then
     kit_dir="$ORACULO_KIT_DIR"
   else
-    kit_dir="$repo_dir/copy-ready"
+    kit_dir="$repo_dir/claude-kit"
   fi
 
   echo "oraculo doctor"
